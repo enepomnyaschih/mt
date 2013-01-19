@@ -1,0 +1,35 @@
+.mt-tweet {
+	background-color: #DDD;
+	float: left;
+	width: 400px;
+}
+.mt-tweet-time {
+	float: right;
+}
+.mt-tweet-full-name {
+	display: inline-block;
+	font-weight: bold;
+}
+.mt-tweet-short-name {
+	color: #666;
+	display: inline-block;
+	font-size: .8em;
+	margin-left: 10px;
+}
+.mt-tweet-button {
+	color: #0084B4;
+	cursor: pointer;
+	display: inline-block;
+}
+.mt-tweet-button:hover {
+	text-decoration: underline;
+}
+.mt-tweet-retweet {
+	margin-left: 10px;
+}
+.mt-tweet-like.active {
+	color: #FF9B00;
+}
+.mt-tweet-retweet.active {
+	color: #609928;
+}
