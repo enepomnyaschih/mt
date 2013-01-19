@@ -1,0 +1,1 @@
+{	"requires" : [		"thirdparty/reset.css",		"thirdparty/class.js",		"thirdparty/jquery-1.9.0.js|auto"	],		"resources" : [		"mt.js",		"mt/Application.css",		"mt/LocalePicker.css",		"mt/Tweet.css",		"mt/Application.js",		"mt/Data.js",		"mt/Locale.js",		"mt/locale/en.js",		"mt/locale/ru.js",		"mt/LocalePicker.js",		"mt/Tweet.js",		"data.js",		"boot.js"	]}
