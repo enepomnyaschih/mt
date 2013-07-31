@@ -1,6 +1,5 @@
-﻿mt.locale.ru = {
+﻿{
 	"language"    : "Русский",
-	
 	"hourLiter"   : "ч",
 	"like"        : "Нравится",
 	"minuteLiter" : "м",
@@ -8,4 +7,4 @@
 	"retweet"     : "Ретвитнуть",
 	"unlike"      : "Не нравится",
 	"unretweet"   : "Отретвитнуть"
-};
+}

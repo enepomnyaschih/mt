@@ -1,6 +1,5 @@
-﻿mt.locale.en = {
+﻿{
 	"language"    : "English",
-	
 	"hourLiter"   : "h",
 	"like"        : "Like",
 	"minuteLiter" : "m",
@@ -8,4 +7,4 @@
 	"retweet"     : "Retweet",
 	"unlike"      : "Unlike",
 	"unretweet"   : "Unretweet"
-};
+}

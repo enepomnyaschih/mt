@@ -1,10 +1,6 @@
 ﻿var application;
 
 $(function() {
-	application = new mt.Application({
-		localeData : mt.locale,
-		tweetData  : testData
-	});
-	
-	$("body").append(application.el);
+	application = new mt.Application(localeData);
+	application.renderTo("body");
 });

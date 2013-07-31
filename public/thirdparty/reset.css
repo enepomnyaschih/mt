@@ -4,7 +4,7 @@
 html, body, div, span, object, iframe, a, img, form, label,
 table, tbody, tfoot, thead, tr, th, td, canvas, embed, audio, video, button
 { border:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box;
-font:inherit; font-size:100%; margin:0; padding:0; vertical-align:baseline; }
+font-family:inherit; font-size:100%; margin:0; padding:0; vertical-align:baseline; }
 
 table { border-collapse:collapse; border-spacing:0; }
 input, textarea, select { box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box; }
@@ -15,7 +15,7 @@ a img { border:none; }
 :focus { outline:none; }
 
 /* Buttons */
-button { background:none; box-align:stretch; -moz-box-align:stretch; -webkit-box-align:stretch;
+button { background:none; box-align:center; -moz-box-align:center; -webkit-box-align:center;
 color:inherit; cursor:pointer; display:block; text-align:inherit; }
 
 /*
@@ -56,3 +56,4 @@ blockquote:before, blockquote:after, q:before, q:after { content:''; content:non
 img.alignleft { margin:0 20px 10px 0; float:left; }
 img.alignright { margin:0 0px 10px 20px; float:right; }
 img.aligncenter { text-align:center; display:block; }
+.blocklink { display:block; color:inherit; text-decoration:inherit; font:inherit; font-size:100%; }
