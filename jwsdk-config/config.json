@@ -5,10 +5,10 @@
 	
 	"publicPath"    : "../public",
 	"buildUrl"      : "build",
-	"pagesUrl"      : "pages",
+	"pagesUrl"      : "",
 	
 	"tempPath"      : "temp",
 	
-	"urlPrefix"     : "/",
+	"urlPrefix"     : "",
 	"dynamicLoader" : false
 }
