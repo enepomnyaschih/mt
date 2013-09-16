@@ -1,10 +1,12 @@
 ﻿mt.Data = function() {
 	mt.Data._super.call(this);
+	this.profile = null;
 	this.tweets = new JW.ObservableArray();
 };
 
 JW.extend(mt.Data, JW.Class, {
 	/*
+	mt.data.Profile profile;
 	JW.ObservableArray<mt.data.Tweet> tweets;
 	*/
 	
@@ -14,18 +16,22 @@ JW.extend(mt.Data, JW.Class, {
 		this._super();
 	},
 	
-	load: function() {
+	load: function(success, scope) {
+		function onLoad(result) {
+			this.profile = mt.data.Profile.createByJson(result.profile);
+			this.tweets.addAll(JW.Array.map(result.tweets, mt.data.Tweet.createByJson));
+			if (success) {
+				success.call(scope || this);
+			}
+		}
+		
 		$.ajax({
 			url: "/backend/tweets.json",
 			type: "get",
 			dataType: "json",
-			success: this._onLoad,
+			success: onLoad,
 			context: this
 		});
-	},
-	
-	_onLoad: function(result) {
-		this.tweets.addAll(JW.Array.map(result.tweets, mt.data.Tweet.createByJson));
 	}
 });
 

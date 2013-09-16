@@ -2,6 +2,7 @@
 	mt.data.Tweet._super.call(this);
 	this.fullName = config.fullName;
 	this.shortName = config.shortName;
+	this.avatarUrl48 = config.avatarUrl48;
 	this.contentHtml = config.contentHtml;
 	this.time = config.time;
 	this.like = config.like;
@@ -12,14 +13,15 @@
 
 JW.extend(mt.data.Tweet, JW.Class, {
 	/*
-	String fullName;
-	String shortName;
-	String contentHtml;
-	Integer time;
-	Boolean like;
-	Boolean retweet;
-	JW.Event<JW.ValueEventParams<Boolean>> likeChangeEvent;
-	JW.Event<JW.ValueEventParams<Boolean>> retweetChangeEvent;
+	string fullName;
+	string shortName;
+	string contentHtml;
+	string avatarUrl48;
+	number time;
+	boolean like;
+	boolean retweet;
+	JW.Event<JW.ValueEventParams<boolean>> likeChangeEvent;
+	JW.Event<JW.ValueEventParams<boolean>> retweetChangeEvent;
 	*/
 	
 	// override
@@ -47,12 +49,7 @@ JW.extend(mt.data.Tweet, JW.Class, {
 });
 
 mt.data.Tweet.createByJson = function(json) {
-	return new mt.data.Tweet({
-		fullName: json.fullName,
-		shortName: json.shortName,
-		contentHtml: json.contentHtml,
-		time: new Date().getTime() - json.timeAgo,
-		like: json.like,
-		retweet: json.retweet
-	});
+	return new mt.data.Tweet(JW.apply({}, json, {
+		time: new Date().getTime() - json.timeAgo
+	}));
 };

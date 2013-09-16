@@ -1,23 +1,23 @@
-﻿mt.TweetView = function(locale, data) {
+﻿mt.TweetView = function(data) {
 	this._updateTime = JW.inScope(this._updateTime, this);
 	this._onLikeClick = JW.inScope(this._onLikeClick, this);
 	this._onRetweetClick = JW.inScope(this._onRetweetClick, this);
 	mt.TweetView._super.call(this);
-	this.locale = locale;
 	this.data = data;
 	this._timer = null;
-	this._localeChangeAttachment = null;
 };
 
 JW.extend(mt.TweetView, JW.UI.Component, {
 	/*
-	mt.Locale locale;
 	mt.data.Tweet data;
 	Integer _timer;
-	JW.EventAttachment _localeChangeAttachment;
 	JW.EventAttachment _likeChangeAttachment;
 	JW.EventAttachment _retweetChangeAttachment;
 	*/
+	
+	renderAvatar: function(el) {
+		el.css("background-image", "url(" + this.data.avatarUrl48 + ")");
+	},
 	
 	renderTime: function(el) {
 		this._updateTime();
@@ -32,7 +32,7 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 		el.text("@" + this.data.shortName);
 	},
 	
-	renderContent: function(el) {
+	renderText: function(el) {
 		el.html(this.data.contentHtml);
 	},
 	
@@ -49,14 +49,7 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	},
 	
 	// override
-	renderComponent: function() {
-		this._super();
-		this._localeChangeAttachment = this.locale.changeEvent.bind(this._onLocaleChange, this);
-	},
-	
-	// override
 	destroyComponent: function() {
-		this._localeChangeAttachment.destroy();
 		this._retweetChangeAttachment.destroy();
 		this._likeChangeAttachment.destroy();
 		clearInterval(this._timer);
@@ -72,40 +65,36 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	_updateLike: function() {
 		this.getElement("like").
 			toggleClass("active", this.data.like).
-			text(this.locale.getString(this.data.like ? "unlike" : "like"));
+			text(this.data.like ? "Unlike" : "Like");
 	},
 	
 	_updateRetweet: function() {
 		this.getElement("retweet").
 			toggleClass("active", this.data.retweet).
-			text(this.locale.getString(this.data.retweet ? "unretweet" : "retweet"));
+			text(this.data.retweet ? "Unretweet" : "Retweet");
 	},
 	
-	_onLikeClick: function() {
+	_onLikeClick: function(event) {
+		event.preventDefault();
 		this.data.setLike(!this.data.like);
 	},
 	
-	_onRetweetClick: function() {
+	_onRetweetClick: function(event) {
+		event.preventDefault();
 		this.data.setRetweet(!this.data.retweet);
-	},
-	
-	_onLocaleChange: function() {
-		this._updateTime();
-		this._updateLike();
-		this._updateRetweet();
 	},
 	
 	_getTimeString: function(timeAgo) {
 		var minutes = timeAgo / 60000;
 		if (minutes < 1) {
-			return this.locale.getString("now");
+			return "Just now";
 		}
 		if (minutes < 60) {
-			return Math.floor(minutes) + this.locale.getString("minuteLiter");
+			return Math.floor(minutes) + "m";
 		}
 		var hours = minutes / 60;
 		if (hours < 24) {
-			return Math.round(hours) + this.locale.getString("hourLiter");
+			return Math.round(hours) + "h";
 		}
 		
 		function pad(value) {
