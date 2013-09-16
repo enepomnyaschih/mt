@@ -13,7 +13,7 @@ JW.extend(mt.TweetFeed, JW.UI.Component, {
 	renderTweets: function() {
 		this._mapper = this.data.tweets.createMapper({
 			createItem: function(tweetData) {
-				return new mt.TweetView(tweetData);
+				return new mt.TweetView(this.data, tweetData);
 			},
 			destroyItem: JW.destroy,
 			scope: this

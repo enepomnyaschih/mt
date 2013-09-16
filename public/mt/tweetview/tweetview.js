@@ -1,22 +1,25 @@
-﻿mt.TweetView = function(data) {
+﻿mt.TweetView = function(data, tweetData) {
 	this._updateTime = JW.inScope(this._updateTime, this);
 	this._onLikeClick = JW.inScope(this._onLikeClick, this);
 	this._onRetweetClick = JW.inScope(this._onRetweetClick, this);
+	this._onRemoveClick = JW.inScope(this._onRemoveClick, this);
 	mt.TweetView._super.call(this);
 	this.data = data;
+	this.tweetData = tweetData;
 	this._timer = null;
 };
 
 JW.extend(mt.TweetView, JW.UI.Component, {
 	/*
-	mt.data.Tweet data;
+	mt.Data data;
+	mt.data.Tweet tweetData;
 	Integer _timer;
 	JW.EventAttachment _likeChangeAttachment;
 	JW.EventAttachment _retweetChangeAttachment;
 	*/
 	
 	renderAvatar: function(el) {
-		el.css("background-image", "url(" + this.data.avatarUrl48 + ")");
+		el.css("background-image", "url(" + this.tweetData.avatarUrl48 + ")");
 	},
 	
 	renderTime: function(el) {
@@ -25,27 +28,31 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	},
 	
 	renderFullName: function(el) {
-		el.text(this.data.fullName);
+		el.text(this.tweetData.fullName);
 	},
 	
 	renderShortName: function(el) {
-		el.text("@" + this.data.shortName);
+		el.text("@" + this.tweetData.shortName);
 	},
 	
 	renderText: function(el) {
-		el.html(this.data.contentHtml);
+		el.html(this.tweetData.contentHtml);
 	},
 	
 	renderLike: function(el) {
 		this._updateLike();
-		this._likeChangeAttachment = this.data.likeChangeEvent.bind(this._updateLike, this);
+		this._likeChangeAttachment = this.tweetData.likeChangeEvent.bind(this._updateLike, this);
 		el.click(this._onLikeClick);
 	},
 	
 	renderRetweet: function(el) {
 		this._updateRetweet();
-		this._retweetChangeAttachment = this.data.retweetChangeEvent.bind(this._updateRetweet, this);
+		this._retweetChangeAttachment = this.tweetData.retweetChangeEvent.bind(this._updateRetweet, this);
 		el.click(this._onRetweetClick);
+	},
+	
+	renderRemove: function(el) {
+		el.click(this._onRemoveClick);
 	},
 	
 	// override
@@ -57,31 +64,36 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	},
 	
 	_updateTime: function() {
-		var timeAgo = new Date().getTime() - this.data.time;
+		var timeAgo = new Date().getTime() - this.tweetData.time;
 		var text = this._getTimeString(timeAgo);
 		this.getElement("time").text(text);
 	},
 	
 	_updateLike: function() {
 		this.getElement("like").
-			toggleClass("active", this.data.like).
-			text(this.data.like ? "Unlike" : "Like");
+			toggleClass("active", this.tweetData.like).
+			text(this.tweetData.like ? "Unlike" : "Like");
 	},
 	
 	_updateRetweet: function() {
 		this.getElement("retweet").
-			toggleClass("active", this.data.retweet).
-			text(this.data.retweet ? "Unretweet" : "Retweet");
+			toggleClass("active", this.tweetData.retweet).
+			text(this.tweetData.retweet ? "Unretweet" : "Retweet");
 	},
 	
 	_onLikeClick: function(event) {
 		event.preventDefault();
-		this.data.setLike(!this.data.like);
+		this.tweetData.setLike(!this.tweetData.like);
 	},
 	
 	_onRetweetClick: function(event) {
 		event.preventDefault();
-		this.data.setRetweet(!this.data.retweet);
+		this.tweetData.setRetweet(!this.tweetData.retweet);
+	},
+	
+	_onRemoveClick: function(event) {
+		event.preventDefault();
+		this.data.tweets.removeItem(this.tweetData);
 	},
 	
 	_getTimeString: function(timeAgo) {

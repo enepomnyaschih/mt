@@ -2,6 +2,7 @@
 	mt.Data._super.call(this);
 	this.profile = null;
 	this.tweets = new JW.ObservableArray();
+	this.tweets.lengthChangeEvent.bind(this._onTweetsLengthChange, this);
 };
 
 JW.extend(mt.Data, JW.Class, {
@@ -32,6 +33,10 @@ JW.extend(mt.Data, JW.Class, {
 			success: onLoad,
 			context: this
 		});
+	},
+	
+	_onTweetsLengthChange: function(params) {
+		this.profile.setTweets(this.profile.tweets + params.newLength - params.oldLength);
 	}
 });
 

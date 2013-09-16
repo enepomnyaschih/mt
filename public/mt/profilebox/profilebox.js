@@ -77,7 +77,6 @@ JW.extend(mt.ProfileBox, JW.UI.Component, {
 			like: false,
 			retweet: false
 		}), 0);
-		this.data.profile.setTweets(this.data.profile.tweets + 1);
 		this.getElement("compose-input").val("")
 	}
 });
