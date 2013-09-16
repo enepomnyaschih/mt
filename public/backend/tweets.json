@@ -18,6 +18,15 @@
 			"timeAgo": 215000,
 			"like": false,
 			"retweet": true
+		},
+		{
+			"fullName": "Egor Nepomnyaschih",
+			"shortName": "enepomnyaschih",
+			"avatarUrl48": "backend/avatar-48.png",
+			"contentHtml": "Try to tweet something!",
+			"timeAgo": 2000000,
+			"like": false,
+			"retweet": true
 		}
 	]
 }
