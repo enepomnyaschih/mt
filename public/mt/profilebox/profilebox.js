@@ -2,11 +2,13 @@
 	this._onComposeSubmit = JW.inScope(this._onComposeSubmit, this);
 	mt.ProfileBox._super.call(this);
 	this.data = data;
+	this._tweetsChangeAttachment = null;
 };
 
 JW.extend(mt.ProfileBox, JW.UI.Component, {
 	/*
 	mt.Data data;
+	JW.EventAttachment _tweetsChangeAttachment;
 	*/
 	
 	renderTop: function(el) {
@@ -25,8 +27,9 @@ JW.extend(mt.ProfileBox, JW.UI.Component, {
 		el.attr("href", "https://twitter.com/" + this.data.profile.shortName);
 	},
 	
-	renderTweetsValue: function(el) {
-		el.text(this.data.profile.tweets);
+	renderTweetsValue: function() {
+		this._updateTweets();
+		this._tweetsChangeAttachment = this.data.profile.tweetsChangeEvent.bind(this._updateTweets, this);
 	},
 	
 	renderFollowing: function(el) {
@@ -49,6 +52,16 @@ JW.extend(mt.ProfileBox, JW.UI.Component, {
 		el.submit(this._onComposeSubmit);
 	},
 	
+	// override
+	destroyComponent: function() {
+		this._tweetsChangeAttachment.destroy();
+		this._super();
+	},
+	
+	_updateTweets: function() {
+		this.getElement("tweets-value").text(this.data.profile.tweets);
+	},
+	
 	_onComposeSubmit: function(event) {
 		event.preventDefault();
 		var text = JW.String.trim(this.getElement("compose-input").val());
@@ -63,7 +76,8 @@ JW.extend(mt.ProfileBox, JW.UI.Component, {
 			time: new Date().getTime(),
 			like: false,
 			retweet: false
-		}));
+		}), 0);
+		this.data.profile.setTweets(this.data.profile.tweets + 1);
 		this.getElement("compose-input").val("")
 	}
 });

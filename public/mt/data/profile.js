@@ -7,6 +7,7 @@
 	this.tweets = config.tweets;
 	this.following = config.following;
 	this.followers = config.followers;
+	this.tweetsChangeEvent = new JW.Event();
 };
 
 JW.extend(mt.data.Profile, JW.Class, {
@@ -18,7 +19,22 @@ JW.extend(mt.data.Profile, JW.Class, {
 	number tweets;
 	number following;
 	number followers;
+	JW.Event<JW.ValueEventParams<number>> tweetsChangeEvent;
 	*/
+	
+	// override
+	destroy: function() {
+		this.tweetsChangeEvent.destroy();
+		this._super();
+	},
+	
+	setTweets: function(value) {
+		if (this.tweets === value) {
+			return;
+		}
+		this.tweets = value;
+		this.tweetsChangeEvent.trigger(new JW.ValueEventParams(this, value));
+	}
 });
 
 mt.data.Profile.createByJson = function(json) {
