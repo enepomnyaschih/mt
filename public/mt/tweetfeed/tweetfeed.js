@@ -1,25 +1,29 @@
 ﻿mt.TweetFeed = function(data) {
 	mt.TweetFeed._super.call(this);
 	this.data = data;
-	this.tweetViews = null;
+	this._mapper = null;
 };
 
 JW.extend(mt.TweetFeed, JW.UI.Component, {
 	/*
 	mt.Data data;
-	JW.AbstractArray<mt.TweetView> tweetViews;
+	JW.AbstractArray.Mapper<mt.data.Tweet, mt.TweetView> _mapper;
 	*/
 	
 	renderTweets: function() {
-		this.tweetViews = this.data.tweets.$map(function(tweetData) {
-			return new mt.TweetView(tweetData);
-		}, this);
-		return this.tweetViews;
+		this._mapper = this.data.tweets.createMapper({
+			createItem: function(tweetData) {
+				return new mt.TweetView(tweetData);
+			},
+			destroyItem: JW.destroy,
+			scope: this
+		});
+		return this._mapper.target;
 	},
 	
 	// override
 	destroyComponent: function() {
-		this.tweetViews.each(JW.destroy);
+		this._mapper.destroy();
 		this._super();
 	}
 });
