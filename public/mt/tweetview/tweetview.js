@@ -7,6 +7,8 @@
 	this.data = data;
 	this.tweetData = tweetData;
 	this._timer = null;
+	this._likeChangeAttachment = null;
+	this._retweetChangeAttachment = null;
 };
 
 JW.extend(mt.TweetView, JW.UI.Component, {

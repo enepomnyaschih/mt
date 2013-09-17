@@ -32,16 +32,8 @@ JW.extend(mt.ProfileBox, JW.UI.Component, {
 		this._tweetsChangeAttachment = this.data.profile.tweetsChangeEvent.bind(this._updateTweets, this);
 	},
 	
-	renderFollowing: function(el) {
-		el.attr("href", "https://twitter.com/following");
-	},
-	
 	renderFollowingValue: function(el) {
 		el.text(this.data.profile.following);
-	},
-	
-	renderFollowers: function(el) {
-		el.attr("href", "https://twitter.com/followers");
 	},
 	
 	renderFollowersValue: function(el) {
