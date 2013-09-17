@@ -1,18 +1,16 @@
-﻿var data;
-var profileBox;
+﻿var tweetData;
+var tweetView;
 
 $(function() {
-	data = mt.Data.createByJson({
-		"profile": {
-			"fullName": "Egor Nepomnyaschih",
-			"shortName": "enepomnyaschih",
-			"avatarUrl32": "backend/avatar-32.png",
-			"avatarUrl48": "backend/avatar-48.png",
-			"tweets": 380,
-			"following": 21,
-			"followers": 27
-		}
+	tweetData = mt.data.Tweet.createByJson({
+		"fullName": "Road Runner",
+		"shortName": "roadrunner",
+		"avatarUrl48": "backend/avatar-48.png",
+		"contentHtml": "jWidget documentation is here <a href=\"https://enepomnyaschih.github.com/jwidget\" target=\"_blank\">enepomnyaschih.github.com/jwidget</a>",
+		"timeAgo": 215000,
+		"like": false,
+		"retweet": true
 	});
-	profileBox = new mt.ProfileBox(data);
-	profileBox.renderTo("#container");
+	tweetView = new mt.TweetView(tweetData);
+	tweetView.renderTo("#container");
 });
