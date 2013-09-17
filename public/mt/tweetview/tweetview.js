@@ -1,8 +1,10 @@
-﻿mt.TweetView = function(tweetData) {
+﻿mt.TweetView = function(data, tweetData) {
 	this._updateTime = JW.inScope(this._updateTime, this);
 	this._onLikeClick = JW.inScope(this._onLikeClick, this);
 	this._onRetweetClick = JW.inScope(this._onRetweetClick, this);
+	this._onRemoveClick = JW.inScope(this._onRemoveClick, this);
 	mt.TweetView._super.call(this);
+	this.data = data;
 	this.tweetData = tweetData;
 	this._timer = null;
 	this._likeChangeAttachment = null;
@@ -11,6 +13,7 @@
 
 JW.extend(mt.TweetView, JW.UI.Component, {
 	/*
+	mt.Data data;
 	mt.data.Tweet tweetData;
 	number _timer;
 	JW.EventAttachment _likeChangeAttachment;
@@ -50,6 +53,10 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 		el.click(this._onRetweetClick);
 	},
 	
+	renderRemove: function(el) {
+		el.click(this._onRemoveClick);
+	},
+	
 	// override
 	destroyComponent: function() {
 		this._retweetChangeAttachment.destroy();
@@ -83,6 +90,11 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	_onRetweetClick: function(event) {
 		event.preventDefault();
 		this.tweetData.setRetweet(!this.tweetData.retweet);
+	},
+	
+	_onRemoveClick: function(event) {
+		event.preventDefault();
+		this.data.tweets.removeItem(this.tweetData);
 	},
 	
 	_getTimeString: function(timeAgo) {
