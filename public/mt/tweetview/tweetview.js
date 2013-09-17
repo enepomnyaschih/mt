@@ -52,7 +52,7 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	
 	// override
 	destroyComponent: function() {
-		clearInverval(this._timer);
+		clearInterval(this._timer);
 		this._retweetChangeAttachment.destroy();
 		this._likeChangeAttachment.destroy();
 		this._super();
