@@ -1,0 +1,5 @@
+/*.log
+/jwsdk-config/temp
+/public/build
+/public/pages
+/.sass-cache
