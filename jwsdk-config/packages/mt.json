@@ -22,6 +22,7 @@
 		"mt/tweetview/tweetview.js",
 		"mt/tweetview/tweetview.jw.html : mt.TweetView",
 		"mt/tweetview/tweetview.styl",
+		"data.json : dataJson",
 		"boot.js"
 	]
 }
