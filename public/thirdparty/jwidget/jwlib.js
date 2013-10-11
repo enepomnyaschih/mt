@@ -1,7 +1,7 @@
 /*!
-	jWidget Lib 0.6
+	jWidget Lib 0.7
 	
-	https://github.com/enepomnyaschih/jwidget/wiki
+	http://enepomnyaschih.github.io/jwidget/#!/guide/home
 	
 	Copyright (C) 2013 Egor Nepomnyaschih
 	
@@ -833,8 +833,8 @@ JW.apply(JW, {
 	},
 	
 	/**
-	 * Возвращает коллбек-функцию для алгоритмов коллекций. Функция проверяет, возвращает ли указанный метод
-	 * элемента с указанными аргументами не false (!==).
+	 * Возвращает коллбек-функцию для алгоритмов коллекций. Функция вызывает указанный метод элемента коллекции
+	 * с указанными аргументами и возвращает результат запуска этого метода.
 	 *
 	 * Пример (отфильтровать задачи, относящиеся к указанной задаче):
 	 *
@@ -1562,6 +1562,7 @@ JW.extend(JW.ItemValueEventParams, JW.ValueEventParams, {
  * - Конвертер в массив (сортировщик по компаратору): JW.AbstractCollection.SorterComparing
  * - Наблюдатель: JW.AbstractCollection.Observer
  * - Синхронизаторы представления: JW.AbstractArray.Inserter, JW.AbstractMap.Inserter
+ * - Объединитель массивов: JW.AbstractArray.Merger
  *
  * Простые коллекции введены прежде всего для совместимости. Они имеют общий интерфейс с оповещающими коллекциями,
  * но работают немного быстрее.
@@ -1641,6 +1642,7 @@ JW.extend(JW.ItemValueEventParams, JW.ValueEventParams, {
  * Создание синхронизаторов:
  *
  * - {@link #createMapper} - Создает конвертер элементов.
+ * - {@link #createFilterer} - Создает фильтровщик.
  * - {@link #createLister} - Создает конвертер в множество.
  * - {@link #createIndexer} - Создает индексатор.
  * - {@link #createOrderer} - Создает конвертер в массив (упорядочитель).
@@ -1719,6 +1721,7 @@ JW.extend(JW.AbstractCollection, JW.Class, {
 	/**
 	 * @method removeItems
 	 * Удаляет все вхождения указанных элементов из коллекции.
+	 * Доступно только для `<T extends JW.Class>`.
 	 * @param {Array} items `<T>` Элементы.
 	 * @returns {void}
 	 */
@@ -1838,11 +1841,11 @@ JW.extend(JW.AbstractCollection, JW.Class, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -1857,11 +1860,11 @@ JW.extend(JW.AbstractCollection, JW.Class, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -1874,12 +1877,12 @@ JW.extend(JW.AbstractCollection, JW.Class, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -1894,12 +1897,12 @@ JW.extend(JW.AbstractCollection, JW.Class, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -2143,6 +2146,14 @@ JW.extend(JW.AbstractCollection, JW.Class, {
 	 * `<T, U, JW.AbstractCollection<T>, JW.AbstractCollection<U>>` Синхронизатор.
 	 */
 	/**
+	 * @method createFilterer
+	 * Конструирует фильтровщик коллекции.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractCollection.Filterer}
+	 * `<T, JW.AbstractCollection<T>>` Синхронизатор.
+	 */
+	/**
 	 * @method createObserver
 	 * Конструирует наблюдатель коллекции.
 	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
@@ -2182,6 +2193,138 @@ JW.extend(JW.AbstractCollection, JW.Class, {
 	 * @returns {JW.AbstractCollection.Lister}
 	 * `<T, JW.AbstractCollection<T>>` Синхронизатор.
 	 */
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
+ * `<T, C extends JW.AbstractCollection<T>>`
+ *
+ * Фильтровщик коллекции. Создает новую коллекцию того же типа, включающую только те
+ * элементы исходной коллекции, для которых указанная функция возвращает значение !== false.
+ * Для массива синхронизатор сохранит порядок элементов.
+ *
+ *     var source = new JW.ObservableArray([1, 2, 3]);
+ *     var filterer = source.{@link JW.AbstractCollection#createFilterer createFilterer}({
+ *         {@link #cfg-filterItem filterItem}: function(x) { return x % 2 === 1; }
+ *     });
+ *     assert(filterer.{@link #property-target target}.{@link JW.AbstractArray#equal equal}([1, 3]));
+ *     
+ *     source.{@link JW.AbstractArray#addAll addAll}([4, 7, 1, 6]);
+ *     assert(filterer.{@link #property-target target}.{@link JW.AbstractArray#equal equal}([1, 3, 7, 1]));
+ *
+ *     source.{@link JW.AbstractArray#move move}(2, 6); // move "3" item to the end
+ *     assert(filterer.{@link #property-target target}.{@link JW.AbstractArray#equal equal}([1, 7, 1, 3]));
+ *
+ * Создавайте синхронизатор с помощью метода JW.AbstractCollection#createFilterer.
+ * Метод сам определит, какая реализация синхронизатора лучше подойдет (простая или observable).
+ *
+ * Целевую коллекцию можно передать в качестве конфигурационной опции:
+ *
+ *     var source = new JW.Set();
+ *     var target = new JW.Set();
+ *     var filterer = source.{@link JW.AbstractCollection#createFilterer createFilterer}({
+ *         {@link #cfg-target target}: target,
+ *         {@link #cfg-filterItem filterItem}: this._filterItem,
+ *         {@link #cfg-scope scope}: this
+ *     });
+ *
+ * Правила работы синхронизатора:
+ *
+ * - Целевая коллекция находится в поле {@link #property-target}.
+ * - При конструировании синхронизатора отфильтрованные элементы исходной коллекции сразу добавляются в
+ * {@link #property-target}.
+ * - При уничтожении синхронизатора все элементы удаляются из {@link #property-target}.
+ * - Целевую коллекцию можно передать в качестве конфигурационной опции {@link #cfg-target}.
+ * В этом случае, вся забота о ее уничтожении ложится на вас (хотя элементы будут из нее удалены автоматически
+ * при уничтожении синхронизатора).
+ * - Если {@link #cfg-target} не передан, то он будет создан автоматически. Синхронизатор подберет наиболее подходящую
+ * реализацию {@link #property-target} (простая или observable). В этом
+ * случае, {@link #property-target} будет уничтожен автоматически при уничтожении синхронизатора.
+ *
+ * **Дополнительные правила для различных типов коллекций**
+ *
+ * JW.AbstractArray:
+ *
+ * - При конструировании синхронизатора целевая коллекция должна быть пуста.
+ * - Целевую коллекцию можно синхронизировать только с одной исходной коллекцией.
+ *
+ * JW.AbstractMap:
+ *
+ * - Целевую коллекцию можно синхронизировать с несколькими исходными коллекциями, если ключи всех элементов различны.
+ * - В целевую коллекцию можно добавлять элементы вручную, если их ключи не пересекаются с ключами других элементов.
+ *
+ * JW.AbstractSet:
+ *
+ * - Целевую коллекцию можно синхронизировать с несколькими исходными коллекциями, если все элементы различны.
+ * - В целевую коллекцию можно добавлять элементы вручную, если они не пересекаются с другими элементами.
+ *
+ * @extends JW.Class
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractCollection#createFilterer.
+ * @param {JW.AbstractCollection} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.AbstractCollection.Filterer = function(source, config) {
+	JW.AbstractCollection.Filterer._super.call(this);
+	config = config || {};
+	this.source = source;
+	this.filterItem = config.filterItem;
+	this._targetCreated = !config.target;
+	this.target = this._targetCreated ? this.source.createEmpty() : config.target;
+	this.scope = config.scope || this;
+};
+
+JW.extend(JW.AbstractCollection.Filterer, JW.Class, {
+	/**
+	 * @cfg {C} target Целевая коллекция.
+	 */
+	/**
+	 * @cfg {Function} filterItem (required)
+	 *
+	 * `filterItem(item: T): boolean`
+	 *
+	 * Фильтрующая функция. Элемент появится в целевой коллекции, если результат запуска фильтрующей функции на этом
+	 * элементе !== false.
+	 */
+	/**
+	 * @cfg {Object} scope Контекст вызова filterItem.
+	 */
+	/**
+	 * @property {C} source Исходная коллекция.
+	 */
+	/**
+	 * @property {C} target Целевая коллекция.
+	 */
+	// boolean _targetCreated;
+	
+	// override
+	destroy: function() {
+		if (this._targetCreated) {
+			this.target.destroy();
+		}
+		this._super();
+	}
 });
 
 /*
@@ -2249,7 +2392,7 @@ JW.AbstractCollection.Lister = function(source, config) {
 	JW.AbstractCollection.Lister._super.call(this);
 	config = config || {};
 	this.source = source;
-	this._targetCreated = config.target === undefined;
+	this._targetCreated = !config.target;
 	this.target = this._targetCreated ? source.createEmptySet() : config.target;
 	this.target.tryAddAll(source.asArray());
 };
@@ -2348,7 +2491,7 @@ JW.AbstractCollection.Indexer = function(source, config) {
 	config = config || {};
 	this.source = source;
 	this.getKey = config.getKey;
-	this._targetCreated = config.target === undefined;
+	this._targetCreated = !config.target;
 	this.target = this._targetCreated ? source.createEmptyMap() : config.target;
 	this.scope = config.scope || this;
 	this.target.trySetAll(this._index(source.asArray()));
@@ -2497,7 +2640,7 @@ JW.AbstractCollection.Mapper = function(source, config) {
 	this.source = source;
 	this.createItem = config.createItem;
 	this.destroyItem = config.destroyItem;
-	this._targetCreated = config.target === undefined;
+	this._targetCreated = !config.target;
 	this.target = this._targetCreated ? this.source.createEmpty() : config.target;
 	this.scope = config.scope || this;
 };
@@ -2714,7 +2857,7 @@ JW.extend(JW.AbstractCollection.Observer, JW.Class, {
 /**
  * @class
  *
- * `<T, C extends JW.AbstractCollection<T>>`
+ * `<T extends JW.Class, C extends JW.AbstractCollection<T>>`
  *
  * Конвертер в массив (упорядочитель). Преобразует исходную коллекцию в массив. Новые элементы добавляются в конец
  * массива.
@@ -2758,7 +2901,7 @@ JW.AbstractCollection.Orderer = function(source, config) {
 	JW.AbstractCollection.Orderer._super.call(this);
 	config = config || {};
 	this.source = source;
-	this._targetCreated = config.target === undefined;
+	this._targetCreated = !config.target;
 	this.target = this._targetCreated ? source.createEmptyArray() : config.target;
 	this.target.tryAddAll(source.asArray());
 };
@@ -2784,12 +2927,17 @@ JW.extend(JW.AbstractCollection.Orderer, JW.Class, {
 		this._super();
 	},
 	
-	_splice: function(removedItemsSet, addedItemsArray) {
-		var newItems = this.target.filter(function(item) {
+	_splice: function(removedItemsSet, addedItemsSet) {
+		var filteredItems = this.target.filter(function(item) {
+			return !JW.Set.contains(removedItemsSet, item) || JW.Set.contains(addedItemsSet, item);
+		}, this);
+		var addedItems = JW.Set.$toArray(addedItemsSet).filter(function(item) {
 			return !JW.Set.contains(removedItemsSet, item);
 		}, this);
-		JW.Array.tryAddAll(newItems, addedItemsArray);
-		this.target.performSplice(newItems);
+		this.target.trySplice(
+			this.target.detectFilter(filteredItems) || [],
+			[new JW.AbstractArray.IndexItems(filteredItems.length, addedItems)]
+		);
 	}
 });
 
@@ -2869,12 +3017,11 @@ JW.AbstractCollection.SorterComparing = function(source, config) {
 	JW.AbstractCollection.SorterComparing._super.call(this);
 	config = config || {};
 	this.source = source;
-	this.compare = config.compare;
+	this.compare = config.compare || JW.cmp;
 	this.scope = config.scope || this;
 	var scope = this.scope;
 	var compare = this.compare;
-	this._compare = function(x, y) { return compare.call(scope, x, y); };
-	this._targetCreated = config.target === undefined;
+	this._targetCreated = !config.target;
 	this.target = this._targetCreated ? source.createEmptyArray() : config.target;
 	this._splice([], source.asArray());
 };
@@ -2884,11 +3031,11 @@ JW.extend(JW.AbstractCollection.SorterComparing, JW.Class, {
 	 * @cfg {JW.AbstractArray} target `<T>` Целевой массив.
 	 */
 	/**
-	 * @cfg {Function} compare (required)
+	 * @cfg {Function} compare
 	 *
 	 * `compare(t1: T, t2: T): number`
 	 *
-	 * Функция-компаратор.
+	 * Функция-компаратор. По умолчанию равна JW.cmp.
 	 */
 	/**
 	 * @cfg {Object} scope Контекст вызова compare.
@@ -2900,11 +3047,10 @@ JW.extend(JW.AbstractCollection.SorterComparing, JW.Class, {
 	 * @property {JW.AbstractArray} target `<T>` Целевой массив.
 	 */
 	// boolean _targetCreated;
-	// number _compare(T x, T y);
 	
 	// override
 	destroy: function() {
-		this._splice(this.source.asArray());
+		this._splice(this.source.asArray(), []);
 		if (this._targetCreated) {
 			this.target.destroy();
 		}
@@ -2916,32 +3062,68 @@ JW.extend(JW.AbstractCollection.SorterComparing, JW.Class, {
 	 * @returns {void}
 	 */
 	resort: function() {
-		this.target.sortComparing(this._compare);
+		this.target.sortComparing(this.compare, this.scope);
 	},
 	
 	_splice: function(removedItems, addedItems) {
-		var removes = JW.Array.toSet(removedItems);
-		var adds = addedItems.concat();
-		adds.sort(this._compare);
-		var iTarget = 0;
-		var iAdds = 0;
-		var i = 0;
-		var result = new Array(this.target.length + addedItems.length - removedItems.length);
-		while (iTarget < this.target.length) {
-			var value = this.target[iTarget];
-			if (JW.Set.contains(removes, value)) {
-				++iTarget;
+		var removedItemsSorted = JW.Array.toSortedComparing(removedItems, this.compare, this.scope);
+		var addedItemsSorted = JW.Array.toSortedComparing(addedItems, this.compare, this.scope);
+		removedItems = new Array(removedItems.length);
+		addedItems = new Array(addedItems.length);
+		var iRemoved = 0;
+		var iAdded = 0;
+		var jRemoved = 0;
+		var jAdded = 0;
+		// ignore out the items which are removed and added at the same time
+		while ((iRemoved < removedItemsSorted.length) || (iAdded < addedItemsSorted.length)) {
+			var removedItem = removedItemsSorted[iRemoved];
+			var addedItem = addedItemsSorted[iAdded];
+			var c = JW.cmp(removedItem === undefined, addedItem === undefined) ||
+				this.compare.call(this.scope, removedItem, addedItem);
+			if (c < 0) {
+				removedItems[jRemoved++] = removedItem;
+				++iRemoved;
+			} else if (c > 0) {
+				addedItems[jAdded++] = addedItem;
+				++iAdded;
 			} else {
-				while ((iAdds < adds.length) && (this._compare(adds[iAdds], value) < 0)) {
-					result[i++] = adds[iAdds++];
-				}
-				result[i++] = this.target[iTarget++];
+				++iRemoved;
+				++iAdded;
 			}
 		}
-		while (i < result.length) {
-			result[i++] = adds[iAdds++];
+		removedItems.splice(jRemoved, removedItems.length - jRemoved);
+		addedItems.splice(jAdded, addedItems.length - jAdded);
+		
+		var iAdds = 0;
+		var addShift = 0;
+		var removeParamsList = [];
+		var addParamsList = [];
+		var removeParams = null;
+		for (iTarget = 0, lTarget = this.target.getLength(); iTarget < lTarget; ++iTarget) {
+			var value = this.target.get(iTarget);
+			if (removedItems[JW.Array.binarySearch(removedItems, value, this.compare, this.scope) - 1] === value) {
+				if (!removeParams) {
+					removeParams = new JW.AbstractArray.IndexCount(iTarget, 0);
+					removeParamsList.push(removeParams);
+				}
+				++removeParams.count;
+				--addShift;
+			} else {
+				removeParams = null;
+				var addParams = new JW.AbstractArray.IndexItems(iTarget + addShift, []);
+				while ((iAdds < addedItems.length) && (this.compare.call(this.scope, addedItems[iAdds], value) < 0)) {
+					addParams.items.push(addedItems[iAdds++]);
+					++addShift;
+				}
+				if (addParams.items.length !== 0) {
+					addParamsList.push(addParams);
+				}
+			}
 		}
-		this.target.performSplice(result);
+		if (iAdds < addedItems.length) {
+			addParamsList.push(new JW.AbstractArray.IndexItems(iTarget + addShift, addedItems.slice(iAdds)));
+		}
+		this.target.splice(removeParamsList, addParamsList);
 	}
 });
 
@@ -2984,7 +3166,7 @@ JW.AbstractCollection._createStatic$Set = function(namespace, algorithm) {
 
 JW.AbstractCollection.createStaticMethods = function(namespace) {
 	namespace.some = function(target, callback, scope) {
-		return namespace.every(target, function(item) {
+		return !namespace.every(target, function(item) {
 			return callback.call(this, item) === false;
 		}, scope);
 	};
@@ -3029,7 +3211,7 @@ JW.AbstractCollection.createStaticMethods = function(namespace) {
 		compare = compare || JW.cmp;
 		scope = scope || target;
 		order = order || 1;
-		var items = namespace.toArray();
+		var items = namespace.toArray(target);
 		items.sort(function(x, y) {
 			return order * compare.call(scope, x, y);
 		});
@@ -3178,6 +3360,7 @@ JW.AbstractCollection.createStaticMethods = function(namespace) {
  * Создание синхронизаторов:
  *
  * - {@link #createMapper} - Создает конвертер элементов.
+ * - {@link #createFilterer} - Создает фильтровщик.
  * - {@link #createLister} - Создает конвертер в множество.
  * - {@link #createIndexer} - Создает индексатор.
  * - {@link #createOrderer} - Создает конвертер в массив (упорядочитель).
@@ -3281,7 +3464,7 @@ JW.extend(JW.IndexedCollection, JW.AbstractCollection, {
 	 */
 	set: function(item, key) {
 		var result = this.trySet(item, key);
-		return (result !== undefined) ? result.item : this.get(key);
+		return (result !== undefined) ? result.value : this.get(key);
 	},
 	
 	/**
@@ -3442,11 +3625,11 @@ JW.extend(JW.IndexedCollection, JW.AbstractCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: K): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -3459,11 +3642,11 @@ JW.extend(JW.IndexedCollection, JW.AbstractCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: K): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -3476,12 +3659,12 @@ JW.extend(JW.IndexedCollection, JW.AbstractCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: K, k2: K): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -3494,12 +3677,12 @@ JW.extend(JW.IndexedCollection, JW.AbstractCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: K, k2: K): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -3511,11 +3694,11 @@ JW.extend(JW.IndexedCollection, JW.AbstractCollection, {
 	 *
 	 * Строит массив из ключей элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: K): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -3530,11 +3713,11 @@ JW.extend(JW.IndexedCollection, JW.AbstractCollection, {
 	 *
 	 * Строит массив из ключей элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: K): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -3547,12 +3730,12 @@ JW.extend(JW.IndexedCollection, JW.AbstractCollection, {
 	 *
 	 * Строит массив из ключей элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: K, k2: K): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -3567,12 +3750,12 @@ JW.extend(JW.IndexedCollection, JW.AbstractCollection, {
 	 *
 	 * Строит массив из ключей элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: K, k2: K): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -3859,10 +4042,11 @@ JW.IndexedCollection.createStaticMethods = function(namespace) {
 	namespace.$getSortingKeys = JW.AbstractCollection._createStatic$Array(namespace, "getSortingKeys");
 	
 	namespace.getSortingKeysComparing = function(target, compare, scope, order) {
+		compare = compare || JW.cmp;
 		order = order || 1;
 		var pairs = [];
 		namespace.every(target, function(item, key) {
-			pairs.push([key, value]);
+			pairs.push([key, item]);
 		}, scope);
 		pairs.sort(function(x, y) {
 			return order * compare(x[1], y[1], x[0], y[0]);
@@ -3875,7 +4059,7 @@ JW.IndexedCollection.createStaticMethods = function(namespace) {
 	namespace.$getSortingKeysComparing = JW.AbstractCollection._createStatic$Array(namespace, "getSortingKeysComparing");
 	
 	namespace.toSorted = function(target, callback, scope, order) {
-		return namespace.map(namespace.getSortingKeys(target, callback, scope, order), function(key) {
+		return JW.Array.map(namespace.getSortingKeys(target, callback, scope, order), function(key) {
 			return namespace.get(target, key);
 		});
 	};
@@ -3883,7 +4067,7 @@ JW.IndexedCollection.createStaticMethods = function(namespace) {
 	namespace.$toSorted = JW.AbstractCollection._createStatic$Array(namespace, "toSorted");
 	
 	namespace.toSortedComparing = function(target, compare, scope, order) {
-		return namespace.map(namespace.getSortingKeysComparing(target, compare, scope, order), function(key) {
+		return JW.Array.map(namespace.getSortingKeysComparing(target, compare, scope, order), function(key) {
 			return namespace.get(target, key);
 		});
 	};
@@ -3967,6 +4151,7 @@ JW.IndexedCollection.createStaticMethods = function(namespace) {
  * - {@link #keyOf} - Возвращает индекс элемента. Если элемент не найден, вернет undefined.
  * - **{@link #indexOf} - Возвращает индекс элемента. Если элемент не найден, вернет -1.**
  * - **{@link #getItems} - Возвращает внутреннее представление массива.**
+ * - **{@link #binarySearch} - Ищет позицию бинарным поиском.**
  *
  * Алгоритмы перебора:
  *
@@ -4015,17 +4200,21 @@ JW.IndexedCollection.createStaticMethods = function(namespace) {
  * - **{@link #reorder}, #tryReorder - Переупорядочивает элементы.**
  * - **{@link #sort}, #sortComparing - Сортирует массив.**
  * - **{@link #performSplice} - Приводит содержимое методом #splice.**
+ * - **{@link #performFilter} - Фильтрует содержимое методом #splice.**
  * - **{@link #performReorder} - Приводит содержимое методом #reorder.**
  *
  * Создание синхронизаторов:
  *
  * - {@link #createMapper} - Создает конвертер элементов.
+ * - {@link #createFilterer} - Создает фильтровщик.
  * - {@link #createLister} - Создает конвертер в множество.
  * - {@link #createIndexer} - Создает индексатор.
  * - {@link #createOrderer} - Создает конвертер в массив (упорядочитель).
  * - {@link #createSorterComparing} - Создает конвертер в массив (сортировщик по компаратору).
  * - {@link #createObserver} - Создает наблюдатель.
  * - **{@link #createInserter} - Создает синхронизатор представления с массивом.**
+ * - **{@link #createMerger} - Создает объединитель массивов.**
+ * - **{@link #createReverser} - Создает обратитель массива.**
  *
  * Создание родственных коллекций (для разработки алгоритмов и синхронизаторов):
  *
@@ -4037,6 +4226,7 @@ JW.IndexedCollection.createStaticMethods = function(namespace) {
  * Другие методы:
  *
  * - **{@link #detectSplice} - Определяет параметры метода #splice для приведения содержимого.**
+ * - **{@link #detectFilter} - Определяет параметр removeParamsList метода #splice для фильтрации содержимого.**
  * - **{@link #detectReorder} - Определяет параметры метода #reorder для приведения содержимого.**
  * - **{@link #detectSort} - Определяет параметры метода #reorder для сортировки по индексу.**
  * - **{@link #detectSortComparing} - Определяет параметры метода #reorder для сортировки по компаратору.**
@@ -4247,11 +4437,11 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -4264,11 +4454,11 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -4281,12 +4471,12 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -4299,12 +4489,12 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -4318,11 +4508,11 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 * Строит массив из индексов элементов коллекции, отсортированный по результату запуска функции f на каждом
 	 * элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -4336,11 +4526,11 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 * Строит массив из индексов элементов коллекции, отсортированный по результату запуска функции f на каждом
 	 * элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -4353,12 +4543,12 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 *
 	 * Строит массив из индексов элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -4371,12 +4561,12 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 *
 	 * Строит массив из индексов элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -4487,10 +4677,6 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	
 	toArray: function() {
 		return this.items.concat();
-	},
-	
-	toSet: function() {
-		return new JW.Set(this.items);
 	},
 	
 	asArray: function() {
@@ -4623,8 +4809,8 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	
 	removeItems: function(items) {
 		var itemSet = new JW.Set(items);
-		var newItems = this.filter(function(v) { return !itemSet.contains(item); });
-		this.performSplice(newItems);
+		var newItems = this.filter(function(item) { return !itemSet.contains(item); });
+		this.performFilter(newItems);
 	},
 	
 	/**
@@ -4718,15 +4904,31 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	
 	/**
 	 * Определяет параметры метода #splice, с которыми содержимое массива станет равно newItems.
-	 * Т.е. определяет, какие элементы нужно удалить, какие вставить, и в какое место.
+	 * Т.е. определяет, какие элементы нужно удалить, какие вставить, и в какое место. Все элементы должны быть
+	 * уникальны относительно функции getKey. Если элементы не уникальны, попробуйте метод #detectFilter.
 	 * @param {Array} newItems `<T>` Новое содержимое массива.
 	 * @param {Function} [getKey] Функция, возвращающая уникальный ключ элемента в коллекции. По умолчанию
 	 * равна #getKey. Если коллекция содержит экземпляры JW.Class, то все тип-топ.
 	 * @param {Object} [scope] Контекст вызова getKey. По умолчанию, функция вызывается в контексте коллекции.
-	 * @returns {JW.AbstractArray.SpliceParams} `<T>` Параметры метода #splice.
+	 * @returns {JW.AbstractArray.SpliceParams}
+	 * `<T>` Параметры метода #splice.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	detectSplice: function(newItems, getKey, scope) {
 		return JW.Array.detectSplice(this.items, newItems, getKey || this.getKey, scope || this);
+	},
+	
+	/**
+	 * Определяет параметр removeParamsList метода #splice, с которыми содержимое массива станет равно newItems.
+	 * Определяет, какие элементы нужно удалить. Не предусматривает вставку новых элементов. В отличие от
+	 * метода #detectSplice, не требует уникальности элементов массива.
+	 * @param {Array} newItems `<T>` Новое содержимое массива.
+	 * @returns {Array}
+	 * `<JW.AbstractArray.IndexCount>` Параметр removeParamsList метода #splice.
+	 * Если вызова метода не требуется - undefined.
+	 */
+	detectFilter: function(newItems) {
+		return JW.Array.detectFilter(this.items, newItems);
 	},
 	
 	/**
@@ -4737,7 +4939,9 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 * @param {Function} [getKey] Функция, возвращающая уникальный ключ элемента в коллекции. По умолчанию
 	 * равна #getKey. Если коллекция содержит экземпляры JW.Class, то все тип-топ.
 	 * @param {Object} [scope] Контекст вызова getKey. По умолчанию, функция вызывается в контексте коллекции.
-	 * @returns {Array} `<number>` Параметр indexArray метода #reorder.
+	 * @returns {Array}
+	 * `<number>` Параметр indexArray метода #reorder.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	detectReorder: function(newItems, getKey, scope) {
 		return JW.Array.detectReorder(this.items, newItems, getKey || this.getKey, scope || this);
@@ -4747,15 +4951,17 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 * Определяет параметр метода #reorder, с которым содержимое массива отсортируется по результату вызова
 	 * функции f на всех элементах.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
-	 * @returns {Array} `<number>` Параметр indexArray метода #reorder.
+	 * @returns {Array}
+	 * `<number>` Параметр indexArray метода #reorder.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	detectSort: function(callback, scope, order) {
 		return JW.Array.detectSort(this.items, callback, scope || this, order);
@@ -4764,16 +4970,18 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	/**
 	 * Определяет параметр метода #reorder, с которым содержимое массива отсортируется по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
-	 * @returns {Array} `<number>` Параметр indexArray метода #reorder.
+	 * @returns {Array}
+	 * `<number>` Параметр indexArray метода #reorder.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	detectSortComparing: function(compare, scope, order) {
 		return JW.Array.detectSortComparing(this.items, compare, scope || this, order);
@@ -4781,6 +4989,8 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	
 	/**
 	 * Преобразует содержимое массива к newItems комбинацией методов #detectSplice и #splice.
+	 * Все элементы должны быть
+	 * уникальны относительно функции getKey. Если элементы не уникальны, попробуйте метод #performFilter.
 	 * @param {Array} newItems `<T>` Новое содержимое массива.
 	 * @param {Function} [getKey] Функция, возвращающая уникальный ключ элемента в коллекции. По умолчанию
 	 * равна #getKey. Если коллекция содержит экземпляры JW.Class, то все тип-топ.
@@ -4791,6 +5001,20 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 		var params = this.detectSplice(newItems, getKey || this.getKey, scope || this);
 		if (params !== undefined) {
 			this.trySplice(params.removeParamsList, params.addParamsList);
+		}
+	},
+	
+	/**
+	 * Преобразует содержимое массива к newItems комбинацией методов #detectFilter и #splice.
+	 * Только удаляет элементы. Не предусматривает вставку новых элементов. В отличие от
+	 * метода #performSplice, не требует уникальности элементов массива.
+	 * @param {Array} newItems `<T>` Новое содержимое массива.
+	 * @returns {void}
+	 */
+	performFilter: function(newItems) {
+		var params = this.detectFilter(newItems);
+		if (params !== undefined) {
+			this.trySplice(params, []);
 		}
 	},
 	
@@ -4812,36 +5036,42 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	/**
 	 * Сортирует массив по результату запуска функции f на элементах.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
 	 * @returns {void}
 	 */
 	sort: function(callback, scope, order) {
-		this.tryReorder(this.detectSort(callback, scope, order));
+		var indexArray = this.detectSort(callback, scope, order);
+		if (indexArray !== undefined) {
+			this.tryReorder(indexArray);
+		}
 	},
 	
 	/**
 	 * Сортирует массив по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
-	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
+	 * `f(t1: T, t2: T, i1: number, i2: number): number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
 	 * @returns {void}
 	 */
 	sortComparing: function(compare, scope, order) {
-		this.tryReorder(this.detectSortComparing(compare, scope, order));
+		var indexArray = this.detectSortComparing(compare, scope, order);
+		if (indexArray !== undefined) {
+			this.tryReorder(indexArray);
+		}
 	},
 	
 	/**
@@ -4853,6 +5083,17 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 */
 	createMapper: function(config) {
 		return new JW.AbstractArray.Mapper(this, config);
+	},
+	
+	/**
+	 * Конструирует фильтровщик коллекции.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractArray.Filterer}
+	 * `<T>` Синхронизатор.
+	 */
+	createFilterer: function(config) {
+		return new JW.AbstractArray.Filterer(this, config);
 	},
 	
 	/**
@@ -4919,6 +5160,32 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 */
 	createInserter: function(config) {
 		return new JW.AbstractArray.Inserter(this, config);
+	},
+	
+	/**
+	 * Конструирует объединитель массивов.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractArray.Merger}
+	 * `<T>` Синхронизатор.
+	 */
+	createMerger: function(config) {
+		return new JW.AbstractArray.Merger(this, config);
+	},
+	
+	createMergerBunch: function(merger) {
+		return new JW.AbstractArray.Merger.Bunch(merger, this);
+	},
+	
+	/**
+	 * Конструирует обратитель массива.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractArray.Reverser}
+	 * `<T>` Синхронизатор.
+	 */
+	createReverser: function(config) {
+		return new JW.AbstractArray.Reverser(this, config);
 	},
 	
 	createSplitter: function(config) {
@@ -4988,6 +5255,25 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 		}
 	},
 	
+	/**
+	 * Ищет индекс первого элемента, который больше указанного значения относительно функции compare,
+	 * используя бинарный поиск. Массив должен быть отсортирован по функции compare.
+	 * @param {T} value Значение.
+	 * @param {Function} [compare]
+	 *
+	 * `f(t1: T, t2: T): number`
+	 *
+	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
+	 *
+	 * @param {Object} [scope]
+	 * Контекст вызова compare. По умолчанию, вызывается в контексте массива.
+	 * @returns {number} Индекс элемента.
+	 */
+	binarySearch: function(value, compare, scope) {
+		return JW.Array.binarySearch(this.items, value, compare, scope);
+	},
+	
 	_callStatic: function(algorithm, args) {
 		return JW.Array[algorithm].apply(JW.Array, [this.items].concat(args || []));
 	}
@@ -5022,6 +5308,14 @@ JW.extend(JW.AbstractArray.IndexCount, JW.Class, {
 	/**
 	 * @property {number} count Количество.
 	 */
+	
+	/**
+	 * Клонирует пару.
+	 * @returns JW.AbstractArray.IndexCount
+	 */
+	clone: function() {
+		return new JW.AbstractArray.IndexCount(this.index, this.count);
+	}
 });
 
 /**
@@ -5054,6 +5348,14 @@ JW.extend(JW.AbstractArray.IndexItems, JW.Class, {
 	 */
 	toIndexCount: function() {
 		return new JW.AbstractArray.IndexCount(this.index, this.items.length);
+	},
+	
+	/**
+	 * Клонирует пару.
+	 * @returns JW.AbstractArray.IndexItems
+	 */
+	clone: function() {
+		return new JW.AbstractArray.IndexItems(this.index, this.items.concat());
 	}
 });
 
@@ -5156,6 +5458,107 @@ JW.extend(JW.AbstractArray.SpliceResult/*<T>*/, JW.Class, {
 	 */
 	isEmpty: function() {
 		return (this.removedItemsList.length === 0) && (this.addedItemsList.length === 0);
+	}
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
+ * `<T> extends JW.AbstractCollection.Filterer<T, JW.AbstractArray<T>>`
+ *
+ * Фильтровщик массива. Подробнее читайте JW.AbstractCollection.Filterer.
+ *
+ * @extends JW.AbstractCollection.Filterer
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractCollection#createFilterer.
+ * @param {JW.AbstractArray} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.AbstractArray.Filterer = function(source, config) {
+	JW.AbstractArray.Filterer._super.call(this, source, config);
+	this._filtered = [];
+	this._splice([], [new JW.AbstractArray.IndexItems(0, this.source.getItems())]);
+};
+
+JW.extend(JW.AbstractArray.Filterer, JW.AbstractCollection.Filterer, {
+	/**
+	 * @cfg {JW.AbstractArray} target `<T>` Целевая коллекция.
+	 */
+	/**
+	 * @property {JW.AbstractArray} source `<T>` Исходная коллекция.
+	 */
+	/**
+	 * @property {JW.AbstractArray} target `<T>` Целевая коллекция.
+	 */
+	// Array<number> _filtered; // 0 - false, 1 - true
+	
+	// override
+	destroy: function() {
+		this.target.tryClear();
+		this._super();
+	},
+	
+	_countFiltered: function(index, count) {
+		var result = 0;
+		for (var i = 0; i < count; ++i) {
+			result += this._filtered[index + i];
+		}
+		return result;
+	},
+	
+	_splice: function(removedItemsList, addedItemsList) {
+		var sourceIndex = 0;
+		var targetIndex = 0;
+		var removeParamsList = JW.Array.map(removedItemsList, function(indexItems) {
+			targetIndex += this._countFiltered(sourceIndex, indexItems.index - sourceIndex);
+			var count = this._countFiltered(indexItems.index, indexItems.items.length);
+			var params = new JW.AbstractArray.IndexCount(targetIndex, count);
+			sourceIndex = indexItems.index + indexItems.length;
+			targetIndex += count;
+			return params;
+		}, this);
+		JW.Array.trySplice(this._filtered, JW.Array.map(removedItemsList, JW.byMethod("toIndexCount")), []);
+		
+		var sourceIndex = 0;
+		var targetIndex = 0;
+		var addParamsList = JW.Array.map(addedItemsList, function(indexItems) {
+			targetIndex += this._countFiltered(sourceIndex, indexItems.index - sourceIndex);
+			var items = [];
+			var filtered = JW.Array.map(indexItems.items, function(item) {
+				if (this.filterItem.call(this.scope, item) === false) {
+					return 0;
+				}
+				items.push(item);
+				return 1;
+			}, this);
+			var params = new JW.AbstractArray.IndexItems(targetIndex, items);
+			JW.Array.tryAddAll(this._filtered, filtered, indexItems.index);
+			sourceIndex = indexItems.index + filtered.length;
+			targetIndex += items.length;
+			return params;
+		}, this);
+		
+		this.target.trySplice(removeParamsList, addParamsList);
 	}
 });
 
@@ -5472,6 +5875,163 @@ JW.extend(JW.AbstractArray.Mapper, JW.AbstractCollection.Mapper, {
 /**
  * @class
  *
+ * `<T>`
+ *
+ * Объединитель массивов. Создает массив, содержащий все элементы исходных массивов в том же порядке.
+ *
+ *     var source = new JW.ObservableArray([
+ *         new JW.Array([1, 2, 3]),
+ *         new JW.ObservableArray(),
+ *         new JW.Array([4])
+ *     ]);
+ *     var merger = source.{@link JW.AbstractArray#createMerger createMerger}();
+ *     assert(merger.{@link #property-target target}.{@link JW.AbstractArray#equal equal}([1, 2, 3, 4]));
+ *     
+ *     source.{@link JW.AbstractArray#add add}(new JW.Array([5, 6]));
+ *     assert(merger.{@link #property-target target}.{@link JW.AbstractArray#equal equal}([1, 2, 3, 4, 5, 6]));
+ *     
+ *     source.{@link JW.AbstractArray#get get}(1).{@link JW.AbstractArray#addAll addAll}([7, 8, 9]);
+ *     assert(merger.{@link #property-target target}.{@link JW.AbstractArray#equal equal}([1, 2, 3, 7, 8, 9, 4, 5, 6]));
+ * 
+ * Создавайте синхронизатор с помощью метода JW.AbstractArray#createMerger:
+ *
+ *     var merger = array.{@link JW.AbstractArray#createMerger createMerger}();
+ *     var array = merger.{@link #property-target target};
+ *
+ * Метод сам определит, какая реализация синхронизатора лучше подойдет (простая или observable).
+ *
+ * Целевой массив можно передать в качестве конфигурационной опции:
+ *
+ *     var source = new JW.Array();
+ *     var target = new JW.Array();
+ *     var merger = source.{@link JW.AbstractArray#createMerger createMerger}({
+ *         {@link #cfg-target target}: target
+ *     });
+ *
+ * Правила работы синхронизатора:
+ *
+ * - Целевой массив находится в поле {@link #property-target}.
+ * - Перед конструированием синхронизатора целевой массив должен быть пуст, в целевой массив нельзя добавлять элементы
+ * вручную, нельзя создавать другие синхронизаторы с тем же целевым массивом.
+ * - При конструировании синхронизатора все элементы исходных коллекций сразу добавляются в {@link #property-target}.
+ * - При уничтожении синхронизатора все элементы исходных коллекций удаляются из {@link #property-target}.
+ * - Целевой массив можно передать в качестве конфигурационной опции {@link #cfg-target}.
+ * В этом случае, вся забота о его уничтожении ложится на вас.
+ * - Если {@link #cfg-target} не передан, то он будет создан автоматически. Синхронизатор подберет наиболее подходящую
+ * реализацию {@link #property-target} (простая или observable). В этом
+ * случае, {@link #property-target} будет уничтожен автоматически при уничтожении синхронизатора.
+ *
+ * @extends JW.Class
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractArray#createMerger.
+ * @param {JW.AbstractArray} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.AbstractArray.Merger = function(source, config) {
+	JW.AbstractArray.Merger._super.call(this);
+	config = config || {};
+	this.source = source;
+	this._targetCreated = !config.target;
+	this.target = this._targetCreated ? this._createTarget() : config.target;
+	this._mapper = source.createMapper({
+		createItem: function(bunch) {
+			return bunch.createMergerBunch(this);
+		},
+		destroyItem: JW.destroy,
+		scope: this
+	});
+	this.target.addAll(this._getAllItems());
+};
+
+JW.extend(JW.AbstractArray.Merger, JW.Class, {
+	/**
+	 * @cfg {JW.AbstractArray} target `<T>` Целевая коллекция.
+	 */
+	/**
+	 * @property {JW.AbstractArray} source `<? extends JW.AbstractArray<T>>` Исходная коллекция.
+	 */
+	/**
+	 * @property {JW.AbstractArray} target `<T>` Целевая коллекция.
+	 */
+	// boolean _targetCreated;
+	// JW.AbstractArray.Mapper<JW.AbstractArray<? extends JW.AbstractArray<T>>, JW.AbstractArray.Merger.Bunch<T>> _mapper;
+	
+	// override
+	destroy: function() {
+		this.target.tryClear();
+		this._mapper.destroy();
+		if (this._targetCreated) {
+			this.target.destroy();
+		}
+		this._super();
+	},
+	
+	// virtual
+	_createTarget: function() {
+		return this.source.some(function(bunch) { return bunch instanceof JW.ObservableArray; }, this) ?
+			new JW.ObservableArray() : new JW.Array();
+	},
+	
+	_getAllItems: function() {
+		return this._merge(this.source.getItems());
+	},
+	
+	_merge: function(bunches) {
+		var items = new Array(this._count(bunches));
+		var iItems = 0;
+		for (var i = 0, l = bunches.length; i < l; ++i) {
+			var bunch = bunches[i].getItems();
+			for (var j = 0, m = bunch.length; j < m; ++j) {
+				items[iItems++] = bunch[j];
+			}
+		}
+		return items;
+	},
+	
+	_count: function(bunches, index, length) {
+		if (index === undefined) {
+			index = 0;
+		}
+		if (length === undefined) {
+			length = bunches.length - index;
+		}
+		var count = 0;
+		for (var i = 0; i < length; ++i) {
+			count += bunches[index + i].getLength();
+		}
+		return count;
+	}
+});
+
+JW.AbstractArray.Merger.Bunch = function(merger, bunch) {
+	JW.AbstractArray.Merger.Bunch._super.call(this);
+};
+
+JW.extend(JW.AbstractArray.Merger.Bunch, JW.Class);
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
  * `<T> extends JW.AbstractCollection.Observer<T, JW.AbstractArray<T>>`
  *
  * Наблюдатель массива. Подробнее читайте JW.AbstractCollection.Observer.
@@ -5515,7 +6075,7 @@ JW.extend(JW.AbstractArray.Observer, JW.AbstractCollection.Observer, {
 /**
  * @class
  *
- * `<T> extends JW.AbstractCollection.Orderer<T, JW.AbstractArray<T>>`
+ * `<T extends JW.Class> extends JW.AbstractCollection.Orderer<T, JW.AbstractArray<T>>`
  *
  * Конвертер массива в массив lol (упорядочитель). Подробнее читайте JW.AbstractCollection.Orderer.
  *
@@ -5534,6 +6094,110 @@ JW.extend(JW.AbstractArray.Orderer, JW.AbstractCollection.Orderer, {
 	/**
 	 * @property {JW.AbstractArray} source `<T>` Исходная коллекция.
 	 */
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
+ * `<T>`
+ *
+ * Обратитель массива. Создает массив, содержащий все элементы исходного массива в обратном порядке.
+ *
+ *     var source = new JW.ObservableArray([1, 2, 3]);
+ *     var reverser = source.{@link JW.AbstractArray#createReverser createReverser}();
+ *     assert(reverser.{@link #property-target target}.{@link JW.AbstractArray#equal equal}([3, 2, 1]));
+ *     
+ *     source.{@link JW.AbstractArray#add add}(4);
+ *     assert(reverser.{@link #property-target target}.{@link JW.AbstractArray#equal equal}([4, 3, 2, 1]));
+ *     
+ *     source.{@link JW.AbstractArray#remove remove}(2);
+ *     assert(reverser.{@link #property-target target}.{@link JW.AbstractArray#equal equal}([4, 2, 1]));
+ * 
+ * Создавайте синхронизатор с помощью метода JW.AbstractArray#createReverser.
+ * Метод сам определит, какая реализация синхронизатора лучше подойдет (простая или observable).
+ *
+ * Целевой массив можно передать в качестве конфигурационной опции:
+ *
+ *     var source = new JW.Array();
+ *     var target = new JW.Array();
+ *     var reverser = source.{@link JW.AbstractArray#createReverser createReverser}({
+ *         {@link #cfg-target target}: target
+ *     });
+ *
+ * Правила работы синхронизатора:
+ *
+ * - Целевой массив находится в поле {@link #property-target}.
+ * - Перед конструированием синхронизатора целевой массив должен быть пуст, в целевой массив нельзя добавлять элементы
+ * вручную, нельзя создавать другие синхронизаторы с тем же целевым массивом.
+ * - При конструировании синхронизатора все элементы исходной коллекции сразу добавляются в {@link #property-target}.
+ * - При уничтожении синхронизатора все элементы исходной коллекции удаляются из {@link #property-target}.
+ * - Целевой массив можно передать в качестве конфигурационной опции {@link #cfg-target}.
+ * В этом случае, вся забота о его уничтожении ложится на вас.
+ * - Если {@link #cfg-target} не передан, то он будет создан автоматически. Синхронизатор подберет наиболее подходящую
+ * реализацию {@link #property-target} (простая или observable). В этом
+ * случае, {@link #property-target} будет уничтожен автоматически при уничтожении синхронизатора.
+ *
+ * @extends JW.Class
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractArray#createReverser.
+ * @param {JW.AbstractArray} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.AbstractArray.Reverser = function(source, config) {
+	JW.AbstractArray.Reverser._super.call(this);
+	config = config || {};
+	this.source = source;
+	this._targetCreated = !config.target;
+	this.target = this._targetCreated ? source.createEmpty() : config.target;
+	this.target.addAll(this._reverse(source.getItems()));
+};
+
+JW.extend(JW.AbstractArray.Reverser, JW.Class, {
+	/**
+	 * @cfg {JW.AbstractArray} target `<T>` Целевая коллекция.
+	 */
+	/**
+	 * @property {JW.AbstractArray} source `<T>` Исходная коллекция.
+	 */
+	/**
+	 * @property {JW.AbstractArray} target `<T>` Целевая коллекция.
+	 */
+	// boolean _targetCreated;
+	
+	// override
+	destroy: function() {
+		this.target.tryClear();
+		if (this._targetCreated) {
+			this.target.destroy();
+		}
+		this._super();
+	},
+	
+	_reverse: function(items) {
+		items = items.concat();
+		items.reverse();
+		return items;
+	}
 });
 
 /*
@@ -5773,6 +6437,7 @@ JW.extend(JW.AbstractArray.Splitter/*<T extends Any, R extends JW.AbstractArray<
  * Создание синхронизаторов:
  *
  * - {@link #createMapper} - Создает конвертер элементов.
+ * - {@link #createFilterer} - Создает фильтровщик.
  * - {@link #createLister} - Создает конвертер в множество.
  * - {@link #createIndexer} - Создает индексатор.
  * - {@link #createOrderer} - Создает конвертер в массив (упорядочитель).
@@ -5974,11 +6639,11 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: string): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -5991,11 +6656,11 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: string): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -6008,12 +6673,12 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: string, k2: string): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -6026,12 +6691,12 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: string, k2: string): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -6044,11 +6709,11 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 *
 	 * Строит массив из ключей элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: string): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -6061,11 +6726,11 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 *
 	 * Строит массив из ключей элементов коллекции, отсортированный по результату запуска функции f на каждом элементе.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: string): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -6078,12 +6743,12 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 *
 	 * Строит массив из ключей элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: string, k2: string): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -6096,12 +6761,12 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 *
 	 * Строит массив из ключей элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: string, k2: string): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -6411,7 +7076,9 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 * Определяет параметры метода #splice, с которыми содержимое словаря станет равно newItems.
 	 * Т.е. определяет, какие элементы нужно удалить, какие добавить, и с каким ключом.
 	 * @param {Object} newItems Новое содержимое словаря.
-	 * @returns {JW.AbstractMap.SpliceParams} `<T>` Параметры метода #splice.
+	 * @returns {JW.AbstractMap.SpliceParams}
+	 * `<T>` Параметры метода #splice.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	detectSplice: function(newItems) {
 		return JW.Map.detectSplice(this.json, newItems);
@@ -6425,7 +7092,9 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 * @param {Function} [getKey] Функция, возвращающая уникальный ключ элемента в коллекции. По умолчанию
 	 * равна #getKey. Если коллекция содержит экземпляры JW.Class, то все тип-топ.
 	 * @param {Object} [scope] Контекст вызова getKey. По умолчанию, функция вызывается в контексте коллекции.
-	 * @returns {Object} Параметр keyMap метода #reindex.
+	 * @returns {Object}
+	 * Параметр keyMap метода #reindex.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	detectReindex: function(newItems, getKey, scope) {
 		return JW.Map.detectReindex(this.json, newItems, getKey || this.getKey, scope || this);
@@ -6467,6 +7136,17 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 */
 	createMapper: function(config) {
 		return new JW.AbstractMap.Mapper(this, config);
+	},
+	
+	/**
+	 * Конструирует фильтровщик коллекции.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractMap.Filterer}
+	 * `<T>` Синхронизатор.
+	 */
+	createFilterer: function(config) {
+		return new JW.AbstractMap.Filterer(this, config);
 	},
 	
 	/**
@@ -6601,6 +7281,62 @@ JW.extend(JW.AbstractMap.SpliceResult, JW.Class, {
 	/**
 	 * @property {Object} updatedItems Добавленные элементы.
 	 */
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
+ * `<T> extends JW.AbstractCollection.Filterer<T, JW.AbstractMap<T>>`
+ *
+ * Фильтровщик словаря. Подробнее читайте JW.AbstractCollection.Filterer.
+ *
+ * @extends JW.AbstractCollection.Filterer
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractCollection#createFilterer.
+ * @param {JW.AbstractMap} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.AbstractMap.Filterer = function(source, config) {
+	JW.AbstractMap.Filterer._super.call(this, source, config);
+	this.target.trySetAll(source.filter(this.filterItem, this.scope));
+};
+
+JW.extend(JW.AbstractMap.Filterer, JW.AbstractCollection.Filterer, {
+	/**
+	 * @cfg {JW.AbstractMap} target `<T>` Целевая коллекция.
+	 */
+	/**
+	 * @property {JW.AbstractMap} source `<T>` Исходная коллекция.
+	 */
+	/**
+	 * @property {JW.AbstractMap} target `<T>` Целевая коллекция.
+	 */
+	
+	// override
+	destroy: function() {
+		this.target.tryRemoveAll(this.source.getKeys());
+		this._super();
+	}
 });
 
 /*
@@ -6957,7 +7693,7 @@ JW.extend(JW.AbstractMap.Observer, JW.AbstractCollection.Observer, {
 /**
  * @class
  *
- * `<T> extends JW.AbstractCollection.Orderer<T, JW.AbstractMap<T>>`
+ * `<T extends JW.Class> extends JW.AbstractCollection.Orderer<T, JW.AbstractMap<T>>`
  *
  * Конвертер словаря в массив (упорядочитель). Подробнее читайте JW.AbstractCollection.Orderer.
  *
@@ -7060,7 +7796,7 @@ JW.extend(JW.AbstractMap.SorterComparing, JW.AbstractCollection.SorterComparing,
  * - {@link #getLength} - Возвращает количество элементов в коллекции.
  * - {@link #isEmpty} - Проверяет коллекцию на пустоту.
  * - {@link #getFirst} - Возвращает первый элемент коллекции.
- * - {@link #containsItem} - Содержит ли коллекция элемент.
+ * - {@link #containsItem}, **{@link #contains}** - Содержит ли коллекция элемент.
  * - **{@link #getJson} - Возвращает внутреннее представление множества.**
  *
  * Алгоритмы перебора:
@@ -7102,6 +7838,7 @@ JW.extend(JW.AbstractMap.SorterComparing, JW.AbstractCollection.SorterComparing,
  * Создание синхронизаторов:
  *
  * - {@link #createMapper} - Создает конвертер элементов.
+ * - {@link #createFilterer} - Создает фильтровщик.
  * - {@link #createLister} - Создает конвертер в множество.
  * - {@link #createIndexer} - Создает индексатор.
  * - {@link #createOrderer} - Создает конвертер в массив (упорядочитель).
@@ -7403,7 +8140,9 @@ JW.extend(JW.AbstractSet, JW.AbstractCollection, {
 	 * Определяет параметры метода #splice, с которыми содержимое множества станет равно newItems.
 	 * Т.е. определяет, какие элементы нужно удалить, какие добавить.
 	 * @param {Array} newItems `<T>` Новое содержимое множества.
-	 * @returns {JW.AbstractSet.SpliceParams} `<T>` Параметры метода #splice.
+	 * @returns {JW.AbstractSet.SpliceParams}
+	 * `<T>` Параметры метода #splice.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	detectSplice: function(newItems) {
 		return JW.Set.detectSplice(this.json, newItems);
@@ -7430,6 +8169,17 @@ JW.extend(JW.AbstractSet, JW.AbstractCollection, {
 	 */
 	createMapper: function(config) {
 		return new JW.AbstractSet.Mapper(this, config);
+	},
+	
+	/**
+	 * Конструирует фильтровщик коллекции.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractSet.Filterer}
+	 * `<T>` Синхронизатор.
+	 */
+	createFilterer: function(config) {
+		return new JW.AbstractSet.Filterer(this, config);
 	},
 	
 	/**
@@ -7553,6 +8303,62 @@ JW.extend(JW.AbstractSet.SpliceResult, JW.Class, {
 	/**
 	 * @property {Array} addedItems `<T>` Добавленные элементы.
 	 */
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
+ * `<T extends JW.Class> extends JW.AbstractCollection.Filterer<T, JW.AbstractSet<T>>`
+ *
+ * Фильтровщик множества. Подробнее читайте JW.AbstractCollection.Filterer.
+ *
+ * @extends JW.AbstractCollection.Filterer
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractCollection#createFilterer.
+ * @param {JW.AbstractSet} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.AbstractSet.Filterer = function(source, config) {
+	JW.AbstractSet.Filterer._super.call(this, source, config);
+	this.target.tryAddAll(source.$toArray().filter(this.filterItem, this.scope));
+};
+
+JW.extend(JW.AbstractSet.Filterer, JW.AbstractCollection.Filterer, {
+	/**
+	 * @cfg {JW.AbstractSet} target `<T>` Целевая коллекция.
+	 */
+	/**
+	 * @property {JW.AbstractSet} source `<T>` Исходная коллекция.
+	 */
+	/**
+	 * @property {JW.AbstractSet} target `<T>` Целевая коллекция.
+	 */
+	
+	// override
+	destroy: function() {
+		this.target.tryRemoveAll(this.source.toArray());
+		this._super();
+	}
 });
 
 /*
@@ -8032,7 +8838,7 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 */
 	/**
 	 * @method removeItems
-	 * `<T>` Удаляет все вхождения указанных элементов из коллекции.
+	 * `<T extends JW.Class>` Удаляет все вхождения указанных элементов из коллекции.
 	 * @static
 	 * @param {Array} array `<T>` Массив.
 	 * @param {Array} items `<T>` Элементы.
@@ -8169,11 +8975,11 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 * @static
 	 * @param {Array} array `<T>` Массив.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -8189,11 +8995,11 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 * @static
 	 * @param {Array} array `<T>` Массив.
 	 *
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -8208,12 +9014,12 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 *
 	 * @static
 	 * @param {Array} array `<T>` Массив.
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -8228,12 +9034,12 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 *
 	 * @static
 	 * @param {Array} array `<T>` Массив.
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -8249,11 +9055,11 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 *
 	 * @static
 	 * @param {Array} array `<T>` Массив.
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -8269,11 +9075,11 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 *
 	 * @static
 	 * @param {Array} array `<T>` Массив.
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -8288,12 +9094,12 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 *
 	 * @static
 	 * @param {Array} array `<T>` Массив.
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -8308,12 +9114,12 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 *
 	 * @static
 	 * @param {Array} array `<T>` Массив.
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -8739,14 +9545,30 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	/**
 	 * @method detectSplice
 	 * `<T>` Определяет параметры метода {@link #static-method-splice}, с которыми содержимое массива станет равно newItems.
-	 * Т.е. определяет, какие элементы нужно удалить, какие вставить, и в какое место.
+	 * Т.е. определяет, какие элементы нужно удалить, какие вставить, и в какое место. Все элементы должны быть
+	 * уникальны относительно функции getKey. Если элементы не уникальны, попробуйте метод
+	 * {@link #static-method-detectFilter}.
 	 * @static
 	 * @param {Array} array `<T>` Массив.
 	 * @param {Array} newItems `<T>` Новое содержимое массива.
 	 * @param {Function} [getKey] Функция, возвращающая уникальный ключ элемента в коллекции. По умолчанию
 	 * равна JW.iid. Если коллекция содержит экземпляры JW.Class, то все тип-топ.
 	 * @param {Object} [scope] Контекст вызова getKey. По умолчанию, функция вызывается в контексте коллекции.
-	 * @returns {JW.AbstractArray.SpliceParams} `<T>` Параметры метода {@link #static-method-splice}.
+	 * @returns {JW.AbstractArray.SpliceParams}
+	 * `<T>` Параметры метода {@link #static-method-splice}.
+	 * Если вызова метода не требуется - undefined.
+	 */
+	/**
+	 * @method detectFilter
+	 * Определяет параметр removeParamsList метода {@link #static-method-splice}, с которыми содержимое массива станет равно newItems.
+	 * Определяет, какие элементы нужно удалить. Не предусматривает вставку новых элементов. В отличие от
+	 * метода {@link #static-method-detectSplice}, не требует уникальности элементов массива.
+	 * @static
+	 * @param {Array} array `<T>` Массив.
+	 * @param {Array} newItems `<T>` Новое содержимое массива.
+	 * @returns {Array}
+	 * `<JW.AbstractArray.IndexCount>` Параметр removeParamsList метода {@link #static-method-splice}.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	/**
 	 * @method detectReorder
@@ -8759,7 +9581,9 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 * @param {Function} [getKey] Функция, возвращающая уникальный ключ элемента в коллекции. По умолчанию
 	 * равна JW.iid. Если коллекция содержит экземпляры JW.Class, то все тип-топ.
 	 * @param {Object} [scope] Контекст вызова getKey. По умолчанию, функция вызывается в контексте коллекции.
-	 * @returns {Array} `<number>` Параметр indexArray метода {@link #static-method-reorder}.
+	 * @returns {Array}
+	 * `<number>` Параметр indexArray метода {@link #static-method-reorder}.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	/**
 	 * @method detectSort
@@ -8767,41 +9591,57 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 * функции f на всех элементах.
 	 * @static
 	 * @param {Array} array `<T>` Массив.
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
-	 * @returns {Array} `<number>` Параметр indexArray метода {@link #static-method-reorder}.
+	 * @returns {Array}
+	 * `<number>` Параметр indexArray метода {@link #static-method-reorder}.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	/**
 	 * @method detectSortComparing
 	 * `<T>` Определяет параметр метода {@link #static-method-reorder}, с которым содержимое массива отсортируется по компаратору.
 	 * @static
 	 * @param {Array} array `<T>` Массив.
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
-	 * @returns {Array} `<number>` Параметр indexArray метода {@link #static-method-reorder}.
+	 * @returns {Array}
+	 * `<number>` Параметр indexArray метода {@link #static-method-reorder}.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	/**
 	 * @method performSplice
 	 * `<T>` Преобразует содержимое массива к newItems комбинацией методов {@link #static-method-detectSplice} и {@link #static-method-splice}.
+	 * Все элементы должны быть
+	 * уникальны относительно функции getKey. Если элементы не уникальны, попробуйте метод {@link #static-method-performFilter}.
 	 * @static
 	 * @param {Array} array `<T>` Массив.
 	 * @param {Array} newItems `<T>` Новое содержимое массива.
 	 * @param {Function} [getKey] Функция, возвращающая уникальный ключ элемента в коллекции. По умолчанию
 	 * равна JW.iid. Если коллекция содержит экземпляры JW.Class, то все тип-топ.
 	 * @param {Object} [scope] Контекст вызова getKey. По умолчанию, функция вызывается в контексте коллекции.
+	 * @returns {void}
+	 */
+	/**
+	 * @method performFilter
+	 * `<T>` Преобразует содержимое массива к newItems комбинацией методов {@link #static-method-detectFilter} и {@link #static-method-splice}.
+	 * Только удаляет элементы. Не предусматривает вставку новых элементов. В отличие от
+	 * метода {@link #static-method-performSplice}, не требует уникальности элементов массива.
+	 * @static
+	 * @param {Array} array `<T>` Массив.
+	 * @param {Array} newItems `<T>` Новое содержимое массива.
 	 * @returns {void}
 	 */
 	/**
@@ -8820,11 +9660,11 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 * `<T>` Сортирует массив по результату запуска функции f на элементах.
 	 * @static
 	 * @param {Array} array `<T>` Массив.
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, index: number): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -8835,12 +9675,12 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 * `<T>` Сортирует массив по компаратору.
 	 * @static
 	 * @param {Array} array `<T>` Массив.
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, i1: number, i2: number): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -8855,6 +9695,16 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
 	 * @returns {JW.AbstractArray.Mapper}
 	 * `<T, U>` Синхронизатор.
+	 */
+	/**
+	 * @method createFilterer
+	 * `<T>` Конструирует фильтровщик коллекции.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @static
+	 * @param {Array} array `<T>` Массив.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractArray.Filterer}
+	 * `<T>` Синхронизатор.
 	 */
 	/**
 	 * @method createObserver
@@ -8917,6 +9767,26 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 * `<T>` Синхронизатор.
 	 */
 	/**
+	 * @method createMerger
+	 * `<T>` Конструирует объединитель массивов.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @static
+	 * @param {Array} array `<T>` Массив.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractArray.Merger}
+	 * `<T>` Синхронизатор.
+	 */
+	/**
+	 * @method createReverser
+	 * `<T>` Конструирует обратитель массива.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @static
+	 * @param {Array} array `<T>` Массив.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractArray.Reverser}
+	 * `<T>` Синхронизатор.
+	 */
+	/**
 	 * @method equal
 	 * `<T>` Поэлементно сравнивает два массива.
 	 * @static
@@ -8967,6 +9837,22 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 * @static
 	 * @param {Array} array `<T>` Массив.
 	 * @returns {T} Удаленный элемент или undefined.
+	 */
+	/**
+	 * @method binarySearch
+	 * Ищет индекс первого элемента, который больше указанного значения относительно функции compare,
+	 * используя бинарный поиск. Массив должен быть отсортирован по функции compare.
+	 * @param {T} value Значение.
+	 * @param {Function} [compare]
+	 *
+	 * `f(t1: T, t2: T): number`
+	 *
+	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
+	 *
+	 * @param {Object} [scope]
+	 * Контекст вызова compare. По умолчанию, вызывается в контексте массива.
+	 * @returns {number} Индекс элемента.
 	 */
 });
 
@@ -9060,17 +9946,17 @@ JW.apply(JW.Array, {
 		return result;
 	},
 	
-	$map: JW.AbstractCollection._create$Array(JW.Array, "map"),
+	$map: JW.AbstractCollection._createStatic$Array(JW.Array, "map"),
 	
 	toArray: function(target) {
 		return target.concat();
 	},
 	
 	toSet: function(target) {
-		return new JW.Set(target);
+		return JW.Array.index(target, JW.iid);
 	},
 	
-	asList: function(target) {
+	asArray: function(target) {
 		return target;
 	},
 	
@@ -9130,7 +10016,7 @@ JW.apply(JW.Array, {
 	
 	removeItems: function(target, items) {
 		var itemSet = new JW.Set(items);
-		var newItems = JW.Array.filter(target, function(v) { return !itemSet.contains(item); });
+		var newItems = JW.Array.filter(target, function(item) { return !itemSet.contains(item); });
 		JW.Array.performSplice(target, newItems);
 	},
 	
@@ -9168,7 +10054,7 @@ JW.apply(JW.Array, {
 	
 	splice: function(target, removeParamsList, addParamsList) {
 		var result = JW.Array.trySplice(target, removeParamsList, addParamsList);
-		return (result !== undefined) ? result : new JW.AbstractArray.SpliceResult(this.items.concat(), [], []);
+		return (result !== undefined) ? result : new JW.AbstractArray.SpliceResult(target.concat(), [], []);
 	},
 	
 	trySplice: function(target, removeParamsList, addParamsList) {
@@ -9176,10 +10062,36 @@ JW.apply(JW.Array, {
 		// JW.assertArray(removeParamsList, function(params) { return params instanceof JW.AbstractArray.IndexCount; }, this);
 		// JW.assertArray(addParamsList, function(params) { return params instanceof JW.AbstractArray.IndexItems; }, this);
 		// TODO: assert out of bounds stuff
+		var last;
+		
+		var optimizedRemoveParamsList = [];
+		last = null;
+		for (var i = 0, l = removeParamsList.length; i < l; ++i) {
+			var params = removeParamsList[i];
+			if (last && (params.index === last.index + last.count)) {
+				last.count += params.count;
+			} else {
+				last = params.clone();
+				optimizedRemoveParamsList.push(last);
+			}
+		}
+		
+		var optimizedAddParamsList = [];
+		last = null;
+		for (var i = 0, l = addParamsList.length; i < l; ++i) {
+			var params = addParamsList[i];
+			if (last && (params.index === last.index + last.items.length)) {
+				JW.Array.tryAddAll(last.items, params.items);
+			} else {
+				last = params.clone();
+				optimizedAddParamsList.push(last);
+			}
+		}
+		
 		var oldItems = target.concat();
 		var removedItemsList = [];
-		for (var i = removeParamsList.length - 1; i >= 0; --i) {
-			var params = removeParamsList[i];
+		for (var i = optimizedRemoveParamsList.length - 1; i >= 0; --i) {
+			var params = optimizedRemoveParamsList[i];
 			var index = params.index;
 			var items = JW.Array.tryRemoveAll(target, index, params.count);
 			if (items === undefined) {
@@ -9187,9 +10099,9 @@ JW.apply(JW.Array, {
 			}
 			removedItemsList.push(new JW.AbstractArray.IndexItems(index, items));
 		}
-		var addedItemsList = []
-		for (var i = 0, l = addParamsList.length; i < l; ++i) {
-			var params = addParamsList[i];
+		var addedItemsList = [];
+		for (var i = 0, l = optimizedAddParamsList.length; i < l; ++i) {
+			var params = optimizedAddParamsList[i];
 			if (JW.Array.tryAddAll(target, params.items, params.index) === undefined) {
 				continue;
 			}
@@ -9276,6 +10188,27 @@ JW.apply(JW.Array, {
 		}
 	},
 	
+	detectFilter: function(oldItems, newItems) {
+		var removeParamsList = [];
+		var oldIndex = 0;
+		var oldLength = oldItems.length;
+		var newLength = newItems.length;
+		for (var newIndex = 0; newIndex <= newLength; ++newIndex) {
+			var newItem = newItems[newIndex];
+			var count = 0;
+			while ((oldIndex + count < oldLength) && (oldItems[oldIndex + count] !== newItem)) {
+				++count;
+			}
+			if (count !== 0) {
+				removeParamsList.push(new JW.AbstractArray.IndexCount(oldIndex, count));
+			}
+			oldIndex += count + 1;
+		}
+		if (removeParamsList.length !== 0) {
+			return removeParamsList;
+		}
+	},
+	
 	detectReorder: function(oldItems, newItems, getKey, scope) {
 		getKey = getKey || JW.iid;
 		scope = scope || oldItems;
@@ -9293,17 +10226,30 @@ JW.apply(JW.Array, {
 	},
 	
 	detectSort: function(target, callback, scope, order) {
-		return JW.Array.invert(JW.Array.getSortingKeys(target, callback, scope, order));
+		var keys = JW.Array.getSortingKeys(target, callback, scope, order);
+		if (!JW.Array.isIdentity(keys)) {
+			return JW.Array.invert(keys);
+		}
 	},
 	
 	detectSortComparing: function(target, compare, scope, order) {
-		return JW.Array.invert(JW.Array.getSortingKeysComparing(target, compare, scope, order));
+		var keys = JW.Array.getSortingKeysComparing(target, compare, scope, order);
+		if (!JW.Array.isIdentity(keys)) {
+			return JW.Array.invert(keys);
+		}
 	},
 	
 	performSplice: function(target, newItems, getKey, scope) {
 		var params = JW.Array.detectSplice(target, newItems, getKey, scope);
 		if (params !== undefined) {
 			JW.Array.trySplice(target, params.removeParamsList, params.addParamsList);
+		}
+	},
+	
+	performFilter: function(target, newItems) {
+		var params = JW.Array.detectFilter(target, newItems);
+		if (params !== undefined) {
+			JW.Array.trySplice(target, params, []);
 		}
 	},
 	
@@ -9315,15 +10261,25 @@ JW.apply(JW.Array, {
 	},
 	
 	sort: function(target, callback, scope, order) {
-		JW.Array.tryReorder(target, JW.Array.detectSort(target, callback, scope, order));
+		var indexArray = JW.Array.detectSort(target, callback, scope, order);
+		if (indexArray !== undefined) {
+			JW.Array.tryReorder(target, indexArray);
+		}
 	},
 	
 	sortComparing: function(target, compare, scope, order) {
-		JW.Array.tryReorder(target, JW.Array.detectSortComparing(target, compare, scope, order));
+		var indexArray = JW.Array.detectSortComparing(target, compare, scope, order);
+		if (indexArray !== undefined) {
+			JW.Array.tryReorder(target, indexArray);
+		}
 	},
 	
 	createMapper: function(source, config) {
 		return new JW.AbstractArray.Mapper(new JW.Array(source, true), config);
+	},
+	
+	createFilterer: function(source, config) {
+		return new JW.AbstractArray.Filterer(new JW.Array(source, true), config);
 	},
 	
 	createObserver: function(source, config) {
@@ -9348,6 +10304,14 @@ JW.apply(JW.Array, {
 	
 	createInserter: function(source, config) {
 		return new JW.AbstractArray.Inserter(new JW.Array(source, true), config);
+	},
+	
+	createMerger: function(source, config) {
+		return new JW.AbstractArray.Merger(new JW.Array(source, true), config);
+	},
+	
+	createReverser: function(source, config) {
+		return new JW.AbstractArray.Reverser(new JW.Array(source, true), config);
 	},
 	
 	createSplitter: function(source, config) {
@@ -9463,6 +10427,25 @@ JW.apply(JW.Array, {
 	
 	pop: function(target) {
 		return target.pop();
+	},
+	
+	binarySearch: function(target, value, compare, scope) {
+		compare = compare || function(x, y) { return (x < y) ? -1 : (x > y) ? 1 : 0 };
+		scope = scope || target;
+		var length = target.length;
+		var len2 = length >> 1;
+		var step = 1;
+		while (step <= len2) {
+			step <<= 1;
+		}
+		var index = 0;
+		while (step) {
+			if ((index + step <= length) && (compare.call(scope, value, target[index + step - 1]) >= 0)) {
+				index += step;
+			}
+			step >>= 1;
+		}
+		return index;
 	}
 });
 
@@ -9622,7 +10605,7 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 */
 	/**
 	 * @method removeItems
-	 * `<T>` Удаляет все вхождения указанных элементов из коллекции.
+	 * `<T extends JW.Class>` Удаляет все вхождения указанных элементов из коллекции.
 	 * @static
 	 * @param {Object} map `<T>` Словарь.
 	 * @param {Array} items `<T>` Элементы.
@@ -9758,11 +10741,11 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 *
 	 * @static
 	 * @param {Object} map `<T>` Словарь.
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: string): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -9777,11 +10760,11 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 *
 	 * @static
 	 * @param {Object} map `<T>` Словарь.
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: string): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -9794,15 +10777,15 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @static
+	 * @param {Object} map `<T>` Словарь.
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: string, k2: string): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
-	 * @static
-	 * @param {Object} map `<T>` Словарь.
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
 	 * @returns {Array} `<T>` Отсортированный массив.
@@ -9814,15 +10797,15 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 *
 	 * Строит массив из элементов коллекции, отсортированный по компаратору.
 	 *
-	 * @param {Function} compare
+	 * @static
+	 * @param {Object} map `<T>` Словарь.
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: string, k2: string): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
-	 * @static
-	 * @param {Object} map `<T>` Словарь.
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
 	 * @returns {JW.Array} `<T>` Отсортированный массив.
@@ -9836,11 +10819,11 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 *
 	 * @static
 	 * @param {Object} map `<T>` Словарь.
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: string): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -9855,11 +10838,11 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 *
 	 * @static
 	 * @param {Object} map `<T>` Словарь.
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T, key: string): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -9874,12 +10857,12 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 *
 	 * @static
 	 * @param {Object} map `<T>` Словарь.
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: string, k2: string): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -9894,12 +10877,12 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 *
 	 * @static
 	 * @param {Object} map `<T>` Словарь.
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T, k1: string, k2: string): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -10294,7 +11277,9 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 * @static
 	 * @param {Object} map `<T>` Словарь.
 	 * @param {Object} newItems Новое содержимое словаря.
-	 * @returns {JW.AbstractMap.SpliceParams} `<T>` Параметры метода {@link #static-method-splice}.
+	 * @returns {JW.AbstractMap.SpliceParams}
+	 * `<T>` Параметры метода {@link #static-method-splice}.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	/**
 	 * @method detectReindex
@@ -10307,7 +11292,9 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 * @param {Function} [getKey] Функция, возвращающая уникальный ключ элемента в коллекции. По умолчанию
 	 * равна JW.iid. Если коллекция содержит экземпляры JW.Class, то все тип-топ.
 	 * @param {Object} [scope] Контекст вызова getKey. По умолчанию, функция вызывается в контексте коллекции.
-	 * @returns {Object} Параметр keyMap метода {@link #static-method-reindex}.
+	 * @returns {Object}
+	 * Параметр keyMap метода {@link #static-method-reindex}.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	/**
 	 * @method performSplice
@@ -10337,6 +11324,16 @@ JW.extend(JW.Map, JW.AbstractMap, {
 	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
 	 * @returns {JW.AbstractMap.Mapper}
 	 * `<T, U>` Синхронизатор.
+	 */
+	/**
+	 * @method createFilterer
+	 * `<T>` Конструирует фильтровщик коллекции.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @static
+	 * @param {Object} map `<T>` Словарь.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractMap.Filterer}
+	 * `<T>` Синхронизатор.
 	 */
 	/**
 	 * @method createObserver
@@ -10494,7 +11491,7 @@ JW.apply(JW.Map, {
 		return result;
 	},
 	
-	$map: JW.AbstractCollection._create$Map(JW.Map, "map"),
+	$map: JW.AbstractCollection._createStatic$Map(JW.Map, "map"),
 	
 	asMap: function(target) {
 		return target;
@@ -10728,6 +11725,10 @@ JW.apply(JW.Map, {
 		return new JW.AbstractMap.Mapper(new JW.Map(source, true), config);
 	},
 	
+	createFilterer: function(source, config) {
+		return new JW.AbstractMap.Filterer(new JW.Map(source, true), config);
+	},
+	
 	createObserver: function(source, config) {
 		return new JW.AbstractMap.Observer(new JW.Map(source, true), config);
 	},
@@ -10907,7 +11908,7 @@ JW.extend(JW.Set, JW.AbstractSet, {
 	 */
 	/**
 	 * @method removeItems
-	 * `<T>` Удаляет все вхождения указанных элементов из коллекции.
+	 * `<T extends JW.Class>` Удаляет все вхождения указанных элементов из коллекции.
 	 * @static
 	 * @param {Object} set `<T>` Множество.
 	 * @param {Array} items `<T>` Элементы.
@@ -11020,11 +12021,11 @@ JW.extend(JW.Set, JW.AbstractSet, {
 	 *
 	 * @static
 	 * @param {Object} set `<T>` Множество.
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -11039,11 +12040,11 @@ JW.extend(JW.Set, JW.AbstractSet, {
 	 *
 	 * @static
 	 * @param {Object} set `<T>` Множество.
-	 * @param {Function} f
+	 * @param {Function} [f]
 	 *
 	 * `f(item: T): number/string`
 	 *
-	 * Функция-сортировщик для элемента.
+	 * Функция-сортировщик для элемента. По умолчанию возвращает item.
 	 *
 	 * @param {Object} [scope] Контекст вызова f. По умолчанию f вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -11058,12 +12059,12 @@ JW.extend(JW.Set, JW.AbstractSet, {
 	 *
 	 * @static
 	 * @param {Object} set `<T>` Множество.
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -11078,12 +12079,12 @@ JW.extend(JW.Set, JW.AbstractSet, {
 	 *
 	 * @static
 	 * @param {Object} set `<T>` Множество.
-	 * @param {Function} compare
+	 * @param {Function} [compare]
 	 *
 	 * `f(t1: T, t2: T): Number`
 	 *
 	 * Функция-компаратор. Возвращает положительное значение, если t1 > t2; отрицательное значение, если t1 < t2;
-	 * 0, если t1 == t2.
+	 * 0, если t1 == t2. По умолчанию возвращает JW.cmp(t1, t2).
 	 *
 	 * @param {Object} [scope] Контекст вызова compare. По умолчанию compare вызывается в контексте коллекции.
 	 * @param {1/-1} [order] Порядок сортировки.
@@ -11400,7 +12401,9 @@ JW.extend(JW.Set, JW.AbstractSet, {
 	 * @static
 	 * @param {Object} set `<T>` Множество.
 	 * @param {Array} newItems `<T>` Новое содержимое множества.
-	 * @returns {JW.AbstractSet.SpliceParams} `<T>` Параметры метода {@link #static-method-splice}.
+	 * @returns {JW.AbstractSet.SpliceParams}
+	 * `<T>` Параметры метода {@link #static-method-splice}.
+	 * Если вызова метода не требуется - undefined.
 	 */
 	/**
 	 * @method performSplice
@@ -11419,6 +12422,16 @@ JW.extend(JW.Set, JW.AbstractSet, {
 	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
 	 * @returns {JW.AbstractSet.Mapper}
 	 * `<T, U>` Синхронизатор.
+	 */
+	/**
+	 * @method createFilterer
+	 * `<T>` Конструирует фильтровщик коллекции.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @static
+	 * @param {Object} set `<T>` Множество.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractSet.Filterer}
+	 * `<T>` Синхронизатор.
 	 */
 	/**
 	 * @method createObserver
@@ -11499,7 +12512,7 @@ JW.extend(JW.Set, JW.AbstractSet, {
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-JW.IndexedCollection.createStaticMethods(JW.Set);
+JW.AbstractCollection.createStaticMethods(JW.Set);
 
 JW.apply(JW.Set, {
 	getLength: function(target) {
@@ -11643,7 +12656,7 @@ JW.apply(JW.Set, {
 	},
 	
 	clear: function(target) {
-		var items = JW.Set.tryClear(target);
+		var result = JW.Set.tryClear(target);
 		return (result !== undefined) ? result : [];
 	},
 	
@@ -11664,6 +12677,8 @@ JW.apply(JW.Set, {
 	},
 	
 	trySplice: function(target, removedItems, addedItems) {
+		var addedItemSet = new JW.Set(addedItems);
+		removedItems = JW.Array.filter(removedItems, function(item) { return !addedItemSet.contains(item); });
 		removedItems = JW.Set.tryRemoveAll(target, removedItems);
 		addedItems = JW.Set.tryAddAll(target, addedItems);
 		if ((removedItems !== undefined) || (addedItems !== undefined)) {
@@ -11699,6 +12714,10 @@ JW.apply(JW.Set, {
 	
 	createMapper: function(source, config) {
 		return new JW.AbstractSet.Mapper(new JW.Set(source, true), config);
+	},
+	
+	createFilterer: function(source, config) {
+		return new JW.AbstractSet.Filterer(new JW.Set(source, true), config);
 	},
 	
 	createObserver: function(source, config) {
@@ -11939,6 +12958,17 @@ JW.extend(JW.ObservableArray, JW.AbstractArray, {
 	},
 	
 	/**
+	 * Конструирует фильтровщик коллекции.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.ObservableArray.Filterer}
+	 * `<T>` Синхронизатор.
+	 */
+	createFilterer: function(config) {
+		return new JW.ObservableArray.Filterer(this, config);
+	},
+	
+	/**
 	 * Конструирует наблюдатель коллекции.
 	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
 	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
@@ -12002,6 +13032,32 @@ JW.extend(JW.ObservableArray, JW.AbstractArray, {
 	 */
 	createInserter: function(config) {
 		return new JW.ObservableArray.Inserter(this, config);
+	},
+	
+	/**
+	 * Конструирует объединитель массивов.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.ObservableArray.Merger}
+	 * `<T>` Синхронизатор.
+	 */
+	createMerger: function(config) {
+		return new JW.ObservableArray.Merger(this, config);
+	},
+	
+	createMergerBunch: function(merger) {
+		return new JW.ObservableArray.Merger.Bunch(merger, this);
+	},
+	
+	/**
+	 * Конструирует обратитель массива.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.AbstractArray.Reverser}
+	 * `<T>` Синхронизатор.
+	 */
+	createReverser: function(config) {
+		return new JW.ObservableArray.Reverser(this, config);
 	},
 	
 	createSplitter: function(config) {
@@ -12133,13 +13189,13 @@ JW.extend(JW.ObservableArray.ReplaceEventParams, JW.ObservableArray.EventParams,
  *
  * `<T> extends JW.ObservableArray.EventParams<T>`
  *
- * Параметры события JW.ObservableArray с элементами.
+ * Параметры события JW.ObservableArray, несущие его бывшее содержимое.
  *
  * @extends JW.ObservableArray.EventParams
  *
  * @constructor
  * @param {JW.ObservableArray} sender `<T>` Отправитель события.
- * @param {Array} items `<T>` Набор элементов.
+ * @param {Array} items `<T>` Бывшее содержимое массива.
  */
 JW.ObservableArray.ItemsEventParams = function(sender, items) {
 	JW.ObservableArray.ItemsEventParams._super.call(this, sender);
@@ -12148,7 +13204,7 @@ JW.ObservableArray.ItemsEventParams = function(sender, items) {
 
 JW.extend(JW.ObservableArray.ItemsEventParams, JW.ObservableArray.EventParams, {
 	/**
-	 * @property {Array} items `<T>` Набор элементов.
+	 * @property {Array} items `<T>` Бывшее содержимое массива.
 	 */
 });
 
@@ -12204,6 +13260,130 @@ JW.extend(JW.ObservableArray.LengthChangeEventParams, JW.ObservableArray.EventPa
 	/**
 	 * @property {number} newLength Новая длина массива.
 	 */
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
+ * `<T> extends JW.AbstractArray.Filterer<T>`
+ *
+ * Фильтровщик оповещающего массива. Подробнее читайте JW.AbstractCollection.Filterer.
+ *
+ * @extends JW.AbstractArray.Filterer
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractCollection#createFilterer.
+ * @param {JW.ObservableArray} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.ObservableArray.Filterer = function(source, config) {
+	JW.ObservableArray.Filterer._super.call(this, source, config);
+	this._spliceEventAttachment = source.spliceEvent.bind(this._onSplice, this);
+	this._replaceEventAttachment = source.replaceEvent.bind(this._onReplace, this);
+	this._moveEventAttachment = source.moveEvent.bind(this._onMove, this);
+	this._clearEventAttachment = source.clearEvent.bind(this._onClear, this);
+	this._reorderEventAttachment = source.reorderEvent.bind(this._onReorder, this);
+};
+
+JW.extend(JW.ObservableArray.Filterer, JW.AbstractArray.Filterer, {
+	/*
+	JW.EventAttachment _spliceEventAttachment;
+	JW.EventAttachment _replaceEventAttachment;
+	JW.EventAttachment _moveEventAttachment;
+	JW.EventAttachment _clearEventAttachment;
+	JW.EventAttachment _reorderEventAttachment;
+	*/
+	
+	// override
+	destroy: function() {
+		this._reorderEventAttachment.destroy();
+		this._clearEventAttachment.destroy();
+		this._moveEventAttachment.destroy();
+		this._replaceEventAttachment.destroy();
+		this._spliceEventAttachment.destroy();
+		this._super();
+	},
+	
+	_onSplice: function(params) {
+		var spliceResult = params.spliceResult;
+		this._splice(spliceResult.removedItemsList, spliceResult.addedItemsList);
+	},
+	
+	_onReplace: function(params) {
+		var oldFiltered = this._filtered[params.index] !== 0;
+		var newFiltered = this.filterItem.call(this.scope, params.newItem) !== false;
+		if (!oldFiltered && !newFiltered) {
+			return;
+		}
+		var index = this._countFiltered(0, params.index);
+		this._filtered[params.index] = newFiltered ? 1 : 0;
+		if (!newFiltered) {
+			this.target.tryRemove(index);
+		} else if (!oldFiltered) {
+			this.target.tryAdd(params.newItem, index);
+		} else {
+			this.target.trySet(params.newItem, index);
+		}
+	},
+	
+	_onMove: function(params) {
+		if (this._filtered[params.fromIndex] !== 0) {
+			var fromIndex, toIndex;
+			if (params.fromIndex < params.toIndex) {
+				fromIndex = this._countFiltered(0, params.fromIndex);
+				toIndex = fromIndex + this._countFiltered(params.fromIndex + 1, params.toIndex - params.fromIndex);
+			} else {
+				toIndex = this._countFiltered(0, params.toIndex);
+				fromIndex = toIndex + this._countFiltered(params.toIndex, params.fromIndex - params.toIndex);
+			}
+			this.target.tryMove(fromIndex, toIndex);
+		}
+		JW.Array.tryMove(this._filtered, params.fromIndex, params.toIndex);
+	},
+	
+	_onClear: function(params) {
+		this.target.tryClear();
+	},
+	
+	_onReorder: function(params) {
+		var targetIndex = 0;
+		var targetIndexWhichMovesToI = {}
+		for (var sourceIndex = 0, l = this._filtered.length; sourceIndex < l; ++sourceIndex) {
+			if (this._filtered[sourceIndex] !== 0) {
+				targetIndexWhichMovesToI[params.indexArray[sourceIndex]] = targetIndex++;
+			}
+		}
+		JW.Array.tryReorder(this._filtered, params.indexArray);
+		
+		var targetIndex = 0;
+		var indexes = new Array(this.target.getLength());
+		for (var sourceIndex = 0, l = this._filtered.length; sourceIndex < l; ++sourceIndex) {
+			if (this._filtered[sourceIndex] !== 0) {
+				indexes[targetIndexWhichMovesToI[sourceIndex]] = targetIndex++;
+			}
+		}
+		
+		this.target.tryReorder(indexes);
+	}
 });
 
 /*
@@ -12581,6 +13761,268 @@ JW.extend(JW.ObservableArray.Mapper, JW.AbstractArray.Mapper, {
 /**
  * @class
  *
+ * `<T> extends JW.AbstractArray.Merger<T>`
+ *
+ * Объединитель массивов. Подробнее читайте JW.AbstractArray.Merger.
+ *
+ * @extends JW.AbstractArray.Merger
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractArray#createMerger.
+ * @param {JW.ObservableArray} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.ObservableArray.Merger = function(source, config) {
+	JW.ObservableArray.Merger._super.call(this, source, config);
+	this._spliceEventAttachment = source.spliceEvent.bind(this._onSplice, this);
+	this._replaceEventAttachment = source.replaceEvent.bind(this._onReplace, this);
+	this._moveEventAttachment = source.moveEvent.bind(this._onMove, this);
+	this._clearEventAttachment = source.clearEvent.bind(this._onClear, this);
+	this._reorderEventAttachment = source.reorderEvent.bind(this._onReorder, this);
+};
+
+JW.extend(JW.ObservableArray.Merger, JW.AbstractArray.Merger, {
+	/*
+	JW.EventAttachment _spliceEventAttachment;
+	JW.EventAttachment _replaceEventAttachment;
+	JW.EventAttachment _moveEventAttachment;
+	JW.EventAttachment _clearEventAttachment;
+	JW.EventAttachment _reorderEventAttachment;
+	*/
+	
+	// override
+	destroy: function() {
+		this._reorderEventAttachment.destroy();
+		this._clearEventAttachment.destroy();
+		this._moveEventAttachment.destroy();
+		this._replaceEventAttachment.destroy();
+		this._spliceEventAttachment.destroy();
+		this._super();
+	},
+	
+	// override
+	_createTarget: function() {
+		return new JW.ObservableArray();
+	},
+	
+	_getIndexes: function(bunches) {
+		var currentIndex = 0;
+		var indexes = JW.Array.map(bunches, function(bunch) {
+			var index = currentIndex;
+			currentIndex += bunch.getLength();
+			return index;
+		}, this);
+		indexes.push(currentIndex);
+		return indexes;
+	},
+	
+	// 0 x,x
+	// 2 x,x,x delete
+	// 5 x,x,x,x
+	// 9 x,x
+	
+	// 0 x,x
+	// 2 x,x,x,x
+	// 6 x,x
+	
+	_onSplice: function(params) {
+		var spliceResult = params.spliceResult;
+		var indexes = this._getIndexes(spliceResult.oldItems);
+		var removeParamsList = JW.Array.map(spliceResult.removedItemsList, function(indexItems) {
+			return new JW.AbstractArray.IndexCount(indexes[indexItems.index], this._count(indexItems.items));
+		}, this);
+		JW.Array.backEvery(spliceResult.removedItemsList, function(indexItems) {
+			indexes.splice(indexItems.index, indexItems.items.length);
+			var count = this._count(indexItems.items);
+			for (var i = indexItems.index; i < indexes.length; ++i) {
+				indexes[i] -= count;
+			}
+		}, this);
+		var addParamsList = JW.Array.map(spliceResult.addedItemsList, function(indexItems) {
+			return new JW.AbstractArray.IndexItems(indexes[indexItems.index], this._merge(indexItems.items));
+		}, this);
+		this.target.trySplice(removeParamsList, addParamsList);
+	},
+	
+	_onReplace: function(params) {
+		var index = this._count(this.source.getItems(), 0, params.index);
+		this.target.trySplice(
+			[new JW.AbstractArray.IndexCount(index, params.oldItem.getLength())],
+			[new JW.AbstractArray.IndexItems(index, params.newItem.getItems())]);
+	},
+	
+	_onMove: function(params) {
+		var count = params.item.getLength();
+		var indexes = new Array(this.target.getLength());
+		var currentIndex = 0;
+		
+		function shiftBunch(bunchLength, shift) {
+			for (var j = 0; j < bunchLength; ++j) {
+				indexes[currentIndex] = currentIndex + shift;
+				++currentIndex;
+			}
+		}
+		
+		for (var i = 0, l = Math.min(params.fromIndex, params.toIndex); i < l; ++i) {
+			shiftBunch(this.source.get(i).getLength(), 0);
+		}
+		if (params.fromIndex <= params.toIndex) {
+			// [1], [2], [3], [4], [5]        [2] move to 3
+			// [1], [3], [4], [2], [5]
+			shiftBunch(count, this._count(this.source.getItems(), params.fromIndex, params.toIndex - params.fromIndex));
+			for (var i = params.fromIndex; i < params.toIndex; ++i) {
+				shiftBunch(this.source.get(i).getLength(), -count);
+			}
+		} else {
+			// [1], [2], [3], [4], [5]        [4] move to 1
+			// [1], [4], [2], [3], [5]
+			for (var i = params.toIndex + 1; i <= params.fromIndex; ++i) {
+				shiftBunch(this.source.get(i).getLength(), count);
+			}
+			shiftBunch(count, -this._count(this.source.getItems(), params.toIndex + 1, params.fromIndex - params.toIndex));
+		}
+		for (var i = Math.max(params.fromIndex, params.toIndex) + 1, l = this.source.getLength(); i < l; ++i) {
+			shiftBunch(this.source.get(i).getLength(), 0);
+		}
+		
+		this.target.tryReorder(indexes);
+	},
+	
+	_onClear: function(params) {
+		this.target.clear();
+	},
+	
+	_onReorder: function(params) {
+		var oldIndexes = this._getIndexes(params.items);
+		var newIndexes = this._getIndexes(this.source.getItems());
+		var indexes = new Array(this.target.getLength());
+		for (var i = 0, l = params.items.length; i < l; ++i) {
+			var bunch = params.items[i];
+			var oldIndex = oldIndexes[i];
+			var newIndex = newIndexes[params.indexArray[i]];
+			for (var j = 0, m = bunch.getLength(); j < m; ++j) {
+				indexes[oldIndex + j] = newIndex + j;
+			}
+		}
+		this.target.tryReorder(indexes);
+	}
+});
+
+JW.ObservableArray.Merger.Bunch = function(merger, bunch) {
+	JW.ObservableArray.Merger.Bunch._super.call(this);
+	this.source = merger.source;
+	this.target = merger.target;
+	this.bunch = bunch;
+	this._spliceAttachment = bunch.spliceEvent.bind(this._onSplice, this);
+	this._replaceAttachment = bunch.replaceEvent.bind(this._onReplace, this);
+	this._moveAttachment = bunch.moveEvent.bind(this._onMove, this);
+	this._clearAttachment = bunch.clearEvent.bind(this._onClear, this);
+	this._reorderAttachment = bunch.reorderEvent.bind(this._onReorder, this);
+};
+
+JW.extend(JW.ObservableArray.Merger.Bunch, JW.AbstractArray.Merger.Bunch, {
+	/*
+	Fields
+	JW.AbstractArray<? extends JW.ObservableArray<T>> source;
+	JW.AbstractArray<T> target;
+	JW.AbstractArray<T> bunch;
+	JW.EventAttachment _spliceAttachment;
+	JW.EventAttachment _replaceAttachment;
+	JW.EventAttachment _moveAttachment;
+	JW.EventAttachment _clearAttachment;
+	JW.EventAttachment _reorderAttachment;
+	*/
+	
+	// override
+	destroy: function() {
+		this._reorderAttachment.destroy();
+		this._clearAttachment.destroy();
+		this._moveAttachment.destroy();
+		this._replaceAttachment.destroy();
+		this._spliceAttachment.destroy();
+		this._super();
+	},
+	
+	_getIndex: function() {
+		var bunches = this.source.getItems();
+		var index = 0;
+		for (var i = 0, l = bunches.length; i < l; ++i) {
+			var bunch = bunches[i];
+			if (bunch === this.bunch) {
+				return index;
+			}
+			index += bunch.getLength();
+		}
+		console.warn("JW.ObservableArray.Merger object is corrupted");
+		return 0;
+	},
+	
+	_onSplice: function(params) {
+		var spliceResult = params.spliceResult;
+		var index = this._getIndex();
+		var removeParamsList = JW.Array.map(spliceResult.removedItemsList, function(indexItems) {
+			return new JW.AbstractArray.IndexCount(indexItems.index + index, indexItems.items.length);
+		}, this);
+		var addParamsList = JW.Array.map(spliceResult.addedItemsList, function(indexItems) {
+			return new JW.AbstractArray.IndexItems(indexItems.index + index, indexItems.items.concat());
+		}, this);
+		this.target.trySplice(removeParamsList, addParamsList);
+	},
+	
+	_onReplace: function(params) {
+		this.target.trySet(params.newItem, this._getIndex() + params.index);
+	},
+	
+	_onMove: function(params) {
+		var index = this._getIndex();
+		this.target.tryMove(index + params.fromIndex, index + params.toIndex);
+	},
+	
+	_onClear: function(params) {
+		this.target.tryRemoveAll(this._getIndex(), params.items.length);
+	},
+	
+	_onReorder: function(params) {
+		var index = this._getIndex();
+		var bunchIndexArray = params.indexArray;
+		var bunchLength = bunchIndexArray.length;
+		var targetLength = this.target.getLength();
+		var targetIndexArray = new Array(targetLength);
+		for (var i = 0; i < index; ++i) {
+			targetIndexArray[i] = i;
+		}
+		for (var i = 0; i < bunchLength; ++i) {
+			targetIndexArray[index + i] = index + bunchIndexArray[i];
+		}
+		for (var i = index + bunchLength; i < targetLength; ++i) {
+			targetIndexArray[i] = i;
+		}
+		this.target.tryReorder(targetIndexArray);
+	}
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
  * `<T> extends JW.AbstractArray.Observer<T>`
  *
  * Наблюдатель оповещающего массива. Подробнее читайте JW.AbstractCollection.Observer.
@@ -12673,7 +14115,7 @@ JW.extend(JW.ObservableArray.Observer, JW.AbstractArray.Observer, {
 /**
  * @class
  *
- * `<T> extends JW.AbstractArray.Orderer<T>`
+ * `<T extends JW.Class> extends JW.AbstractArray.Orderer<T>`
  *
  * Конвертер оповещающего массива в массив (упорядочитель). Подробнее читайте JW.AbstractCollection.Orderer.
  *
@@ -12710,7 +14152,7 @@ JW.extend(JW.ObservableArray.Orderer, JW.AbstractArray.Orderer, {
 		var spliceResult = params.spliceResult;
 		this._splice(
 			JW.Array.toSet(spliceResult.getRemovedItems()),
-			spliceResult.getAddedItems());
+			JW.Array.toSet(spliceResult.getAddedItems()));
 	},
 	
 	_onReplace: function(params) {
@@ -12722,6 +14164,122 @@ JW.extend(JW.ObservableArray.Orderer, JW.AbstractArray.Orderer, {
 	
 	_onClear: function(params) {
 		this.target.removeItems(params.items);
+	}
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
+ * `<T> extends JW.AbstractArray.Reverser<T>`
+ *
+ * Объединитель массивов. Подробнее читайте JW.AbstractArray.Reverser.
+ *
+ * @extends JW.AbstractArray.Reverser
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractArray#createReverser.
+ * @param {JW.ObservableArray} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.ObservableArray.Reverser = function(source, config) {
+	JW.ObservableArray.Reverser._super.call(this, source, config);
+	this._spliceEventAttachment = source.spliceEvent.bind(this._onSplice, this);
+	this._replaceEventAttachment = source.replaceEvent.bind(this._onReplace, this);
+	this._moveEventAttachment = source.moveEvent.bind(this._onMove, this);
+	this._clearEventAttachment = source.clearEvent.bind(this._onClear, this);
+	this._reorderEventAttachment = source.reorderEvent.bind(this._onReorder, this);
+};
+
+JW.extend(JW.ObservableArray.Reverser, JW.AbstractArray.Reverser, {
+	/*
+	JW.EventAttachment _spliceEventAttachment;
+	JW.EventAttachment _replaceEventAttachment;
+	JW.EventAttachment _moveEventAttachment;
+	JW.EventAttachment _clearEventAttachment;
+	JW.EventAttachment _reorderEventAttachment;
+	*/
+	
+	// override
+	destroy: function() {
+		this._reorderEventAttachment.destroy();
+		this._clearEventAttachment.destroy();
+		this._moveEventAttachment.destroy();
+		this._replaceEventAttachment.destroy();
+		this._spliceEventAttachment.destroy();
+		this._super();
+	},
+	
+	_onSplice: function(params) {
+		var spliceResult = params.spliceResult;
+		var oldLength = this.target.getLength();
+		var newLength = oldLength;
+		
+		var removeParamsList = JW.Array.map(spliceResult.removedItemsList, function(indexItems) {
+			var length = indexItems.items.length;
+			var index = oldLength - indexItems.index - length;
+			newLength -= length;
+			return new JW.AbstractArray.IndexCount(index, length);
+		}, this);
+		removeParamsList.reverse();
+		
+		var addedItemsList = spliceResult.addedItemsList.concat();
+		addedItemsList.reverse();
+		
+		JW.Array.each(addedItemsList, function(indexItems) {
+			newLength += indexItems.items.length;
+		}, this);
+		
+		var addParamsList = JW.Array.map(addedItemsList, function(indexItems) {
+			var items = indexItems.items;
+			var length = items.length;
+			var index = newLength - indexItems.index - length;
+			return new JW.AbstractArray.IndexItems(index, this._reverse(items));
+		}, this);
+		
+		this.target.trySplice(removeParamsList, addParamsList);
+	},
+	
+	_onReplace: function(params) {
+		this.target.trySet(params.newItem, this.target.getLength() - params.index - 1);
+	},
+	
+	_onMove: function(params) {
+		this.target.tryMove(
+			this.target.getLength() - params.fromIndex - 1,
+			this.target.getLength() - params.toIndex - 1);
+	},
+	
+	_onClear: function(params) {
+		this.target.tryClear();
+	},
+	
+	_onReorder: function(params) {
+		var indexArray = params.indexArray;
+		var length = indexArray.length;
+		var indexes = new Array(indexArray.length);
+		for (var i = 0; i < length; ++i) {
+			indexes[length - i - 1] = length - indexArray[i] - 1;
+		}
+		this.target.tryReorder(indexes);
 	}
 });
 
@@ -12979,6 +14537,17 @@ JW.extend(JW.ObservableMap, JW.AbstractMap, {
 	},
 	
 	/**
+	 * Конструирует фильтровщик коллекции.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.ObservableMap.Filterer}
+	 * `<T>` Синхронизатор.
+	 */
+	createFilterer: function(config) {
+		return new JW.ObservableMap.Filterer(this, config);
+	},
+	
+	/**
 	 * Конструирует наблюдатель коллекции.
 	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
 	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
@@ -13171,6 +14740,77 @@ JW.extend(JW.ObservableMap.LengthChangeEventParams/*<T>*/, JW.ObservableMap.Even
 	/**
 	 * @property {number} newLength Новый размер коллекции.
 	 */
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
+ * `<T> extends JW.AbstractMap.Filterer<T>`
+ *
+ * Фильтровщик оповещающего словаря. Подробнее читайте JW.AbstractCollection.Filterer.
+ *
+ * @extends JW.AbstractMap.Filterer
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractCollection#createFilterer.
+ * @param {JW.ObservableMap} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.ObservableMap.Filterer = function(source, config) {
+	JW.ObservableMap.Filterer._super.call(this, source, config);
+	this._spliceEventAttachment = source.spliceEvent.bind(this._onSplice, this);
+	this._reindexEventAttachment = source.reindexEvent.bind(this._onReindex, this);
+	this._clearEventAttachment = source.clearEvent.bind(this._onClear, this);
+};
+
+JW.extend(JW.ObservableMap.Filterer, JW.AbstractMap.Filterer, {
+	/*
+	JW.EventAttachment _spliceEventAttachment;
+	JW.EventAttachment _reindexEventAttachment;
+	JW.EventAttachment _clearEventAttachment;
+	*/
+	
+	// override
+	destroy: function() {
+		this._clearEventAttachment.destroy();
+		this._reindexEventAttachment.destroy();
+		this._spliceEventAttachment.destroy();
+		this._super();
+	},
+	
+	_onSplice: function(params) {
+		var spliceResult = params.spliceResult;
+		this.target.trySplice(
+			JW.Map.getKeys(spliceResult.removedItems),
+			JW.Map.filter(spliceResult.addedItems, this.filterItem, this.scope));
+	},
+	
+	_onReindex: function(params) {
+		this.target.tryReindex(params.keyMap);
+	},
+	
+	_onClear: function(params) {
+		this.target.tryRemoveAll(JW.Map.getKeys(params.items));
+	}
 });
 
 /*
@@ -13552,7 +15192,7 @@ JW.extend(JW.ObservableMap.Observer, JW.AbstractMap.Observer, {
 /**
  * @class
  *
- * `<T> extends JW.AbstractMap.Orderer<T>`
+ * `<T extends JW.Class> extends JW.AbstractMap.Orderer<T>`
  *
  * Конвертер оповещающего словаря в массив (упорядочитель). Подробнее читайте JW.AbstractCollection.Orderer.
  *
@@ -13586,7 +15226,7 @@ JW.extend(JW.ObservableMap.Orderer, JW.AbstractMap.Orderer, {
 		var spliceResult = params.spliceResult;
 		this._splice(
 			JW.Map.toSet(spliceResult.removedItems),
-			JW.Map.toArray(spliceResult.addedItems));
+			JW.Map.toSet(spliceResult.addedItems));
 	},
 	
 	_onClear: function(params) {
@@ -13804,6 +15444,17 @@ JW.extend(JW.ObservableSet, JW.AbstractSet, {
 	},
 	
 	/**
+	 * Конструирует фильтровщик коллекции.
+	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
+	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
+	 * @returns {JW.ObservableSet.Filterer}
+	 * `<T>` Синхронизатор.
+	 */
+	createFilterer: function(config) {
+		return new JW.ObservableSet.Filterer(this, config);
+	},
+	
+	/**
 	 * Конструирует наблюдатель коллекции.
 	 * Автоматически подбирает наиболее подходящую реализацию синхронизатора.
 	 * @param {Object} config Конфигурация (см. Config options синхронизатора).
@@ -13961,6 +15612,70 @@ JW.extend(JW.ObservableSet.LengthChangeEventParams, JW.ObservableSet.EventParams
 	/**
 	 * @property {number} newLength Новый размер коллекции.
 	 */
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2013 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ *
+ * `<T extends JW.Class> extends JW.AbstractSet.Filterer<T>`
+ *
+ * Фильтровщик оповещающего множества. Подробнее читайте JW.AbstractCollection.Filterer.
+ *
+ * @extends JW.AbstractSet.Filterer
+ *
+ * @constructor
+ * Конструирует синхронизатор. Предпочтительнее использовать метод JW.AbstractCollection#createFilterer.
+ * @param {JW.ObservableSet} source `<T>` Исходная коллекция.
+ * @param {Object} config Конфигурация (см. Config options).
+ */
+JW.ObservableSet.Filterer = function(source, config) {
+	JW.ObservableSet.Filterer._super.call(this, source, config);
+	this._spliceEventAttachment = source.spliceEvent.bind(this._onSplice, this);
+	this._clearEventAttachment = source.clearEvent.bind(this._onClear, this);
+};
+
+JW.extend(JW.ObservableSet.Filterer, JW.AbstractSet.Filterer, {
+	/*
+	JW.EventAttachment _spliceEventAttachment;
+	JW.EventAttachment _clearEventAttachment;
+	*/
+	
+	// override
+	destroy: function() {
+		this._clearEventAttachment.destroy();
+		this._spliceEventAttachment.destroy();
+		this._super();
+	},
+	
+	_onSplice: function(params) {
+		var spliceResult = params.spliceResult;
+		this.target.trySplice(
+			spliceResult.removedItems,
+			JW.Array.filter(spliceResult.addedItems, this.filterItem, this.scope));
+	},
+	
+	_onClear: function(params) {
+		this.target.tryRemoveAll(params.items);
+	}
 });
 
 /*
@@ -14282,8 +15997,8 @@ JW.extend(JW.ObservableSet.Orderer, JW.AbstractSet.Orderer, {
 	_onSplice: function(params) {
 		var spliceResult = params.spliceResult;
 		this._splice(
-			JW.Set.toSet(spliceResult.removedItems),
-			spliceResult.addedItems);
+			JW.Array.toSet(spliceResult.removedItems),
+			JW.Array.toSet(spliceResult.addedItems));
 	},
 	
 	_onClear: function(params) {
