@@ -1,7 +1,7 @@
 /*!
-	jWidget UI 0.6
+	jWidget UI 0.7
 	
-	https://github.com/enepomnyaschih/jwidget/wiki
+	http://enepomnyaschih.github.io/jwidget/#!/guide/home
 	
 	Copyright (C) 2013 Egor Nepomnyaschih
 	
@@ -40,7 +40,7 @@ JW.UI = {
 	 * 
 	 * Функция JW.UI.template вызывается автоматически при подключении `jw.html`-файлов через
 	 * [jWidget SDK](https://github.com/enepomnyaschih/jwsdk/wiki/ru). Для подробностей, смотрите
-	 * [пример](https://github.com/enepomnyaschih/jwidget/wiki/Пример-3.-Интеграция-с-jWidget-SDK).
+	 * [Учебник. Часть 6. Инфраструктура проекта](#!/guide/sample6).
 	 *
 	 * @static
 	 * @param {Function} cls Класс, унаследованный от JW.UI.Component.
@@ -364,7 +364,7 @@ JW.UI.Browsers = (function()
  * Такой интерфейс обеспечивает краткость, с одной стороны, и гибкость в плане соблюдения методики Model-View,
  * с другой стороны.
  * 
- * [Пример 1. Model-View](https://github.com/enepomnyaschih/jwidget/wiki/Пример-1.-Model-View)
+ * [Учебник. Часть 1. Модель и представление](#!/guide/sample1)
  * 
  * ### Подробнее о списках дочерних компонентов
  * 
@@ -375,7 +375,7 @@ JW.UI.Browsers = (function()
  * Именно по этой причине в модели рекомендуется использовать {@link JW.AbstractCollection коллекции jWidget} вместо
  * нативных Array и Object: эти коллекции имеют Observable-реализации и синхронизаторы.
  * 
- * [Пример 2. Синхронизатор коллекции](https://github.com/enepomnyaschih/jwidget/wiki/Пример-2.-Синхронизатор-коллекции)
+ * [Учебник. Часть 5. Синхронизаторы коллекций](#!/guide/sample5)
  * 
  * ### Подробнее о методе render&lt;ChildId&gt;
  * 
@@ -525,10 +525,10 @@ JW.UI.Browsers = (function()
  * Естественно, вы можете использовать jWidget и без jWidget SDK, но тогда HTML-шаблоны придется либо загружать
  * динамически, либо описывать явно в исходном JavaScript-коде с использованием функции JW.UI.template.
  * 
- * Более сложный пример смотрите здесь:
+ * Более полный пример смотрите здесь:
  * 
- * [Пример 3. Интеграция с jWidget SDK](https://github.com/enepomnyaschih/jwidget/wiki/Пример-3.-Интеграция-с-jWidget-SDK)
- *
+ * [Учебник. Часть 6. Инфраструктура проекта](#!/guide/sample6)
+ * 
  * @extends JW.Class
  * @constructor
  */
@@ -660,8 +660,9 @@ JW.extend(JW.UI.Component, JW.Class, {
 	
 	/**
 	 * Метод жизненного цикла компонента. Служит для уничтожения компонента. Здесь откатывается все, что было сделано
-	 * во время рендеринга компонента, т.е. в методах #beforeRender, `render<ChildId>`, #renderComponent и
-	 * #afterAppend. При вызове этого метода все списки дочерних компонентов, добавленные через метод #addArray, уже
+	 * во время рендеринга компонента, т.е. в
+	 * методах #beforeRender, `render<ChildId>`, #renderComponent и #afterAppend.
+	 * При вызове этого метода все списки дочерних компонентов, добавленные через метод #addArray, уже
 	 * удалены, но еще не уничтожены. Уничтожать их надо явно. Напротив, дочерние компоненты, состоящие в #children
 	 * нужно удалить оттуда вручную, если вы не хотите, чтобы они были уничтожены. Это обосновано работой
 	 * синхронизаторов. Вызов <code>this._super()</code> осуществляется в конце метода.
