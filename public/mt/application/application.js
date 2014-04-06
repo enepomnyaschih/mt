@@ -9,11 +9,11 @@ JW.extend(mt.Application, JW.UI.Component, {
 	*/
 	
 	renderProfileBox: function() {
-		return new mt.ProfileBox(this.data);
+		return this.own(new mt.ProfileBox(this.data));
 	},
 	
 	renderTweets: function() {
-		return new mt.TweetFeed(this.data);
+		return this.own(new mt.TweetFeed(this.data));
 	},
 	
 	// override

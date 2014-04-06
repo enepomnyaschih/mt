@@ -17,3 +17,5 @@ mt.Data.createByJson = function(json) {
 	data.tweets.addAll(JW.Array.map(json.tweets, mt.data.Tweet.createByJson));
 	return data;
 };
+
+mt.data = {};

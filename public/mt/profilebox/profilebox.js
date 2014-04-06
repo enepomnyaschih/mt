@@ -47,17 +47,17 @@ JW.UI.template(mt.ProfileBox, {
 				'<div class="clear"></div>' +
 			'</a>' +
 			'<div jwid="middle">' +
-				'<a jwid="tweets" class="blocklink mt-profile-box-count" href="#" target="_blank">' +
-					'<div jwid="tweets-value" class="mt-profile-box-count-value"></div>' +
-					'<div class="mt-profile-box-count-label">TWEETS</div>' +
+				'<a jwid="count tweets" class="blocklink" href="#" target="_blank">' +
+					'<div jwid="count-value tweets-value"></div>' +
+					'<div jwid="count-label">TWEETS</div>' +
 				'</a>' +
-				'<a jwid="following" class="blocklink mt-profile-box-count mt-profile-box-count-border" href="https://twitter.com/following" target="_blank">' +
-					'<div jwid="following-value" class="mt-profile-box-count-value"></div>' +
-					'<div class="mt-profile-box-count-label">FOLLOWING</div>' +
+				'<a jwid="count count-border following" class="blocklink" href="https://twitter.com/following" target="_blank">' +
+					'<div jwid="count-value following-value"></div>' +
+					'<div jwid="count-label">FOLLOWING</div>' +
 				'</a>' +
-				'<a jwid="followers" class="blocklink mt-profile-box-count mt-profile-box-count-border" href="https://twitter.com/followers" target="_blank">' +
-					'<div jwid="followers-value" class="mt-profile-box-count-value"></div>' +
-					'<div class="mt-profile-box-count-label">FOLLOWERS</div>' +
+				'<a jwid="count count-border followers" class="blocklink" href="https://twitter.com/followers" target="_blank">' +
+					'<div jwid="count-value followers-value"></div>' +
+					'<div jwid="count-label">FOLLOWERS</div>' +
 				'</a>' +
 				'<div class="clear"></div>' +
 			'</div>' +
