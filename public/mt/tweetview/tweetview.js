@@ -99,25 +99,3 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 		return date.getDate() + "." + pad(date.getMonth());
 	}
 });
-
-JW.UI.template(mt.TweetView, {
-	main:
-		'<div jwclass="mt-tweet">' +
-			'<div jwid="avatar"></div>' +
-			'<div jwid="content">' +
-				'<div jwid="header">' +
-					'<div jwid="full-name"></div>' +
-					'<div jwid="short-name"></div>' +
-					'<div jwid="time"></div>' +
-					'<div class="clear"></div>' +
-				'</div>' +
-				'<div jwid="text"></div>' +
-				'<div jwid="buttons">' +
-					'<a jwid="button like" href="#"></a>' +
-					'<a jwid="button retweet" href="#"></a>' +
-					'<a jwid="button remove" href="#">Remove</a>' +
-				'</div>' +
-			'</div>' +
-			'<div class="clear"></div>' +
-		'</div>'
-});
