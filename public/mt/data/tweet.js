@@ -7,8 +7,8 @@
 	this.time = config.time;
 	this.like = config.like;
 	this.retweet = config.retweet;
-	this.likeChangeEvent = new JW.Event();
-	this.retweetChangeEvent = new JW.Event();
+	this.likeChangeEvent = this.own(new JW.Event());
+	this.retweetChangeEvent = this.own(new JW.Event());
 };
 
 JW.extend(mt.data.Tweet, JW.Class, {
@@ -23,13 +23,6 @@ JW.extend(mt.data.Tweet, JW.Class, {
 	JW.Event<JW.ValueEventParams<boolean>> likeChangeEvent;
 	JW.Event<JW.ValueEventParams<boolean>> retweetChangeEvent;
 	*/
-	
-	// override
-	destroy: function() {
-		this.retweetChangeEvent.destroy();
-		this.likeChangeEvent.destroy();
-		this._super();
-	},
 	
 	setLike: function(value) {
 		if (this.like === value) {

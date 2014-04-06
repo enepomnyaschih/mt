@@ -5,16 +5,12 @@
 	mt.TweetView._super.call(this);
 	this.tweetData = tweetData;
 	this._timer = null;
-	this._likeChangeAttachment = null;
-	this._retweetChangeAttachment = null;
 };
 
 JW.extend(mt.TweetView, JW.UI.Component, {
 	/*
 	mt.data.Tweet tweetData;
 	number _timer;
-	JW.EventAttachment _likeChangeAttachment;
-	JW.EventAttachment _retweetChangeAttachment;
 	*/
 	
 	renderAvatar: function(el) {
@@ -40,21 +36,19 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	
 	renderLike: function(el) {
 		this._updateLike();
-		this._likeChangeAttachment = this.tweetData.likeChangeEvent.bind(this._updateLike, this);
+		this.own(this.tweetData.likeChangeEvent.bind(this._updateLike, this));
 		el.click(this._onLikeClick);
 	},
 	
 	renderRetweet: function(el) {
 		this._updateRetweet();
-		this._retweetChangeAttachment = this.tweetData.retweetChangeEvent.bind(this._updateRetweet, this);
+		this.own(this.tweetData.retweetChangeEvent.bind(this._updateRetweet, this));
 		el.click(this._onRetweetClick);
 	},
 	
 	// override
 	destroyComponent: function() {
 		clearInterval(this._timer);
-		this._retweetChangeAttachment.destroy();
-		this._likeChangeAttachment.destroy();
 		this._super();
 	},
 	
