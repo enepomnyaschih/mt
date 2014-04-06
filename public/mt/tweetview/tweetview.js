@@ -73,9 +73,9 @@ JW.UI.template(mt.TweetView, {
 				'</div>' +
 				'<div jwid="text"></div>' +
 				'<div jwid="buttons">' +
-					'<a jwid="like" class="mt-tweet-button" href="#"></a>' +
-					'<a jwid="retweet" class="mt-tweet-button" href="#"></a>' +
-					'<a jwid="remove" class="mt-tweet-button" href="#">Remove</a>' +
+					'<a jwid="button like" href="#"></a>' +
+					'<a jwid="button retweet" href="#"></a>' +
+					'<a jwid="button remove" href="#">Remove</a>' +
 				'</div>' +
 			'</div>' +
 			'<div class="clear"></div>' +
