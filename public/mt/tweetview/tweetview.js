@@ -4,13 +4,11 @@
 	this._onRetweetClick = JW.inScope(this._onRetweetClick, this);
 	mt.TweetView._super.call(this);
 	this.tweetData = tweetData;
-	this._timer = null;
 };
 
 JW.extend(mt.TweetView, JW.UI.Component, {
 	/*
 	mt.data.Tweet tweetData;
-	number _timer;
 	*/
 	
 	renderAvatar: function(el) {
@@ -19,7 +17,7 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	
 	renderTime: function() {
 		this._updateTime();
-		this._timer = setInterval(this._updateTime, 30000);
+		this.own(new JW.Interval(this._updateTime, 30000));
 	},
 	
 	renderFullName: function(el) {
@@ -44,12 +42,6 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 		this._updateRetweet();
 		this.own(this.tweetData.retweetChangeEvent.bind(this._updateRetweet, this));
 		el.click(this._onRetweetClick);
-	},
-	
-	// override
-	destroyComponent: function() {
-		clearInterval(this._timer);
-		this._super();
 	},
 	
 	_updateTime: function() {
