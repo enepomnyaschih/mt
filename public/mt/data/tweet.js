@@ -5,10 +5,8 @@
 	this.avatarUrl48 = config.avatarUrl48;
 	this.contentHtml = config.contentHtml;
 	this.time = config.time;
-	this.like = config.like;
-	this.retweet = config.retweet;
-	this.likeChangeEvent = this.own(new JW.Event());
-	this.retweetChangeEvent = this.own(new JW.Event());
+	this.like = this.own(new JW.Property(config.like));
+	this.retweet = this.own(new JW.Property(config.retweet));
 };
 
 JW.extend(mt.data.Tweet, JW.Class, {
@@ -18,27 +16,9 @@ JW.extend(mt.data.Tweet, JW.Class, {
 	string contentHtml;
 	string avatarUrl48;
 	number time;
-	boolean like;
-	boolean retweet;
-	JW.Event<JW.ValueEventParams<boolean>> likeChangeEvent;
-	JW.Event<JW.ValueEventParams<boolean>> retweetChangeEvent;
+	JW.Property<boolean> like;
+	JW.Property<boolean> retweet;
 	*/
-	
-	setLike: function(value) {
-		if (this.like === value) {
-			return;
-		}
-		this.like = value;
-		this.likeChangeEvent.trigger(new JW.ValueEventParams(this, value));
-	},
-	
-	setRetweet: function(value) {
-		if (this.retweet === value) {
-			return;
-		}
-		this.retweet = value;
-		this.retweetChangeEvent.trigger(new JW.ValueEventParams(this, value));
-	}
 });
 
 mt.data.Tweet.createByJson = function(json) {
