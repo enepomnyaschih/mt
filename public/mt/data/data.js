@@ -1,18 +1,12 @@
 ﻿mt.Data = function() {
 	mt.Data._super.call(this);
-	this.tweets = new JW.Array();
+	this.tweets = this.own(new JW.Array()).ownItems();
 };
 
 JW.extend(mt.Data, JW.Class, {
 	/*
 	JW.AbstractArray<mt.data.Tweet> tweets;
 	*/
-	
-	// override
-	destroy: function() {
-		this.tweets.destroy();
-		this._super();
-	}
 });
 
 mt.Data.createByJson = function(json) {
