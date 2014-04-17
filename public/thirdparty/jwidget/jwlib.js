@@ -1,5 +1,5 @@
 /*!
-	jWidget Lib 0.8
+	jWidget Lib 0.9.0
 	
 	http://enepomnyaschih.github.io/jwidget/#!/guide/home
 	
@@ -653,10 +653,10 @@ JW.apply(JW, {
 	/**
 	 * Calls object method {@link JW.Class#destroy destroy}. Can be used in mappers configuration:
 	 * 
-	 *     var mapper = collection.createMapper({
-	 *         createItem  : function(data) { return new View(data); },
-	 *         destroyItem : JW.destroy, // shorthand for function(view) { view.destroy(); }
-	 *         scope       : this
+	 *     var mapper = collection.{@link JW.AbstractCollection#createMapper createMapper}({
+	 *         {@link JW.AbstractCollection.Mapper#createItem createItem}  : function(data) { return new View(data); },
+	 *         {@link JW.AbstractCollection.Mapper#destroyItem destroyItem} : JW.destroy, // shorthand for function(view) { view.destroy(); }
+	 *         {@link JW.AbstractCollection.Mapper#scope scope}       : this
 	 *     });
 	 *
 	 * @static
@@ -727,7 +727,7 @@ JW.apply(JW, {
 	 * 
 	 *     var MyClass = function(el, message) {
 	 *         this._onClick = JW.inScope(this._onClick, this);
-	 *         MyClass._super.call(this);
+	 *         MyClass.{@link JW.Class#_super _super}.call(this);
 	 *         this.el = el;
 	 *         this.message = message;
 	 *         this.el.bind("click", this._onClick);
@@ -738,7 +738,7 @@ JW.apply(JW, {
 	 *         // String message;
 	 *         
 	 *         // override
-	 *         destroy: function() {
+	 *         {@link JW.Class#destroy destroy}: function() {
 	 *             this.el.unbind("click", this._onClick);
 	 *         },
 	 *         
@@ -1000,8 +1000,9 @@ JW.Class = function() {
  * @method destroy
  *
  * Class destructor. The logic of class instance destruction should be implemented here. You must call this method
- * explicitly from outside, because JavaScript doesn't support automatic class destructor calling. Don't forget to
- * call superclass destructor at the end of the method:
+ * explicitly from outside, because JavaScript doesn't support automatic class destructor calling. Alternatively
+ * (and optimally), you should use method #own to aggregate objects inside each other. If you override this method,
+ * don't forget to call superclass destructor at the end of the method:
  *
  *     destroy: function() {
  *         // Release resources
@@ -1681,7 +1682,7 @@ JW.extend(JW.ItemValueEventParams, JW.ValueEventParams, {
  */
 JW.AbstractCollection = function() {
 	JW.AbstractCollection._super.call(this);
-	this.own(new JW.AbstractCollection.Content(this));
+	this._ownsItems = false;
 };
 
 JW.AbstractCollection._create$Array = function(algorithm) {
@@ -1704,13 +1705,19 @@ JW.AbstractCollection._create$Set = function(algorithm) {
 
 JW.extend(JW.AbstractCollection, JW.Class, {
 	/**
-	 * Makes this collection an owner of its items, which means that all the items will be destroyed on
-	 * the collection destruction. Will be reworked in [#66](https://github.com/enepomnyaschih/jwidget/issues/66).
+	 * Makes this collection an owner of its items, which means that its items are alive while they are present in
+	 * this collection. The item is destroyed when it leaves the
+	 * collection, and all items are destroyed on the collection destruction.
 	 * @returns {JW.AbstractCollection} this
 	 */
 	ownItems: function() {
-		this.own(new JW.AbstractCollection.ItemOwner(this));
+		this._ownsItems = true;
 		return this;
+	},
+	
+	destroy: function() {
+		this.tryClear();
+		this._super();
 	},
 	
 	/**
@@ -2210,18 +2217,6 @@ JW.extend(JW.AbstractCollection, JW.Class, {
 	 */
 });
 
-JW.AbstractCollection.Content = function(collection) {
-	JW.AbstractCollection.Content._super.call(this);
-	this.collection = collection;
-};
-
-JW.extend(JW.AbstractCollection.Content, JW.Class, {
-	destroy: function() {
-		this.collection.tryClear();
-		this._super();
-	}
-});
-
 /*
 	jWidget Lib source file.
 	
@@ -2558,38 +2553,6 @@ JW.extend(JW.AbstractCollection.Indexer, JW.Class, {
 			keys.push(this.getKey.call(this.scope, items[i]));
 		}
 		return keys;
-	}
-});
-
-/*
-	jWidget Lib source file.
-	
-	Copyright (C) 2014 Egor Nepomnyaschih
-	
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU Lesser General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-	
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU Lesser General Public License for more details.
-	
-	You should have received a copy of the GNU Lesser General Public License
-	along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-JW.AbstractCollection.ItemOwner = function(collection) {
-	JW.AbstractCollection.ItemOwner._super.call(this);
-	this.collection = collection;
-};
-
-JW.extend(JW.AbstractCollection.ItemOwner, JW.Class, {
-	// override
-	destroy: function() {
-		this.collection.$clear().$asArray().backEvery(JW.destroy);
-		this._super();
 	}
 });
 
@@ -4251,7 +4214,7 @@ JW.IndexedCollection.createStaticMethods = function(namespace) {
  */
 JW.AbstractArray = function(items, adapter) {
 	JW.AbstractArray._super.call(this);
-	this.items = adapter ? items : !items ? [] : (typeof items === "number") ? new Array(items) : items.concat();
+	this.items = adapter ? items : items ? items.concat() : [];
 	this.getKey = null;
 };
 
@@ -4750,7 +4713,11 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 * @returns {JW.Proxy} `<T>` Proxy of the replaced item. If not modified - `undefined`.
 	 */
 	trySet: function(item, index) {
-		return JW.Array.trySet(this.items, item, index);
+		var oldProxy = JW.Array.trySet(this.items, item, index);
+		if ((oldProxy !== undefined) && this._ownsItems) {
+			oldProxy.get().destroy();
+		}
+		return oldProxy;
 	},
 	
 	/**
@@ -4850,7 +4817,11 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 * @returns {Array} `<T>` Old collection contents. If not modified - `undefined`.
 	 */
 	tryClear: function() {
-		return JW.Array.tryClear(this.items);
+		var items = JW.Array.tryClear(this.items);
+		if ((items !== undefined) && this._ownsItems) {
+			JW.Array.backEvery(items, JW.destroy);
+		}
+		return items;
 	},
 	
 	/**
@@ -4875,7 +4846,11 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 * @returns {JW.AbstractArray.SpliceResult} `<T>` Result. If not modified - `undefined`.
 	 */
 	trySplice: function(removeParamsList, addParamsList) {
-		return JW.Array.trySplice(this.items, removeParamsList, addParamsList);
+		var spliceResult = JW.Array.trySplice(this.items, removeParamsList, addParamsList);
+		if ((spliceResult !== undefined) && this._ownsItems) {
+			JW.Array.backEvery(spliceResult.getRemovedItems(), JW.destroy);
+		}
+		return spliceResult;
 	},
 	
 	/**
@@ -5560,6 +5535,124 @@ JW.extend(JW.AbstractArray.Filterer, JW.AbstractCollection.Filterer, {
 			return params;
 		}, this);
 		
+		this.target.trySplice(removeParamsList, addParamsList);
+	},
+	
+	/**
+	 * Changes filterer configuration and refilters target collection. Accepts next
+	 * options: #filterItem, #scope.
+	 * @param {Object} config Configuration.
+	 */
+	reconfigure: function(config) {
+		this.filterItem = JW.def(config.filterItem, this.filterItem);
+		this.scope = JW.def(config.scope, this.scope);
+		this.refilter();
+	},
+	
+	/**
+	 * Refilters target collection item at specified position in source collection.
+	 * Call this method when collection item properties change the way that it must be refiltered.
+	 * @param {number} index Index of source collection item to refilter.
+	 */
+	refilterAt: function(sourceIndex) {
+		var item = this.source.get(sourceIndex);
+		var good = this.filterItem.call(this.scope, item) !== false;
+		var targetIndex = this._countFiltered(0, sourceIndex);
+		if (this._filtered[sourceIndex] === 0) {
+			if (good) {
+				this._filtered[sourceIndex] = 1;
+				this.target.add(item, targetIndex);
+			}
+		} else {
+			if (!good) {
+				this._filtered[sourceIndex] = 0;
+				this.target.remove(targetIndex);
+			}
+		}
+	},
+	
+	/**
+	 * Refilters target collection item. Call this method when collection item properties change the way that
+	 * it must be refiltered.
+	 * @param {T} item Item to refilter.
+	 */
+	refilterItem: function(item) {
+		var index = this.source.indexOf(item);
+		if (index !== -1) {
+			this.refilterAt(index);
+		}
+	},
+	
+	/**
+	 * Refilters target collection. Call this method when collection items properties change the way that
+	 * they must be refiltered.
+	 */
+	refilter: function() {
+		var newFiltered = this.source.map(function(item) {
+			return (this.filterItem.call(this.scope, item) !== false) ? 1 : 0;
+		}, this);
+		
+		var removeParams = null;
+		var removeParamsList = [];
+		
+		function flushRemove() {
+			if (removeParams !== null) {
+				removeParamsList.push(removeParams);
+				removeParams = null;
+			}
+		}
+		
+		var targetIndex = 0;
+		this.source.every(function(item, index) {
+			if (this._filtered[index] === 0) {
+				return;
+			}
+			if (newFiltered[index] === 0) {
+				if (removeParams === null) {
+					removeParams = new JW.AbstractArray.IndexCount(targetIndex, 0);
+				}
+				++removeParams.count;
+				this._filtered[index] = 0;
+			} else {
+				flushRemove();
+			}
+			++targetIndex;
+		}, this);
+		
+		flushRemove();
+		
+		var addParams = null;
+		var addParamsList = [];
+		
+		function flushAdd() {
+			if (addParams !== null) {
+				addParamsList.push(addParams);
+				addParams = null;
+			}
+		}
+		
+		var targetIndex = 0;
+		this.source.every(function(item, index) {
+			if (this._filtered[index] === 1) {
+				flushAdd();
+				++targetIndex;
+				return;
+			}
+			if (newFiltered[index] === 1) {
+				if (addParams === null) {
+					addParams = new JW.AbstractArray.IndexItems(targetIndex, []);
+				}
+				addParams.items.push(item);
+				this._filtered[index] = 1;
+				++targetIndex;
+			} else {
+				flushAdd();
+			}
+		}, this);
+		
+		flushAdd();
+		
+		this._filtered = newFiltered;
 		this.target.trySplice(removeParamsList, addParamsList);
 	}
 });
@@ -6457,7 +6550,7 @@ JW.extend(JW.AbstractArray.Splitter/*<T extends Any, R extends JW.AbstractArray<
 JW.AbstractMap = function(json, adapter) {
 	JW.AbstractMap._super.call(this);
 	this.json = adapter ? json : json ? JW.apply({}, json) : {};
-	this.length = JW.Map.getLength(this.json);
+	this._length = JW.Map.getLength(this.json);
 	this.getKey = null;
 };
 
@@ -6502,11 +6595,11 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	},
 	
 	getLength: function() {
-		return this.length;
+		return this._length;
 	},
 	
 	isEmpty: function() {
-		return this.length === 0;
+		return this._length === 0;
 	},
 	
 	/**
@@ -7008,8 +7101,12 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 * @returns {Object} `<T>` Old collection contents. If not modified - `undefined`.
 	 */
 	tryClear: function() {
-		this.length = 0;
-		return JW.Map.tryClear(this.json);
+		this._length = 0;
+		var items = JW.Map.tryClear(this.json);
+		if ((items !== undefined) && this._ownsItems) {
+			JW.Array.backEvery(JW.Map.toArray(items), JW.destroy);
+		}
+		return items;
 	},
 	
 	/**
@@ -7031,8 +7128,11 @@ JW.extend(JW.AbstractMap, JW.IndexedCollection, {
 	 */
 	trySplice: function(removedKeys, updatedItems) {
 		var spliceResult = JW.Map.trySplice(this.json, removedKeys, updatedItems);
-		if (spliceResult) {
-			this.length += JW.Map.getLength(spliceResult.addedItems) - JW.Map.getLength(spliceResult.removedItems);
+		if (spliceResult !== undefined) {
+			this._length += JW.Map.getLength(spliceResult.addedItems) - JW.Map.getLength(spliceResult.removedItems);
+			if (this._ownsItems) {
+				JW.Array.backEvery(JW.Map.toArray(spliceResult.removedItems), JW.destroy);
+			}
 			return spliceResult;
 		}
 	},
@@ -7850,7 +7950,7 @@ JW.extend(JW.AbstractMap.SorterComparing, JW.AbstractCollection.SorterComparing,
 JW.AbstractSet = function(items, adapter) {
 	JW.AbstractSet._super.call(this);
 	this.json = adapter ? items : items ? JW.Array.index(items, JW.byField("_iid")) : {};
-	this.length = JW.Set.getLength(this.json);
+	this._length = JW.Set.getLength(this.json);
 };
 
 JW.extend(JW.AbstractSet, JW.AbstractCollection, {
@@ -7866,11 +7966,11 @@ JW.extend(JW.AbstractSet, JW.AbstractCollection, {
 	},
 	
 	getLength: function() {
-		return this.length;
+		return this._length;
 	},
 	
 	isEmpty: function() {
-		return this.length === 0;
+		return this._length === 0;
 	},
 	
 	containsItem: function(item) {
@@ -8092,8 +8192,12 @@ JW.extend(JW.AbstractSet, JW.AbstractCollection, {
 	 * @returns {Array} `<T>` Old collection contents. If not modified - `undefined`.
 	 */
 	tryClear: function() {
-		this.length = 0;
-		return JW.Set.tryClear(this.json);
+		this._length = 0;
+		var items = JW.Set.tryClear(this.json);
+		if ((items !== undefined) && this._ownsItems) {
+			JW.Array.backEvery(items, JW.destroy);
+		}
+		return items;
 	},
 	
 	/**
@@ -8115,8 +8219,11 @@ JW.extend(JW.AbstractSet, JW.AbstractCollection, {
 	 */
 	trySplice: function(removedItems, addedItems) {
 		var spliceResult = JW.Set.trySplice(this.json, removedItems, addedItems);
-		if (spliceResult) {
-			this.length += spliceResult.addedItems.length - spliceResult.removedItems.length;
+		if (spliceResult !== undefined) {
+			this._length += spliceResult.addedItems.length - spliceResult.removedItems.length;
+			if (this._ownsItems) {
+				JW.Array.backEvery(spliceResult.removedItems, JW.destroy);
+			}
 			return spliceResult;
 		}
 	},
@@ -12738,6 +12845,8 @@ JW.apply(JW.Set, {
  *
  * `<T> extends JW.AbstractArray<T>`
  *
+ * Has several events and an observable property #length.
+ *
  * See structurized list of methods in JW.AbstractArray.
  *
  * @extends JW.AbstractArray
@@ -12748,17 +12857,19 @@ JW.apply(JW.Set, {
  */
 JW.ObservableArray = function(items, adapter) {
 	JW.ObservableArray._super.call(this, items, adapter);
-	this.spliceEvent = this.own(new JW.Event());
-	this.replaceEvent = this.own(new JW.Event());
-	this.moveEvent = this.own(new JW.Event());
-	this.clearEvent = this.own(new JW.Event());
-	this.reorderEvent = this.own(new JW.Event());
-	this.changeEvent = this.own(new JW.Event());
-	this.lengthChangeEvent = this.own(new JW.Event());
-	this._lastLength = this.items.length;
+	this.length = new JW.Property(this.getLength());
+	this.spliceEvent = new JW.Event();
+	this.replaceEvent = new JW.Event();
+	this.moveEvent = new JW.Event();
+	this.clearEvent = new JW.Event();
+	this.reorderEvent = new JW.Event();
+	this.changeEvent = new JW.Event();
 };
 
 JW.extend(JW.ObservableArray, JW.AbstractArray, {
+	/**
+	 * @property {JW.Property} length `<Number>` Collection length. **Don't modify manually!**
+	 */
 	/**
 	 * @event spliceEvent
 	 * Items are removed from array and items are added to array. Triggered in result
@@ -12793,11 +12904,18 @@ JW.extend(JW.ObservableArray, JW.AbstractArray, {
 	 * of events #spliceEvent, #replaceEvent, #moveEvent, #clearEvent, #reorderEvent.
 	 * @param {JW.ObservableArray.EventParams} params `<T>` Parameters.
 	 */
-	/**
-	 * @event lengthChangeEvent
-	 * Array length is changed. Triggered right after #changeEvent if array length has changed.
-	 * @param {JW.ObservableArray.LengthChangeEventParams} params `<T>` Parameters.
-	 */
+	
+	// override
+	destroy: function() {
+		this.changeEvent.destroy();
+		this.reorderEvent.destroy();
+		this.clearEvent.destroy();
+		this.moveEvent.destroy();
+		this.replaceEvent.destroy();
+		this.spliceEvent.destroy();
+		this.length.destroy();
+		this._super();
+	},
 	
 	// override
 	trySet: function(item, index) {
@@ -12806,7 +12924,7 @@ JW.extend(JW.ObservableArray, JW.AbstractArray, {
 			return;
 		}
 		this.replaceEvent.trigger(new JW.ObservableArray.ReplaceEventParams(this, index, oldItem.value, item));
-		this._triggerChange();
+		this.changeEvent.trigger(new JW.ObservableArray.EventParams(this));
 		return oldItem;
 	},
 	
@@ -12817,7 +12935,7 @@ JW.extend(JW.ObservableArray, JW.AbstractArray, {
 			return;
 		}
 		this.moveEvent.trigger(new JW.ObservableArray.MoveEventParams(this, fromIndex, toIndex, item));
-		this._triggerChange();
+		this.changeEvent.trigger(new JW.ObservableArray.EventParams(this));
 		return item;
 	},
 	
@@ -12827,8 +12945,9 @@ JW.extend(JW.ObservableArray, JW.AbstractArray, {
 		if (oldItems === undefined) {
 			return;
 		}
+		this.length.set(0);
 		this.clearEvent.trigger(new JW.ObservableArray.ItemsEventParams(this, oldItems));
-		this._triggerChange();
+		this.changeEvent.trigger(new JW.ObservableArray.EventParams(this));
 		return oldItems;
 	},
 	
@@ -12838,8 +12957,9 @@ JW.extend(JW.ObservableArray, JW.AbstractArray, {
 		if (result === undefined) {
 			return;
 		}
+		this.length.set(this.getLength());
 		this.spliceEvent.trigger(new JW.ObservableArray.SpliceEventParams(this, result));
-		this._triggerChange();
+		this.changeEvent.trigger(new JW.ObservableArray.EventParams(this));
 		return result;
 	},
 	
@@ -12850,7 +12970,7 @@ JW.extend(JW.ObservableArray, JW.AbstractArray, {
 			return;
 		}
 		this.reorderEvent.trigger(new JW.ObservableArray.ReorderEventParams(this, indexArray, items));
-		this._triggerChange();
+		this.changeEvent.trigger(new JW.ObservableArray.EventParams(this));
 		return items;
 	},
 	
@@ -13002,15 +13122,6 @@ JW.extend(JW.ObservableArray, JW.AbstractArray, {
 	
 	createSplitter: function(config) {
 		return new JW.ObservableArray.Splitter(this, config);
-	},
-	
-	_triggerChange: function() {
-		this.changeEvent.trigger(new JW.ObservableArray.EventParams(this));
-		var length = this.getLength();
-		if (this._lastLength !== length) {
-			this.lengthChangeEvent.trigger(new JW.ObservableArray.LengthChangeEventParams(this, this._lastLength, length));
-			this._lastLength = length;
-		}
 	}
 });
 
@@ -13170,35 +13281,6 @@ JW.ObservableArray.ReorderEventParams = function(sender, indexArray, items) {
 JW.extend(JW.ObservableArray.ReorderEventParams, JW.ObservableArray.ItemsEventParams, {
 	/**
 	 * @property {Array} indexArray `<number>` Indexes of items in reordered array.
-	 */
-});
-
-/**
- * @class
- *
- * `<T> extends JW.ObservableArray.EventParams<T>`
- *
- * Parameters of JW.ObservableArray#lengthChangeEvent.
- *
- * @extends JW.ObservableArray.EventParams
- *
- * @constructor
- * @param {JW.ObservableArray} sender `<T>` Event sender.
- * @param {number} oldLength Old collection length.
- * @param {number} newLength New collection length.
- */
-JW.ObservableArray.LengthChangeEventParams = function(sender, oldLength, newLength) {
-	JW.ObservableArray.LengthChangeEventParams._super.call(this, sender);
-	this.oldLength = oldLength;
-	this.newLength = newLength;
-};
-
-JW.extend(JW.ObservableArray.LengthChangeEventParams, JW.ObservableArray.EventParams, {
-	/**
-	 * @property {number} oldLength Old array length.
-	 */
-	/**
-	 * @property {number} newLength New array length.
 	 */
 });
 
@@ -14178,6 +14260,8 @@ JW.ObservableArray.Splitter = JW.AbstractArray.Splitter.extend();
  *
  * `<T> extends JW.AbstractMap<T>`
  *
+ * Has several events and an observable property #length.
+ *
  * See structurized list of methods in JW.AbstractMap.
  *
  * @extends JW.AbstractMap
@@ -14188,15 +14272,17 @@ JW.ObservableArray.Splitter = JW.AbstractArray.Splitter.extend();
  */
 JW.ObservableMap = function(json, adapter) {
 	JW.ObservableMap._super.call(this, json, adapter);
-	this.spliceEvent = this.own(new JW.Event());
-	this.reindexEvent = this.own(new JW.Event());
-	this.clearEvent = this.own(new JW.Event());
-	this.changeEvent = this.own(new JW.Event());
-	this.lengthChangeEvent = this.own(new JW.Event());
-	this._lastLength = this.getLength();
+	this.length = new JW.Property(this.getLength());
+	this.spliceEvent = new JW.Event();
+	this.reindexEvent = new JW.Event();
+	this.clearEvent = new JW.Event();
+	this.changeEvent = new JW.Event();
 };
 
 JW.extend(JW.ObservableMap, JW.AbstractMap, {
+	/**
+	 * @property {JW.Property} length `<Number>` Collection length. **Don't modify manually!**
+	 */
 	/**
 	 * @event spliceEvent
 	 * Items are removed from map, items are added to map and items are updated in map. Triggered in result
@@ -14221,11 +14307,16 @@ JW.extend(JW.ObservableMap, JW.AbstractMap, {
 	 * of events #spliceEvent, #reindexEvent, #clearEvent.
 	 * @param {JW.ObservableMap.EventParams} params `<T>` Parameters.
 	 */
-	/**
-	 * @event lengthChangeEvent
-	 * Map length is changed. Triggered right after #changeEvent if map length has changed.
-	 * @param {JW.ObservableMap.LengthChangeEventParams} params `<T>` Parameters.
-	 */
+	
+	// override
+	destroy: function() {
+		this.changeEvent.destroy();
+		this.clearEvent.destroy();
+		this.reindexEvent.destroy();
+		this.spliceEvent.destroy();
+		this.length.destroy();
+		this._super();
+	},
 	
 	// override
 	trySplice: function(removedKeys, updatedItems) {
@@ -14233,8 +14324,9 @@ JW.extend(JW.ObservableMap, JW.AbstractMap, {
 		if (spliceResult === undefined) {
 			return;
 		}
+		this.length.set(this.getLength());
 		this.spliceEvent.trigger(new JW.ObservableMap.SpliceEventParams(this, spliceResult));
-		this._triggerChange();
+		this.changeEvent.trigger(new JW.ObservableMap.EventParams(this));
 		return spliceResult;
 	},
 	
@@ -14244,8 +14336,9 @@ JW.extend(JW.ObservableMap, JW.AbstractMap, {
 		if (items === undefined) {
 			return;
 		}
+		this.length.set(this.getLength());
 		this.clearEvent.trigger(new JW.ObservableMap.ItemsEventParams(this, items));
-		this._triggerChange();
+		this.changeEvent.trigger(new JW.ObservableMap.EventParams(this));
 		return items;
 	},
 	
@@ -14256,7 +14349,7 @@ JW.extend(JW.ObservableMap, JW.AbstractMap, {
 			return;
 		}
 		this.reindexEvent.trigger(new JW.ObservableMap.ReindexEventParams(this, result));
-		this._triggerChange();
+		this.changeEvent.trigger(new JW.ObservableMap.EventParams(this));
 		return result;
 	},
 	
@@ -14378,15 +14471,6 @@ JW.extend(JW.ObservableMap, JW.AbstractMap, {
 	 */
 	createInserter: function(config) {
 		return new JW.ObservableMap.Inserter(this, config);
-	},
-	
-	_triggerChange: function() {
-		this.changeEvent.trigger(new JW.ObservableMap.EventParams(this));
-		var newLength = this.getLength();
-		if (this._lastLength !== newLength) {
-			this.lengthChangeEvent.trigger(new JW.ObservableMap.LengthChangeEventParams(this, this._lastLength, newLength));
-			this._lastLength = newLength;
-		}
 	}
 });
 
@@ -14477,35 +14561,6 @@ JW.ObservableMap.ItemsEventParams = function(sender, items) {
 JW.extend(JW.ObservableMap.ItemsEventParams, JW.ObservableMap.EventParams, {
 	/**
 	 * @property {Object} items Old map contents.
-	 */
-});
-
-/**
- * @class
- *
- * `<T> extends JW.ObservableMap.EventParams<T>`
- *
- * Parameters of JW.ObservableMap#lengthChangeEvent.
- *
- * @extends JW.ObservableMap.EventParams
- *
- * @constructor
- * @param {JW.ObservableMap} sender `<T>` Event sender.
- * @param {number} oldLength Old collection length.
- * @param {number} newLength New collection length.
- */
-JW.ObservableMap.LengthChangeEventParams = function(sender, oldLength, newLength) {
-	JW.ObservableMap.LengthChangeEventParams._super.call(this, sender);
-	this.oldLength = oldLength;
-	this.newLength = newLength;
-};
-
-JW.extend(JW.ObservableMap.LengthChangeEventParams, JW.ObservableMap.EventParams, {
-	/**
-	 * @property {number} oldLength Old collection length.
-	 */
-	/**
-	 * @property {number} newLength New collection length.
 	 */
 });
 
@@ -14984,6 +15039,8 @@ JW.extend(JW.ObservableMap.SorterComparing, JW.AbstractMap.SorterComparing, {
  *
  * `<T extends JW.Class> extends JW.AbstractSet<T>`
  *
+ * Has several events and an observable property #length.
+ *
  * See structurized list of methods in JW.AbstractSet.
  *
  * @extends JW.AbstractSet
@@ -14995,14 +15052,16 @@ JW.extend(JW.ObservableMap.SorterComparing, JW.AbstractMap.SorterComparing, {
  */
 JW.ObservableSet = function(json, adapter) {
 	JW.ObservableSet._super.call(this, json, adapter);
-	this.spliceEvent = this.own(new JW.Event());
-	this.clearEvent = this.own(new JW.Event());
-	this.changeEvent = this.own(new JW.Event());
-	this.lengthChangeEvent = this.own(new JW.Event());
-	this._lastLength = this.getLength();
+	this.length = new JW.Property(this.getLength());
+	this.spliceEvent = new JW.Event();
+	this.clearEvent = new JW.Event();
+	this.changeEvent = new JW.Event();
 };
 
 JW.extend(JW.ObservableSet, JW.AbstractSet, {
+	/**
+	 * @property {JW.Property} length `<Number>` Collection length. **Don't modify manually!**
+	 */
 	/**
 	 * @event spliceEvent
 	 * Items are removed from set, items are added to set. Triggered in result
@@ -15021,11 +15080,15 @@ JW.extend(JW.ObservableSet, JW.AbstractSet, {
 	 * of events #spliceEvent, #clearEvent.
 	 * @param {JW.ObservableSet.EventParams} params `<T>` Parameters.
 	 */
-	/**
-	 * @event lengthChangeEvent
-	 * Set length is changed. Triggered right after #changeEvent if set length has changed.
-	 * @param {JW.ObservableSet.LengthChangeEventParams} params `<T>` Parameters.
-	 */
+	
+	// override
+	destroy: function() {
+		this.changeEvent.destroy();
+		this.clearEvent.destroy();
+		this.spliceEvent.destroy();
+		this.length.destroy();
+		this._super();
+	},
 	
 	// override
 	tryClear: function() {
@@ -15033,8 +15096,9 @@ JW.extend(JW.ObservableSet, JW.AbstractSet, {
 		if (items === undefined) {
 			return;
 		}
+		this.length.set(0);
 		this.clearEvent.trigger(new JW.ObservableSet.ItemsEventParams(this, items));
-		this._triggerChange();
+		this.changeEvent.trigger(new JW.ObservableSet.EventParams(this));
 		return items;
 	},
 	
@@ -15044,8 +15108,9 @@ JW.extend(JW.ObservableSet, JW.AbstractSet, {
 		if (spliceResult === undefined) {
 			return;
 		}
+		this.length.set(this.getLength());
 		this.spliceEvent.trigger(new JW.ObservableSet.SpliceEventParams(this, spliceResult));
-		this._triggerChange();
+		this.changeEvent.trigger(new JW.ObservableSet.EventParams(this));
 		return spliceResult;
 	},
 	
@@ -15156,15 +15221,6 @@ JW.extend(JW.ObservableSet, JW.AbstractSet, {
 	 */
 	createLister: function(config) {
 		return new JW.ObservableSet.Lister(this, config);
-	},
-	
-	_triggerChange: function() {
-		this.changeEvent.trigger(new JW.ObservableSet.EventParams(this));
-		var newLength = this.getLength();
-		if (this._lastLength !== newLength) {
-			this.lengthChangeEvent.trigger(new JW.ObservableSet.LengthChangeEventParams(this, this._lastLength, newLength));
-			this._lastLength = newLength;
-		}
 	}
 });
 
@@ -15231,35 +15287,6 @@ JW.ObservableSet.ItemsEventParams = function(sender, items) {
 JW.extend(JW.ObservableSet.ItemsEventParams, JW.ObservableSet.EventParams, {
 	/**
 	 * @property {Array} items `<T>` Old set contents.
-	 */
-});
-
-/**
- * @class
- *
- * `<T> extends JW.ObservableSet.EventParams<T>`
- *
- * Parameters of JW.ObservableSet#lengthChangeEvent.
- *
- * @extends JW.ObservableSet.EventParams
- *
- * @constructor
- * @param {JW.ObservableSet} sender `<T>` Event sender.
- * @param {number} oldLength Old collection length.
- * @param {number} newLength New collection length.
- */
-JW.ObservableSet.LengthChangeEventParams = function(sender, oldLength, newLength) {
-	JW.ObservableSet.LengthChangeEventParams._super.call(this, sender);
-	this.oldLength = oldLength;
-	this.newLength = newLength;
-};
-
-JW.extend(JW.ObservableSet.LengthChangeEventParams, JW.ObservableSet.EventParams, {
-	/**
-	 * @property {number} oldLength Old collection length.
-	 */
-	/**
-	 * @property {number} newLength New collection length.
 	 */
 });
 
@@ -15753,6 +15780,9 @@ JW.extend(JW.Copier, JW.Class, {
  *     var target = functor.{@link #property-target target};
  *     assert("1000 MW", target.{@link JW.Property#get get}());
  *
+ * Functor doesn't let you destroy a previously assigned value. Functor doesn't reset the value of target property
+ * on destruction. Use JW.Mapper if you need these features.
+ *
  * @extends JW.Class
  *
  * @constructor
@@ -15780,11 +15810,11 @@ JW.Functor = function(sources, func, scope, config) {
 
 JW.extend(JW.Functor, JW.Class, {
 	/**
-	 * @property {Array} sources `<JW.Property>` Source properties.
+	 * @cfg {JW.Property} [target]
+	 * `<T>` Optional. Target property. By default, created automatically.
 	 */
 	/**
-	 * @cfg {JW.Property} target
-	 * `<T>` Target property. By default, created automatically.
+	 * @property {Array} sources `<JW.Property>` Source properties.
 	 */
 	/**
 	 * @property {JW.Property} target `<T>` Target property.
@@ -15842,14 +15872,267 @@ JW.extend(JW.Functor, JW.Class, {
 
 /**
  * @class
+ * `<T>` Watches source {@link JW.Property properties} modification and recreates
+ * a target property using specified functions. Unlike JW.Functor,
+ * lets you destroy a previously created value. Also, mapper resets the target
+ * property value to null on destruction.
+ *
+ *     var count = new JW.Property(1);
+ *     var units = new JW.Property("apples");
+ *     var target = new JW.Property();
+ *     // Next command prints "Init 1 apples" to console
+ *     var mapper = new JW.Mapper([ count, units ], {
+ *         {@link #cfg-target target}: target,
+ *         {@link JW.Mapper#createValue createValue}: function(value, units) {
+ *             var result = value + " " + units;
+ *             console.log("Init " + result);
+ *             return result;
+ *         },
+ *         {@link JW.Mapper#destroyValue destroyValue}: function(result, value, units) {
+ *             console.log("Done " + result);
+ *         },
+ *         {@link JW.Mapper#scope scope}: this
+ *     });
+ *     assert("1 apples", target.{@link JW.Property#get get}());
+ *     // Next command prints "Done 1 apples" and "Init 2 apples"
+ *     count.{@link JW.Property#set set}(2);
+ *     assert("2 apples", target.{@link JW.Property#get get}());
+ *     // Next command prints "Done 2 apples"
+ *     mapper.{@link JW.Mapper#destroy destroy}();
+ *     assert(null, target.{@link JW.Property#get get}());
+ *
+ * If target is omitted in constructor, it is created automatically. Notice
+ * that mapper owns it in this case.
+ *
+ *     var source = new JW.Property(1);
+ *     var mapper = new JW.Mapper([ source ], {
+ *         {@link JW.Mapper#createValue createValue}: function(value) {
+ *             return value + " apples";
+ *         },
+ *         {@link JW.Mapper#scope scope}: this
+ *     });
+ *     var target = mapper.{@link JW.Mapper#property-target target};
+ *     assert("1 apples", target.{@link JW.Property#get get}());
+ *
+ * On source property change, next flow will take a place:
+ *
+ * 1. New value is created
+ * 1. Target property is set to new value
+ * 1. Old value is destroyed
+ *
+ * In contrast, JW.Switcher's flow is opposite:
+ *
+ * 1. {@link JW.Switcher#done done} method is called
+ * 1. {@link JW.Switcher#init init} method is called
+ *
+ * Common use case for mapper is replaceable child component creation by data:
+ *
+ *     var MyComponent = function(document) {
+ *         MyComponent.{@link JW.Class#static-property-_super _super}.call(this);
+ *         this.document = document;
+ *     };
+ *     
+ *     JW.extend(MyComponent, JW.UI.Component, {
+ *         // JW.Property<Document> document;
+ *         
+ *         renderDocument: function() {
+ *             return this.{@link JW.Class#own own}(new JW.Mapper(this.document, {
+ *                 {@link JW.Mapper#createValue createValue}: function(document) {
+ *                     return new DocumentView(document);
+ *                 },
+ *                 {@link JW.Mapper#destroyValue destroyValue}: JW.destroy,
+ *                 {@link JW.Mapper#scope scope}: this
+ *             })).{@link JW.Mapper#property-target target};
+ *         }
+ *     });
+ *     
+ *     JW.UI.template(MyComponent, {
+ *         main:
+ *             '<div jwclass="my-component">' +
+ *                 '<div jwid="document" />' +
+ *             '</div>'
+ *     });
+ *
+ * Also, mapper allows you to chain property calculations. Assume that you have several folders and
+ * several documents in each folder. One folder is selected, and each folder has a selected document there. You
+ * want to create a document view by a currently selected folder and a currently selected document there. Do this:
+ *
+ *     var Folder = function() {
+ *         Folder.{@link JW.Class#_super _super}.call(this);
+ *         this.selectedDocument = this.{@link JW.Class#own own}(new JW.Property());
+ *     };
+ *     
+ *     JW.extend(Folder, JW.Class);
+ *     
+ *     var App = function() {
+ *         App.{@link JW.Class#_super _super}.call(this);
+ *         this.selectedFolder = this.{@link JW.Class#own own}(new JW.Property());
+ *         this.documentView = this.{@link JW.Class#own own}(new JW.Property());
+ *         this.{@link JW.Class#own own}(new JW.Mapper([this.selectedFolder], {
+ *             {@link JW.Mapper#cfg-createValue createValue}: function(folder) {
+ *                 return new JW.Mapper([folder.selectedDocument], {
+ *                     {@link JW.Mapper#cfg-target target}: this.documentView,
+ *                     {@link JW.Mapper#cfg-createValue createValue}: function(document) {
+ *                         return new DocumentView(folder, document);
+ *                     },
+ *                     {@link JW.Mapper#cfg-destroyValue destroyValue}: JW.destroy,
+ *                     {@link JW.Mapper#cfg-scope scope}: this
+ *                 });
+ *             },
+ *             {@link JW.Mapper#cfg-destroyValue destroyValue}: JW.destroy,
+ *             {@link JW.Mapper#cfg-scope scope}: this
+ *         }));
+ *     };
+ *     
+ *     JW.extend(App, JW.Class);
+ *
+ * By default, mapper doesn't calls the callbacks if at least one of the source values is null. You can change it
+ * via {@link JW.Mapper#acceptNull acceptNull} option.
+ *
+ * @extends JW.Class
+ *
+ * @constructor
+ * @param {Array} source `<JW.Property>` Source properties.
+ * @param {Object} config Configuration (see Config options).
+ */
+JW.Mapper = function(sources, config) {
+	JW.Mapper._super.call(this);
+	this.sources = sources;
+	this.createValue = config.createValue;
+	this.destroyValue = config.destroyValue;
+	this.scope = config.scope || this;
+	this.target = config.target || this.own(new JW.Property());
+	this.acceptNull = config.acceptNull || false;
+	this._sourceValues = null;
+	this._targetValue = null;
+	this.update();
+	JW.Array.every(sources, this.watch, this);
+};
+
+JW.extend(JW.Mapper, JW.Class, {
+	/**
+	 * @cfg {JW.Property} target
+	 * `<T>` Target property. By default, created automatically.
+	 */
+	/**
+	 * @cfg {Function} createValue
+	 *
+	 * `createValue(... sourceValues): T`
+	 *
+	 * Calculates target property value based on source property values.
+	 */
+	/**
+	 * @cfg {Function} [destroyValue]
+	 *
+	 * `destroyValue(targetValue: T, ... sourceValues)`
+	 *
+	 * Optional. Destroys target property value.
+	 */
+	/**
+	 * @cfg {Object} scope
+	 * Optional. Call scope of #createValue and #destroyValue.
+	 */
+	/**
+	 * @cfg {Boolean} [acceptNull=false]
+	 * Optional. If false, functions won't be called if at least one of the source values is null. Target value
+	 * is resetted to null in this case.
+	 */
+	/**
+	 * @property {Array} sources `<JW.Property>` Source properties.
+	 */
+	/**
+	 * @property {JW.Property} target `<T>` Target property.
+	 */
+	
+	// override
+	destroy: function() {
+		var oldValue = this.target.get();
+		if (oldValue === this._targetValue) {
+			this.target.set(null);
+		}
+		this._done();
+		this._sourceValues = null;
+		this._super();
+	},
+	
+	/**
+	 * Watches specified event and triggers target value recalculation on
+	 * the event triggering.
+	 * @param {JW.Event} event Event.
+	 * @returns {JW.Functor} this
+	 */
+	bind: function(event) {
+		this.own(event.bind(this.update, this));
+		return this;
+	},
+	
+	/**
+	 * Watches specified property and triggers target value recalculation on
+	 * the property change.
+	 * @param {JW.Property} property Property.
+	 * @returns {JW.Functor} this
+	 */
+	watch: function(property) {
+		this.bind(property.changeEvent);
+		return this;
+	},
+	
+	/**
+	 * Updates target property focibly.
+	 */
+	update: function() {
+		var values = JW.Array.map(this.sources, JW.byMethod("get"));
+		var newValue;
+		if (this.acceptNull || JW.Array.every(values, JW.isSet)) {
+			newValue = this.createValue.apply(this.scope, values);
+		} else {
+			newValue = null;
+			values = null;
+		}
+		this.target.set(newValue);
+		this._done();
+		this._targetValue = newValue;
+		this._sourceValues = values;
+	},
+	
+	_done: function() {
+		if (this.destroyValue && this._sourceValues) {
+			this.destroyValue.apply(this.scope, [this._targetValue].concat(this._sourceValues));
+		}
+	}
+});
+
+/*
+	jWidget Lib source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
  * `<V>` The observable property. A convenient way to keep one object in sync
- * with another object. Use next helpers:
+ * with another object. Has next helpers:
  *
  * - JW.Copier - keeps one property equal to another property
  * - JW.Updater - watches several properties in order to update something by
  * a callback
  * - JW.Functor - watches several properties in order to reassign target
  * property value to a callback result
+ * - JW.Mapper - watches several properties in order to recreate and destroy
+ * target property value by callbacks
  * - JW.Switcher - watches a property to initialize and release its value
  * - JW.UI.TextUpdater - watches a string property and updates the text in a
  * DOM element
@@ -15865,8 +16148,16 @@ JW.extend(JW.Functor, JW.Class, {
  * CSS style in a DOM element
  * - JW.UI.ClassUpdater - watches a boolean property and updates the specified
  * CSS class presence in a DOM element
- * - JW.UI.ValueListener - watches the value in a DOM element and updates a
+ * - JW.UI.VisibleUpdater - watches a boolean property and updates visibility
+ * of the specified DOM element
+ * - JW.UI.RadioUpdater - watches a string property and updates the selection
+ * of DOM radio elements
+ * - JW.UI.ValueListener - watches the value in a DOM text input and updates a
  * string property
+ * - JW.UI.CheckedListener - watches the value in a DOM checkbox element and
+ * updates a boolean property
+ * - JW.UI.RadioListener - watches the selection of DOM radio elements and
+ * updates a string property
  *
  * For example, you can use the next algorithm to change localization on fly
  * in your Web application:
@@ -15937,6 +16228,9 @@ JW.extend(JW.Property, JW.Class, {
 	 * @param {V} value
 	 */
 	set: function(value) {
+		if (value === undefined) {
+			value = null;
+		}
 		var oldValue = this._value;
 		if (oldValue === value) {
 			return;
@@ -15952,9 +16246,11 @@ JW.extend(JW.Property, JW.Class, {
 	 * Makes this property an owner of its value. It means that the value will
 	 * be destroyed automatically on reassignment and on destruction of the
 	 * property.
+	 * @returns {JW.Property} this
 	 */
 	ownValue: function() {
 		this._ownsValue = true;
+		return this;
 	},
 	
 	/**
@@ -15993,16 +16289,24 @@ JW.extend(JW.Property, JW.Class, {
 
 /**
  * @class
- * `<V>` Watches source {@link JW.Property property} modification and calls
- * the specified {@link #init} and {@link #done} functions passing property
- * value as argument. Also, {@link #init} function is called on switcher
- * initialization, {@link #done} function is called on destruction. The
- * functions are not called if property value is null.
+ * Watches source {@link JW.Property properties} modification and calls
+ * the specified functions.
+ *
+ * {@link #init} function is called on switcher initialization and on property change. The new values of the properties
+ * are passed as arguments.
+ *
+ * {@link #done} function is called on property change and on switcher destruction. The old values of the properties
+ * are passed as arguments.
  *
  *     var property = new JW.Property(1);
- *     var switcher = new JW.Switcher(property, {
- *         {@link #init}: function(value) { console.log("Init " + value); },
- *         {@link #done}: function(value) { console.log("Done " + value); },
+ *     var switcher = new JW.Switcher([property], {
+ *         {@link #init}: function(value) {
+ *             console.log("Init " + value);
+ *             return value + 1;
+ *         },
+ *         {@link #done}: function(value) {
+ *             console.log("Done " + value);
+ *         },
  *         {@link #scope}: this
  *     }); // output: Init 1
  *     property.{@link JW.Property#set set}(2); // output: Done 1, Init 2
@@ -16010,68 +16314,116 @@ JW.extend(JW.Property, JW.Class, {
  *     property.{@link JW.Property#set set}(3); // output: Init 3
  *     switcher.{@link #destroy}(); // output: Done 3
  *
+ * By default, switcher doesn't calls the callbacks if at least one of the source values is null. You can change it
+ * via {@link JW.Switcher#acceptNull acceptNull} option.
+ *
  * Realistic use case for switcher is represented in next example:
  *
  *     this.selectedDocument = this.{@link JW.Class#own own}(new JW.Property());
- *     this.own(new JW.Switcher(this.selectedDocument, {
- *         {@link #init}: function(document) { document.selected.{@link JW.Property#set set}(true); },
- *         {@link #done}: function(document) { document.selected.{@link JW.Property#set set}(false); },
+ *     this.{@link JW.Class#own own}(new JW.Switcher([this.selectedDocument], {
+ *         {@link #init}: function(document) {
+ *             document.selected.{@link JW.Property#set set}(true);
+ *         },
+ *         {@link #done}: function(document) {
+ *             document.selected.{@link JW.Property#set set}(false);
+ *         },
  *         {@link #scope}: this
  *     }));
  *
  * @extends JW.Class
  *
  * @constructor
- * @param {JW.Property} property `V` Property.
+ * @param {Array} sources `<JW.Property>` Source properties.
  * @param {Object} config Configuration (see Config options).
  */
-JW.Switcher = function(property, config) {
+JW.Switcher = function(sources, config) {
 	JW.Switcher._super.call(this);
 	config = config || {};
-	this.property = property;
+	this.sources = sources;
 	this.init = config.init;
 	this.done = config.done;
 	this.scope = config.scope || this;
-	this._value = null;
-	this.own(new JW.Updater([property], this._update, this));
+	this.acceptNull = config.acceptNull || false;
+	this._values = null;
+	this._init();
+	JW.Array.every(sources, this.watch, this);
 };
 
 JW.extend(JW.Switcher, JW.Class, {
 	/**
-	 * @property {JW.Property} property Property.
+	 * @property {Array} sources `<JW.Property>` Source properties.
 	 */
 	/**
-	 * @cfg {Function} init
+	 * @cfg {Function} [init]
 	 *
-	 * `init(value: V)`
+	 * `init(... sourceValues)`
 	 *
-	 * Value initialization function.
+	 * Optional. Value initialization function.
 	 */
 	/**
-	 * @cfg {Function} done
+	 * @cfg {Function} [done]
 	 *
-	 * `done(value: V)`
+	 * `done(... sourceValues)`
 	 *
-	 * Value releasing function.
+	 * Optional. Value releasing function.
 	 */
 	/**
-	 * @cfg {Object} scope
-	 * {@link #init} and {@link #done} call scope.
+	 * @cfg {Object} [scope]
+	 * Optional. {@link #init} and {@link #done} call scope.
+	 */
+	/**
+	 * @cfg {Boolean} [acceptNull=false]
+	 * Optional. If false, functions won't be called if at least one of the source values is null.
 	 */
 	
 	destroy: function() {
-		this._update();
+		this._done();
 		this._super();
 	},
 	
-	_update: function(value) {
-		if (JW.isSet(this._value) && this.done) {
-			this.done.call(this.scope, this._value);
+	/**
+	 * Watches specified event and triggers target value recalculation on
+	 * the event triggering.
+	 * @param {JW.Event} event Event.
+	 * @returns {JW.Functor} this
+	 */
+	bind: function(event) {
+		this.own(event.bind(this.update, this));
+		return this;
+	},
+	
+	/**
+	 * Watches specified property and triggers target value recalculation on
+	 * the property change.
+	 * @param {JW.Property} property Property.
+	 * @returns {JW.Functor} this
+	 */
+	watch: function(property) {
+		this.bind(property.changeEvent);
+		return this;
+	},
+	
+	/**
+	 * Updates switcher forcibly.
+	 */
+	update: function() {
+		this._done();
+		this._init();
+	},
+	
+	_init: function() {
+		var values = JW.Array.map(this.sources, JW.byMethod("get"));
+		this._values = (this.acceptNull || JW.Array.every(values, JW.isSet)) ? values : null;
+		if (this._values && this.init) {
+			this.init.apply(this.scope, this._values);
 		}
-		this._value = value;
-		if (JW.isSet(this._value) && this.init) {
-			this.init.call(this.scope, this._value);
+	},
+	
+	_done: function() {
+		if (this._values && this.done) {
+			this.done.apply(this.scope, this._values);
 		}
+		this._values = null;
 	}
 });
 
@@ -16185,16 +16537,102 @@ JW.extend(JW.Updater, JW.Class, {
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-JW.makeFactory = function(cls, idField) {
+/**
+ * @method makeRegistry
+ *
+ * Converts a class to a {@link Registry Registry}, which means that this class gets special static fields and methods.
+ *
+ * @static
+ * @member JW
+ * @param {Function} cls Class.
+ * @param {String} [idField="id"] Identifier field name.
+ * @returns {Function} Returns cls.
+ */
+JW.makeRegistry = function(cls, idField) {
 	idField = idField || "id";
 	
+	/**
+	 * @class Registry
+	 * Convert a class to a registry by method JW.makeRegistry. After that you'll be able to use several
+	 * static fields and methods.
+	 *
+	 *     // Base time unit
+	 *     var TimeUnit = function() {
+	 *         TimeUnit.{@link JW.Class#_super _super}.call(this);
+	 *     };
+	 *     
+	 *     JW.extend(TimeUnit, JW.Class, {
+	 *         // abstract id: String;
+	 *         // abstract add(date: Date, count: Integer): Date;
+	 *     });
+	 *     
+	 *     JW.makeRegistry(TimeUnit);
+	 *     
+	 *     // Date time unit
+	 *     TimeUnit.Day = function() {
+	 *         TimeUnit.Day.{@link JW.Class#_super _super}.call(this);
+	 *     };
+	 *     
+	 *     JW.extend(TimeUnit.Day, TimeUnit, {
+	 *         id: "day",
+	 *         add: function(date, count) { date.setDate(date.getDate() + count); }
+	 *     });
+	 *     
+	 *     TimeUnit.{@link Registry#registerItem registerItem}(new TimeUnit.Day());
+	 *     
+	 *     // Month time unit
+	 *     TimeUnit.Month = function() {
+	 *         TimeUnit.Month.{@link JW.Class#_super _super}.call(this);
+	 *     };
+	 *     
+	 *     JW.extend(TimeUnit.Month, TimeUnit, {
+	 *         id: "month",
+	 *         add: function(date, count) { date.setMonth(date.getMonth() + count); }
+	 *     });
+	 *     
+	 *     TimeUnit.{@link Registry#registerItem registerItem}(new TimeUnit.Month());
+	 *     
+	 *     // Example of how to utilize this
+	 *     function addDate(date, count, unit) {
+	 *         TimeUnit.{@link Registry#getItem getItem}(unit).add(date, count);
+	 *     }
+	 *     
+	 *     var date = new Date(2000, 0, 1);
+	 *     addDate(date, 40, "day");
+	 *     assert(2000 === date.getFullYear());
+	 *     assert(1 === date.getMonth());
+	 *     assert(10 === date.getDate());
+	 */
 	JW.apply(cls, {
+		/**
+		 * @property {Object} items Mapping from item id to an item.
+		 * @static
+		 */
 		items: {},
 		
+		/**
+		 * @property {Array} itemArray Array of all items in addition order.
+		 * @static
+		 */
+		itemArray: [],
+		
+		/**
+		 * @method
+		 * Registers a new item. Item must have an id field specified by JW.makeRegistry method call.
+		 * @static
+		 * @param {Mixed} item Item.
+		 */
 		registerItem: function(item) {
 			cls.items[item[idField]] = item;
+			cls.itemArray.push(item);
 		},
 		
+		/**
+		 * @method
+		 * Returns an item by id.
+		 * @static
+		 * @param {String} id
+		 */
 		getItem: function(value) {
 			return (value instanceof cls) ? value : cls.items[value];
 		},
@@ -16206,6 +16644,8 @@ JW.makeFactory = function(cls, idField) {
 	
 	return cls;
 };
+
+JW.makeFactory = JW.makeRegistry;
 
 /*
 	jWidget Lib source file.
@@ -16233,17 +16673,23 @@ JW.makeFactory = function(cls, idField) {
  * JW.Interval destruction causes clearInterval invocation.
  * Convenient to use in combination with {@link JW.Class#own} method:
  *
- *     this.{@link JW.Class#own own}(new JW.Interval(JW.inScope(this._update, this), 1000));
+ *     this.{@link JW.Class#own own}(new JW.Interval(this._update, this, 1000));
  *
  * @extends JW.Class
  *
  * @constructor
  * @param {Function} handler Interval handler function.
- * @param {Number} delay Interval delay.
+ * @param {Object} [scope] Call scope of handler.
+ * @param {Number} [delay] Interval delay.
  */
-JW.Interval = function(callback, delay) {
+JW.Interval = function(handler, scope, delay) {
 	JW.Interval._super.call(this);
-	this.interval = setInterval(callback, delay);
+	if (JW.isSet(scope) && (typeof scope === "object")) {
+		handler = JW.inScope(handler, scope);
+	} else if (typeof scope === "number") {
+		delay = scope;
+	}
+	this.interval = setInterval(handler, delay);
 };
 
 JW.extend(JW.Interval, JW.Class, {
@@ -16333,9 +16779,11 @@ JW.extend(JW.Proxy, JW.Class, {
 	/**
 	 * Makes this proxy an owner of its value. It means that the value will
 	 * be destroyed automatically on destruction of the proxy.
+	 * @returns {JW.Property} this
 	 */
 	ownValue: function() {
 		this._ownsValue = true;
+		return this;
 	}
 });
 
@@ -16619,17 +17067,23 @@ JW.String = {
  * JW.Timeout destruction causes clearTimeout invocation.
  * Convenient to use in combination with {@link JW.Class#own} method:
  *
- *     this.{@link JW.Class#own own}(new JW.Timeout(JW.inScope(this._update, this), 1000));
+ *     this.{@link JW.Class#own own}(new JW.Timeout(this._update, this, 1000));
  *
  * @extends JW.Class
  *
  * @constructor
  * @param {Function} handler Timeout handler function.
- * @param {Number} delay Timeout delay.
+ * @param {Object} [scope] Call scope of handler.
+ * @param {Number} [delay] Timeout delay.
  */
-JW.Timeout = function(callback, delay) {
+JW.Timeout = function(handler, scope, delay) {
 	JW.Timeout._super.call(this);
-	this.timeout = setTimeout(callback, delay);
+	if (JW.isSet(scope) && (typeof scope === "object")) {
+		handler = JW.inScope(handler, scope);
+	} else if (typeof scope === "number") {
+		delay = scope;
+	}
+	this.timeout = setTimeout(handler, delay);
 };
 
 JW.extend(JW.Timeout, JW.Class, {

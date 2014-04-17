@@ -1,5 +1,5 @@
 /*!
-	jWidget UI 0.8
+	jWidget UI 0.9.0
 	
 	http://enepomnyaschih.github.io/jwidget/#!/guide/home
 	
@@ -26,6 +26,12 @@
  */
 JW.UI = {
 	/**
+	 * @property {JW.Property} hash `<String>` Current page hash (without leading "#").
+	 * @static
+	 */
+	hash: new JW.Property(location.hash.substr(1)),
+	
+	/**
 	 * Defines HTML templates for specified JW.UI.Component subclass.
 	 * 
 	 * You can define multiple templates for any subclass of JW.UI.Component. Each template has a name.
@@ -40,7 +46,7 @@ JW.UI = {
 	 * 
 	 * JW.UI.template function is called automatically if you attach `jw.html` files via
 	 * [jWidget SDK](https://github.com/enepomnyaschih/jwsdk/wiki/en). See
-	 * [Getting started. Part 6. Project infrastructure](#!/guide/ensample6) for details.
+	 * [Getting started. Part 7. Project infrastructure](#!/guide/ensample7) for details.
 	 *
 	 * @static
 	 * @param {Function} cls JW.UI.Component subclass.
@@ -102,6 +108,9 @@ JW.UI = {
 jQuery(function() {
 	JW.UI.windowEl = jQuery(window);
 	JW.UI.bodyEl   = jQuery(document.body);
+	jQuery(window).bind("hashchange", function() {
+		JW.UI.hash.set(location.hash.substr(1));
+	});
 });
 
 /*
@@ -353,8 +362,8 @@ JW.UI.Browsers = (function()
  *     </div>
  *
  * You can retrieve an element by its `jwid` using method #getElement. Result of this method is
- * a [jQuery-wrapper](http://api.jquery.com/) over this element. In addition, each component
- * has field #el, which refers to root jQuery-element of the component.
+ * a [jQuery-wrapper](http://api.jquery.com/) over this element. Root element always has jwid "root".
+ * In addition, root element of the component is stored in #el property.
  *
  * ### Component creation in code
  *
@@ -370,17 +379,21 @@ JW.UI.Browsers = (function()
  *
  * ### Child components
  *
- * There are 3 ways to add a child component:
+ * There are 4 ways to add a child component:
  * 
  * - Add a child component into #children map with a key equal to `jwid` of element to replace with the child
  * component. Usually it is done in #renderComponent method.
+ * - Add an easily replaceable child component using #addReplaceable method. Pass JW.Property there and
+ * the framework will provide the continuous synchronization with this property during application running.
  * - Add an array of child components into some element using #addArray method. If the passed array
  * is JW.ObservableArray, then framework will provide the continuous synchronization with this array during
  * application running.
  * - Define method <code>render&lt;ChildId&gt;</code>, where <code>&lt;ChildId&gt;</code> is `jwid` of element,
  * written in CamelCase with capitalized first letter. Example: `renderArticle` (renders element `jwid="article"`).
- * If the method returns JW.UI.Component or JW.AbstractArray, then result will be treated as child component
- * or child component array correspondingly. See **More about render&lt;ChildId&gt; method** paragraph for details.
+ * If the method returns JW.UI.Component, JW.Property or JW.AbstractArray, then result will be treated as child component
+ * or child component array. Define method `renderRoot` to render root element, but you can return JW.AbstractArray
+ * only there.
+ * See **More about render&lt;ChildId&gt; method** paragraph for details.
  * 
  * Such interface provides simplicity, at one hand, and flexibility in Model-View architecture following regard,
  * at another hand.
@@ -395,7 +408,7 @@ JW.UI.Browsers = (function()
  * That's the reason why we recommend to use jWidget JW.AbstractCollection in data model instead of native JavaScript
  * Array and Object: these collections have Observable-implementations and can be synchronized with each other.
  * 
- * [Getting started. Part 5. Collection synchronizers](#!/guide/ensample5)
+ * [Getting started. Part 6. Collection synchronizers](#!/guide/ensample6)
  * 
  * ### More about render&lt;ChildId&gt; method
  * 
@@ -409,29 +422,32 @@ JW.UI.Browsers = (function()
  * Depending on the returned result of this method, there are next capabilities:
  * 
  * - If method returns JW.UI.Component, then it will be added into #children map and will become a child component.
+ * Doesn't work for root element.
+ * - If method returns JW.Property, then it will be added as easily replaceable child component by
+ * method #addReplaceable. Doesn't work for root element.
  * - If method returns JW.AbstractArray, then it will be added as child array by method #addArray.
- * - If method returns `false` (===), then element will be removed from component HTML.
+ * - If method returns `false` (===), then element will be removed from component HTML. Doesn't work for root element.
  * - In any other case, framework won't perform any additional action.
  * 
  * ### Components removal and destruction
  * 
- * You can destroy the component via #destroy method. But you can not destroy child component (framework will
+ * You can destroy the component via #destroy method. But you can not destroy a component which is added into another one as a child (framework will
  * throw an exception in this case). You must remove child component from a parent first. To remove the component
  * from a parent, you must perform the operation opposite to adding operation. So, to remove a component
  * with `jwid="comments"` you must call {@link JW.AbstractMap#method-remove} method of #children object.
  * You can destroy this component immediately:
  * 
- *     this.children.{@link JW.AbstractMap#method-remove remove}("comments").{@link JW.Class#destroy destroy}();
+ *     this.{@link JW.UI.Component#children children}.{@link JW.AbstractMap#method-remove remove}("comments").{@link JW.Class#destroy destroy}();
  * 
  * In this case, the element of HTML template with such `jwid` will return back to its original state.
  *
  * You can destroy child components freely in {@link #destroyComponent} method of parent component. In this method,
- * child components are already removed from the parent and are ready to be destroyed.
+ * child components are already removed from the parent by the framework and are ready to be destroyed.
  *
  * Also, you can use aggregation method {@link JW.Class#own} to destroy the child component.
  *
  * Child arrays are a bit more complicated. First way to remove a child which is added to the parent via array is to
- * remove this child from this array. Second way: #addArray method returns an instance of
+ * remove this child from this array (if it is JW.ObservableArray). Second way: #addArray method returns an instance of
  * JW.UI.Component.Array. If you destroy it, the array will be removed from parent component:
  * 
  *         // override
@@ -484,28 +500,35 @@ JW.UI.Browsers = (function()
  *             '</div>'
  *     });
  *
- * **External named child component**
+ * **Internal replaceable child component**
  *
- * This example describes how to insert a child component which was created by someone else, and therefore
- * shouldn't be destroyed automatically.
+ * This example describes how to create an easily replaceable child component with `jwid="document"`.
+ * Assume that you have a property "document" and want to replace an old document view with a new one
+ * on document change.
  *
- *     var MyComponent = function(titleBox) {
+ *     var MyComponent = function(document) {
  *         MyComponent.{@link JW.Class#static-property-_super _super}.call(this);
- *         this.titleBox = titleBox;
+ *         this.document = document;
  *     };
  *     
  *     JW.extend(MyComponent, JW.UI.Component, {
- *         // JW.UI.Component titleBox;
+ *         // JW.Property<Document> document;
  *         
- *         renderTitleBox: function() {
- *             return this.titleBox;
+ *         renderDocument: function() {
+ *             return this.{@link JW.Class#own own}(new JW.Mapper([this.document], {
+ *                 {@link JW.Mapper#createValue createValue}: function(document) {
+ *                     return new DocumentView(document);
+ *                 },
+ *                 {@link JW.Mapper#destroyValue destroyValue}: JW.destroy,
+ *                 {@link JW.Mapper#scope scope}: this
+ *             })).{@link JW.Mapper#property-target target};
  *         }
  *     });
  *     
  *     JW.UI.template(MyComponent, {
  *         main:
  *             '<div jwclass="my-component">' +
- *                 '<div jwid="title-box" />' +
+ *                 '<div jwid="document" />' +
  *             '</div>'
  *     });
  *
@@ -551,7 +574,9 @@ JW.UI.Browsers = (function()
  *         
  *         renderLabels: function() {
  *             return this.{@link JW.Class#own own}(this.labels.{@link JW.AbstractArray#createMapper createMapper}({
- *                 {@link JW.AbstractCollection.Mapper#createItem createItem}: function(label) { return new LabelView(label); },
+ *                 {@link JW.AbstractCollection.Mapper#createItem createItem}: function(label) {
+ *                     return new LabelView(label);
+ *                 },
  *                 {@link JW.AbstractCollection.Mapper#destroyItem destroyItem}: JW.destroy,
  *                 {@link JW.AbstractCollection.Mapper#scope scope}: this
  *             })).{@link JW.AbstractCollection.Mapper#property-target target};
@@ -565,29 +590,29 @@ JW.UI.Browsers = (function()
  *             '</div>'
  *     });
  *
- * **External child array**
+ * **External child components**
  *
- * This example describes how to insert child component array into
- * element with `jwid="labels"`. Child array will be being synchronized with data on fly.
- * Components are created by someone else, and therefore shouldn't be destroyed on component destruction.
+ * This example describes how to insert child components which were created by someone else, and therefore
+ * shouldn't be destroyed automatically. Here, "titleBox" can be either JW.UI.Component, or
+ * JW.Property<JW.UI.Component>, or JW.AbstractArray<JW.UI.Component>.
  *
- *     var MyComponent = function(labelViews) {
+ *     var MyComponent = function(titleBox) {
  *         MyComponent.{@link JW.Class#static-property-_super _super}.call(this);
- *         this.labelViews = labelViews;
+ *         this.titleBox = titleBox;
  *     };
  *     
  *     JW.extend(MyComponent, JW.UI.Component, {
- *         // JW.AbstractArray<LabelView> labelViews;
+ *         // Mixed titleBox;
  *         
- *         renderLabels: function() {
- *             return this.labelViews;
+ *         renderTitleBox: function() {
+ *             return this.titleBox;
  *         }
  *     });
  *     
  *     JW.UI.template(MyComponent, {
  *         main:
  *             '<div jwclass="my-component">' +
- *                 '<div jwid="labels" />' +
+ *                 '<div jwid="title-box" />' +
  *             '</div>'
  *     });
  *
@@ -628,7 +653,7 @@ JW.UI.Browsers = (function()
  * 
  * ### Intergration with jWidget SDK
  * 
- * jWidget UI library is integrated with [jWidget SDK](https://github.com/enepomnyaschih/jwsdk/wiki/ru) perfectly, and
+ * jWidget UI library is integrated with [jWidget SDK](https://github.com/enepomnyaschih/jwsdk/wiki/en) perfectly, and
  * it gives you nice code optimizations of JS-code out of the box and capability to extract HTML templates into
  * separate files. For example, you can simplify the very first example by splitting code into 2 files:
  * 
@@ -679,7 +704,7 @@ JW.UI.Browsers = (function()
  * 
  * See more complicated example in article:
  * 
- * [Getting started. Part 6. Project infrastructure](#!/guide/ensample6)
+ * [Getting started. Part 7. Project infrastructure](#!/guide/ensample7)
  * 
  * @extends JW.Class
  * @constructor
@@ -699,6 +724,7 @@ JW.UI.Component = function(config) {
 	this._elements = null;
 	this._childMapper = null;
 	this._childInserter = null;
+	this._replaceables = null;
 	this._arrays = null;
 },
 
@@ -741,6 +767,7 @@ JW.extend(JW.UI.Component, JW.Class, {
 	Map<Element> _elements;
 	JW.ObservableMap.Mapper<JW.UI.Component, JW.UI.Component.Child> _childMapper;
 	JW.ObservableMap.Inserter<JW.UI.Component.Child> _childInserter;
+	Set<JW.UI.Component.Replaceable> _replaceables;
 	Set<JW.UI.Component.Array> _arrays;
 	*/
 	
@@ -754,8 +781,10 @@ JW.extend(JW.UI.Component, JW.Class, {
 		this.destroyed = true;
 		if (this.el) {
 			this.el.detach();
-			JW.Set.each(this._arrays, JW.byMethod("destroy"));
+			JW.Set.each(this._arrays, JW.destroy);
 			this._arrays = null;
+			JW.Set.each(this._replaceables, JW.destroy);
+			this._replaceables = null;
 			
 			this._childInserter.destroy();
 			this._childInserter = null;
@@ -846,8 +875,10 @@ JW.extend(JW.UI.Component, JW.Class, {
 		this.replacedEl = replacedEl;
 		this.el = jQuery(this.template || this.templates.main);
 		this._elements = {};
+		this._elements["root"] = this.el;
 		this.allChildren = {};
 		this.children = new JW.ObservableMap();
+		this._replaceables = {};
 		this._arrays = {};
 		this.rootClass = JW.String.parseClass(this.rootClass || this.el.attr("jwclass"));
 		this.el.removeAttr("jwclass");
@@ -883,12 +914,20 @@ JW.extend(JW.UI.Component, JW.Class, {
 			var renderMethodName = "render" + JW.String.capitalize(jwIdCamel);
 			if (typeof this[renderMethodName] === "function") {
 				var result = this[renderMethodName](anchorEl);
-				if (result instanceof JW.UI.Component) {
-					this.children.set(result, jwId);
-				} else if ((result instanceof JW.Array) || (result instanceof JW.ObservableArray)) {
-					this.addArray(result, jwId);
-				} else if (result === false) {
-					this.removeElement(jwId);
+				if (jwId === "root") {
+					if (result instanceof JW.AbstractArray) {
+						this.addArray(result, jwId);
+					}
+				} else {
+					if (result instanceof JW.UI.Component) {
+						this.children.set(result, jwId);
+					} else if (result instanceof JW.Property) {
+						this.addReplaceable(result, jwId);
+					} else if (result instanceof JW.AbstractArray) {
+						this.addArray(result, jwId);
+					} else if (result === false) {
+						this.removeElement(jwId);
+					}
 				}
 			}
 		}
@@ -974,6 +1013,28 @@ JW.extend(JW.UI.Component, JW.Class, {
 	},
 	
 	/**
+	 * Add an easily replaceable child component into specified element.
+	 * 
+	 * Pass an instance of JW.Property<JW.UI.Component>, and view will be synchronized with this property of fly.
+	 * 
+	 * It is convenient to create "component" property from data property using JW.Mapper class.
+	 * 
+	 * Method returns an instance of JW.UI.Component.Replaceable. This object is purposed for replaceable child
+	 * removal from parent component. Use {@link JW.Class#destroy destroy} method to do this.
+	 * Also, the replaceable will be removed from parent component on parent component destruction right
+	 * before #destroyComponent method call.
+	 * But notice that child component inside this property won't be destroyed automatically.
+	 * Usually it can be done by corresponding JW.Mapper destruction in #destroyComponent method.
+	 *
+	 * @param {JW.Property} component `<JW.UI.Component>` Child component property.
+	 * @param {String} id jwId of element to replace.
+	 * @returns {JW.UI.Component.Replaceable} Replaceable child component wrapper.
+	 */
+	addReplaceable: function(component, id) {
+		return new JW.UI.Component.Replaceable(this, component, id);
+	},
+	
+	/**
 	 * Add child component array into specified element.
 	 * 
 	 * Based on JW.AbstractArray.Inserter synchronizer. Thanks to that, if you'll pass an instance of
@@ -982,7 +1043,7 @@ JW.extend(JW.UI.Component, JW.Class, {
 	 * It is convenient to create "components" array from data array using JW.AbstractArray#createMapper method,
 	 * i.e. by JW.AbstractCollection.Mapper instantiation.
 	 * 
-	 * Method returns an instance of JW.UI.Component.Array. THis object is purposed for child component array
+	 * Method returns an instance of JW.UI.Component.Array. This object is purposed for child component array
 	 * removal from parent component. Use {@link JW.Class#destroy destroy} method to do this.
 	 * Also, the array will be removed from parent component on parent component destruction right
 	 * before #destroyComponent method call.
@@ -1175,6 +1236,62 @@ JW.extend(JW.UI.Component.Child, JW.Class, {
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * @class
+ *
+ * Replaceable child component wrapper in JW.UI.Component.
+ * 
+ * Returned by JW.UI.Component#addReplaceable method. If you'll destroy this object, replaceables child component
+ * will be removed from parent and element will return to its original state.
+ *
+ * @extends JW.Class
+ */
+JW.UI.Component.Replaceable = function(parent, component, id) {
+	JW.UI.Component.Replaceable._super.call(this);
+	this.parent = parent;
+	this.id = id;
+	JW.Set.add(parent._replaceables, this);
+	
+	this.own(new JW.Switcher([component], {
+		init: function(child) {
+			this.parent.children.set(child, this.id);
+		},
+		done: function() {
+			this.parent.children.remove(this.id);
+		},
+		scope: this
+	}));
+};
+
+JW.extend(JW.UI.Component.Replaceable, JW.Class, {
+	// JW.UI.Component parent;
+	
+	// override
+	destroy: function() {
+		JW.Set.remove(this.parent._replaceables, this);
+		this._super();
+	}
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 JW.UI.Inserter = function(source, el) {
 	JW.UI.Inserter._super.call(this);
 	this.el = el;
@@ -1291,7 +1408,7 @@ JW.UI.preloadImage = function(
 
 /**
  * @class
- * Watches source {@link JW.Property property} modification and updates the
+ * Watches source string {@link JW.Property property} modification and updates the
  * specified attribute of the DOM element.
  * Applied on initialization as well.
  *
@@ -1354,7 +1471,74 @@ JW.extend(JW.UI.AttrUpdater, JW.Class, {
 
 /**
  * @class
- * Watches source {@link JW.Property property} modification and updates the
+ * Watches checkbox state modification and updates the value of the target boolean
+ * {@link JW.Property property}.
+ * Applied on initialization as well.
+ *
+ *     var checked = new JW.Property();
+ *     var listener = new JW.UI.CheckedListener($("#mycheckbox"), value);
+ *     // Assume that the checkbox is unchecked initially
+ *     assertEquals(false, value.{@link JW.Property#get get}());
+ *     // Later on, user checked the checkbox
+ *     assertEquals(true, value.{@link JW.Property#get get}());
+ *
+ * For backward binding, use JW.UI.PropUpdater, passing "checked" as a prop argument value.
+ *
+ * @extends JW.Class
+ *
+ * @constructor
+ * @param {jQuery} el DOM element.
+ * @param {JW.Property} property `<Boolean>` Target property.
+ */
+JW.UI.CheckedListener = function(el, property) {
+	this._update = JW.inScope(this._update, this);
+	JW.UI.CheckedListener._super.call(this);
+	this.el = jQuery(el);
+	this.property = property;
+	this._update();
+	this.el.bind("change", this._update);
+};
+
+JW.extend(JW.UI.CheckedListener, JW.Class, {
+	/**
+	 * @property {jQuery} el DOM element.
+	 */
+	/**
+	 * @property {JW.Property} property `<Boolean>` Target property.
+	 */
+	
+	destroy: function() {
+		this.el.unbind("change", this._update);
+		this._super();
+	},
+	
+	_update: function() {
+		this.property.set(this.el.prop("checked"));
+	}
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ * Watches source boolean {@link JW.Property property} modification and updates the
  * specified CSS class presence in the DOM element.
  * Applied on initialization as well.
  *
@@ -1417,7 +1601,7 @@ JW.extend(JW.UI.ClassUpdater, JW.Class, {
 
 /**
  * @class
- * Watches source {@link JW.Property property} modification and updates the
+ * Watches source string {@link JW.Property property} modification and updates the
  * specified CSS style of the DOM element.
  * Applied on initialization as well.
  *
@@ -1480,7 +1664,7 @@ JW.extend(JW.UI.CssUpdater, JW.Class, {
 
 /**
  * @class
- * Watches source {@link JW.Property property} modification and updates the
+ * Watches source string {@link JW.Property property} modification and updates the
  * inner HTML of the DOM element.
  * Applied on initialization as well.
  *
@@ -1538,7 +1722,7 @@ JW.extend(JW.UI.HtmlUpdater, JW.Class, {
 
 /**
  * @class
- * Watches source {@link JW.Property property} modification and updates the
+ * Watches source boolean {@link JW.Property property} modification and updates the
  * specified property of the DOM element.
  * Applied on initialization as well.
  *
@@ -1548,12 +1732,14 @@ JW.extend(JW.UI.HtmlUpdater, JW.Class, {
  *     // Next command unchecks the checkbox
  *     checked.{@link JW.Property#set set}(false);
  *
+ * For backward binding, use JW.UI.CheckedListener for checkboxes and JW.UI.RadioListener for radios.
+ *
  * @extends JW.Class
  *
  * @constructor
  * @param {jQuery} el DOM element.
  * @param {String} prop Element's property name.
- * @param {JW.Property} property `<String>` Source property.
+ * @param {JW.Property} property `<Boolean>` Source property.
  */
 JW.UI.PropUpdater = function(el, prop, property) {
 	JW.UI.PropUpdater._super.call(this);
@@ -1572,11 +1758,14 @@ JW.extend(JW.UI.PropUpdater, JW.Class, {
 	 * @property {String} prop Element's property name.
 	 */
 	/**
-	 * @property {JW.Property} property `<String>` Source property.
+	 * @property {JW.Property} property `<Boolean>` Source property.
 	 */
 	
 	_update: function() {
 		this.el.prop(this.prop, this.property.get());
+		if (this.prop === "checked") {
+			this.el.change();
+		}
 	}
 });
 
@@ -1601,7 +1790,157 @@ JW.extend(JW.UI.PropUpdater, JW.Class, {
 
 /**
  * @class
- * Watches source {@link JW.Property property} modification and updates the
+ * Watches selection modification in radio group and updates the value of the target string
+ * {@link JW.Property property}.
+ * Applied on initialization as well.
+ *
+ *     var selected = new JW.Property();
+ *     var listener = new JW.UI.RadioListener($("#myform"), "myradio", value);
+ *     // Assume that the radio with value "apple" is selected initially
+ *     assertEquals("apple", value.{@link JW.Property#get get}());
+ *     // Later on, user selected "banana" radio
+ *     assertEquals("banana", value.{@link JW.Property#get get}());
+ *
+ * Notice that the object binds an event listener to a container element and uses bubbling mechanism to detect the
+ * selection modification. That's why you must avoid bubbling interruption in child elements of the container.
+ * All radios must have the same "name" attribute value. If neighter radio is selected, property is set to null.
+ *
+ * For backward binding, use JW.UI.RadioUpdater.
+ *
+ * @extends JW.Class
+ *
+ * @constructor
+ * @param {jQuery} el Container DOM element.
+ * @param {String} name Radios "name" attribute.
+ * @param {JW.Property} property `<Boolean>` Target property.
+ */
+JW.UI.RadioListener = function(el, name, property) {
+	this._update = JW.inScope(this._update, this);
+	JW.UI.RadioListener._super.call(this);
+	this.el = jQuery(el);
+	this.name = name;
+	this.property = property;
+	this._selector = "input[type=radio][name='" + name + "']";
+	this._update();
+	this.el.on("change", this._selector, this._update);
+};
+
+JW.extend(JW.UI.RadioListener, JW.Class, {
+	/**
+	 * @property {jQuery} el Container DOM element.
+	 */
+	/**
+	 * @property {String} name Radios "name" attribute.
+	 */
+	/**
+	 * @property {JW.Property} property `<Boolean>` Target property.
+	 */
+	
+	destroy: function() {
+		this.el.off("change", this._selector, this._update);
+		this._super();
+	},
+	
+	_update: function() {
+		var radio = this.el.find(this._selector + ":checked");
+		this.property.set((radio.length !== 0) ? radio.attr("value") : null);
+	}
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ * Watches source string {@link JW.Property property} modification and selects a corresponding radio.
+ * Applied on initialization as well.
+ *
+ *     var value = new JW.Property("apple");
+ *     // Next command selects a radio with value "apple" in a group
+ *     var updater = new JW.UI.RadioUpdater($("#myform"), "myradio", value);
+ *     // Next command selects a radio with value "banana" in a group
+ *     value.{@link JW.Property#set set}("banana");
+ *
+ * All radios must have the same "name" attribute value.
+ *
+ * For backward binding, use JW.UI.RadioListener.
+ *
+ * @extends JW.Class
+ *
+ * @constructor
+ * @param {jQuery} el Container DOM element.
+ * @param {String} name Radios "name" attribute.
+ * @param {JW.Property} property `<String>` Source property.
+ */
+JW.UI.RadioUpdater = function(el, name, property) {
+	JW.UI.RadioUpdater._super.call(this);
+	this.el = jQuery(el);
+	this.name = name;
+	this.property = property;
+	this._selector = "input[type=radio][name='" + name + "']";
+	this._update();
+	this.own(property.changeEvent.bind(this._update, this));
+};
+
+JW.extend(JW.UI.RadioUpdater, JW.Class, {
+	/**
+	 * @property {jQuery} el Container DOM element.
+	 */
+	/**
+	 * @property {String} name Radios "name" attribute.
+	 */
+	/**
+	 * @property {JW.Property} property `<String>` Source property.
+	 */
+	
+	_update: function() {
+		var value = this.property.get();
+		if (JW.isSet(value)) {
+			this.el.find(this._selector + "[value='" + value + "']").prop("checked", true).change();
+		} else {
+			this.el.find(this._selector + ":checked").prop("checked", false).change();
+		}
+	}
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ * Watches source string {@link JW.Property property} modification and updates the
  * inner text of the DOM element.
  * Applied on initialization as well.
  *
@@ -1659,16 +1998,18 @@ JW.extend(JW.UI.TextUpdater, JW.Class, {
 
 /**
  * @class
- * Watches DOM element value modification and updates the value of the target
+ * Watches DOM text input value modification and updates the value of the target string
  * {@link JW.Property property}.
  * Applied on initialization as well.
  *
  *     var value = new JW.Property();
- *     var listener = new JW.UI.ValueListener($("#myelem"), value);
+ *     var listener = new JW.UI.ValueListener($("#myinput"), value);
  *     // Assume that the element is a blank field initially
  *     assertEquals("", value.{@link JW.Property#get get}());
  *     // Later on, user entered "foo" in the field
  *     assertEquals("foo", value.{@link JW.Property#get get}());
+ *
+ * For backward binding, use JW.UI.ValueUpdater.
  *
  * @extends JW.Class
  *
@@ -1734,8 +2075,8 @@ JW.extend(JW.UI.ValueListener, JW.Class, {
 
 /**
  * @class
- * Watches source {@link JW.Property property} modification and updates the
- * value of the DOM element.
+ * Watches source string {@link JW.Property property} modification and updates the
+ * value of the DOM text input.
  * Applied on initialization as well.
  *
  *     var value = new JW.Property("Submit");
@@ -1743,6 +2084,8 @@ JW.extend(JW.UI.ValueListener, JW.Class, {
  *     var updater = new JW.UI.ValueUpdater($("#myelem"), value);
  *     // Next command changes element value to "Отправить"
  *     value.{@link JW.Property#set set}("Отправить");
+ *
+ * For backward binding, use JW.UI.ValueListener.
  *
  * @extends JW.Class
  *
@@ -1768,5 +2111,64 @@ JW.extend(JW.UI.ValueUpdater, JW.Class, {
 	
 	_update: function() {
 		this.el.val(this.property.get());
+	}
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class
+ * Watches source boolean {@link JW.Property property} modification and updates
+ * visibility of the DOM element. To make element invisible, sets "display: none" inline style. To make
+ * element visible, removes "display" inline style. Make sure that element is visible by your CSS rules.
+ * Applied on initialization as well.
+ *
+ *     var visible = new JW.Property(true);
+ *     // Next command makes element visible
+ *     var updater = new JW.UI.VisibleUpdater($("#myelem"), visible);
+ *     // Next command makes element invisible
+ *     visible.{@link JW.Property#set set}(false);
+ *
+ * @extends JW.Class
+ *
+ * @constructor
+ * @param {jQuery} el DOM element.
+ * @param {JW.Property} property `<Boolean>` Source property.
+ */
+JW.UI.VisibleUpdater = function(el, property) {
+	JW.UI.VisibleUpdater._super.call(this);
+	this.el = jQuery(el);
+	this.property = property;
+	this._update();
+	this.own(property.changeEvent.bind(this._update, this));
+};
+
+JW.extend(JW.UI.VisibleUpdater, JW.Class, {
+	/**
+	 * @property {jQuery} el DOM element.
+	 */
+	/**
+	 * @property {JW.Property} property `<String>` Source property.
+	 */
+	
+	_update: function() {
+		this.el.css("display", this.property.get() ? "" : "none");
 	}
 });
