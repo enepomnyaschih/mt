@@ -1,9 +1,9 @@
 ﻿{
 	"requires": [
 		"thirdparty/reset.css",
-		"thirdparty/jquery/jquery-1.9.0.js|auto",
-		"thirdparty/jwidget/jwlib.js|auto",
-		"thirdparty/jwidget/jwui.js|auto"
+		"bower_components/jquery/dist/jquery.js|auto",
+		"bower_components/jwidget/jwlib.js|auto",
+		"bower_components/jwidget/jwui.js|auto"
 	],
 	
 	"resources" : [
