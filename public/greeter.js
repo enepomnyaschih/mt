@@ -1,6 +1,6 @@
 var Greeter = function() {
 	Greeter._super.call(this);
-	this.name = this.own(new JW.Property("stranger"));
+	this.name = this.own(new JW.Property("wanderer"));
 };
 
 JW.extend(Greeter, JW.UI.Component, {
