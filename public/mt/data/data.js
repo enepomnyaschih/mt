@@ -1,7 +1,7 @@
 ﻿mt.Data = function() {
 	mt.Data._super.call(this);
 	this.profile = null; // mt.data.Profile
-	this.tweets = this.own(new JW.Array()).ownItems(); // JW.AbstractArray<mt.data.Tweet>
+	this.tweets = this.own(new JW.ObservableArray()).ownItems(); // JW.AbstractArray<mt.data.Tweet>
 };
 
 JW.extend(mt.Data, JW.Class);
