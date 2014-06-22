@@ -1,5 +1,5 @@
 /*!
-	jWidget Lib 0.9.0
+	jWidget Lib 1.0.0
 	
 	http://enepomnyaschih.github.io/jwidget/#!/guide/home
 	
@@ -956,7 +956,7 @@ JW.extend = JW.ClassUtil.extend;
  *         
  *         getElement: function() {
  *             if (!this.el) {
- *                 this.el = jQuery('<div />');
+ *                 this.el = jQuery('<div></div>');
  *                 this.el.width(this.width);
  *                 this.el.height(this.height);
  *             }
@@ -1574,7 +1574,7 @@ JW.extend(JW.ItemValueEventParams, JW.ValueEventParams, {
  * - Converter to array (orderer): JW.AbstractCollection.Orderer
  * - Converter to array (sorter by comparer): JW.AbstractCollection.SorterComparing
  * - Observer: JW.AbstractCollection.Observer
- * - View synchronizers: JW.AbstractArray.Inserter, JW.AbstractMap.Inserter
+ * - View synchronizers: JW.AbstractArray.Inserter, JW.AbstractMap.Inserter, JW.UI.Inserter
  * - Arrays merger: JW.AbstractArray.Merger
  * - Array reverser: JW.AbstractArray.Reverser
  *
@@ -3087,7 +3087,7 @@ JW.extend(JW.AbstractCollection.SorterComparing, JW.Class, {
 		var removeParamsList = [];
 		var addParamsList = [];
 		var removeParams = null;
-		for (iTarget = 0, lTarget = this.target.getLength(); iTarget < lTarget; ++iTarget) {
+		for (var iTarget = 0, lTarget = this.target.getLength(); iTarget < lTarget; ++iTarget) {
 			var value = this.target.get(iTarget);
 			if (removedItems[JW.Array.binarySearch(removedItems, value, this.compare, this.scope) - 1] === value) {
 				if (!removeParams) {
@@ -3111,7 +3111,7 @@ JW.extend(JW.AbstractCollection.SorterComparing, JW.Class, {
 		if (iAdds < addedItems.length) {
 			addParamsList.push(new JW.AbstractArray.IndexItems(iTarget + addShift, addedItems.slice(iAdds)));
 		}
-		this.target.splice(removeParamsList, addParamsList);
+		this.target.trySplice(removeParamsList, addParamsList);
 	}
 });
 
@@ -5510,7 +5510,7 @@ JW.extend(JW.AbstractArray.Filterer, JW.AbstractCollection.Filterer, {
 			targetIndex += this._countFiltered(sourceIndex, indexItems.index - sourceIndex);
 			var count = this._countFiltered(indexItems.index, indexItems.items.length);
 			var params = new JW.AbstractArray.IndexCount(targetIndex, count);
-			sourceIndex = indexItems.index + indexItems.length;
+			sourceIndex = indexItems.index + indexItems.items.length;
 			targetIndex += count;
 			return params;
 		}, this);
@@ -5729,13 +5729,12 @@ JW.extend(JW.AbstractArray.Indexer, JW.AbstractCollection.Indexer, {
  * you can define a third function: array is cleared
  * (in case if there is more effective clearing algorithm than iterative items deletion).
  * Unlike JW.AbstractCollection.Observer, tracks items order.
- * Can be used mainly for DOM-element synchronization with array of child elements.
  *
  * Use JW.AbstractArray#createInserter method to create the synchronizer.
  *
  *     var inserter = array.{@link JW.AbstractArray#createInserter createInserter}({
- *         {@link #cfg-addItem addItem}: function(el, index) { this.el.{@link jQuery#insert insert}(el, index); },
- *         {@link #cfg-removeItem removeItem}: function(el, index) { el.detach(); },
+ *         {@link #cfg-addItem addItem}: function(item, index) { this.store.insert(item, index); },
+ *         {@link #cfg-removeItem removeItem}: function(item, index) { this.store.remove(index); },
  *         {@link #cfg-scope scope}: this
  *     });
  *
@@ -6031,7 +6030,7 @@ JW.AbstractArray.Merger = function(source, config) {
 		destroyItem: JW.destroy,
 		scope: this
 	}));
-	this.target.addAll(this._getAllItems());
+	this.target.tryAddAll(this._getAllItems());
 };
 
 JW.extend(JW.AbstractArray.Merger, JW.Class, {
@@ -6273,7 +6272,7 @@ JW.AbstractArray.Reverser = function(source, config) {
 	config = config || {};
 	this.source = source;
 	this.target = config.target || this.own(source.createEmpty());
-	this.target.addAll(this._reverse(source.getItems()));
+	this.target.tryAddAll(this._reverse(source.getItems()));
 };
 
 JW.extend(JW.AbstractArray.Reverser, JW.Class, {
@@ -13812,7 +13811,7 @@ JW.extend(JW.ObservableArray.Merger, JW.AbstractArray.Merger, {
 	},
 	
 	_onClear: function(params) {
-		this.target.clear();
+		this.target.tryClear();
 	},
 	
 	_onReorder: function(params) {
@@ -14336,7 +14335,7 @@ JW.extend(JW.ObservableMap, JW.AbstractMap, {
 		if (items === undefined) {
 			return;
 		}
-		this.length.set(this.getLength());
+		this.length.set(0);
 		this.clearEvent.trigger(new JW.ObservableMap.ItemsEventParams(this, items));
 		this.changeEvent.trigger(new JW.ObservableMap.EventParams(this));
 		return items;
@@ -15949,7 +15948,7 @@ JW.extend(JW.Functor, JW.Class, {
  *     JW.UI.template(MyComponent, {
  *         main:
  *             '<div jwclass="my-component">' +
- *                 '<div jwid="document" />' +
+ *                 '<div jwid="document"></div>' +
  *             '</div>'
  *     });
  *

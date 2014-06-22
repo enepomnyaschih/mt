@@ -1,5 +1,5 @@
 /*!
-	jWidget UI 0.9.0
+	jWidget UI 1.0.0
 	
 	http://enepomnyaschih.github.io/jwidget/#!/guide/home
 	
@@ -25,6 +25,19 @@
  * Main jWidget UI library namespace.
  */
 JW.UI = {
+	// Some code is taken from jQuery. We are not happy with standard jQuery.parseHtml, because it is slow.
+	// We implement an own JW.UI.parseHtml which omits a good bunch of useless manupulations.
+	wrapMap: {
+		option: [ 1, "<select multiple='multiple'>", "</select>" ],
+		thead: [ 1, "<table>", "</table>" ],
+		col: [ 2, "<table><colgroup>", "</colgroup></table>" ],
+		tr: [ 2, "<table><tbody>", "</tbody></table>" ],
+		td: [ 3, "<table><tbody><tr>", "</tr></tbody></table>" ],
+		_default: [ 0, "", "" ]
+	},
+	
+	rtagName: /^<([\w:]+)/,
+	
 	/**
 	 * @property {JW.Property} hash `<String>` Current page hash (without leading "#").
 	 * @static
@@ -40,7 +53,7 @@ JW.UI = {
 	 * Templates are inherited together with component classes.
 	 * 
 	 * Each component class has at least one template, its name is `main`. This is the main template which is
-	 * used to render the component. By default, `main` equals to `<div />`.
+	 * used to render the component. By default, `main` equals to `<div></div>`.
 	 * Usually, `main` template is enough for the majority of components. This template is applied automatically,
 	 * unlike other templates which should be applied manually.
 	 * 
@@ -53,6 +66,9 @@ JW.UI = {
 	 * @param {Object} tpls Templates to add or override.
 	 */
 	template: function(cls, tpls) {
+		tpls = JW.Map.map(tpls, function(html) {
+			return new JW.UI.Component.Template(html);
+		});
 		if (cls.prototype.Templates && cls.prototype.Templates.componentCls == cls) {
 			JW.apply(cls.prototype.Templates.prototype, tpls);
 		} else {
@@ -102,8 +118,82 @@ JW.UI = {
 			return (type === "text") || (type !== "password");
 		}
 		return tagName === "textarea";
+	},
+	
+	insert: function(parent, child, index) {
+		if (!JW.isSet(index) || (index >= parent.childNodes.length)) {
+			parent.appendChild(child);
+		} else {
+			parent.insertBefore(child, parent.childNodes.item(index));
+		}
+	},
+	
+	remove: function(el) {
+		if (el.parentNode) {
+			el.parentNode.removeChild(el);
+		}
+	},
+	
+	parseHtml: function(html) {
+		if (JW.UI._fragment) {
+			JW.UI._fragment.textContent = "";
+		} else {
+			JW.UI._fragment = document.createDocumentFragment();
+		}
+		var el = JW.UI._fragment.appendChild(document.createElement("div"));
+		var tagName = JW.UI.rtagName.exec(html)[1];
+		var wrap = JW.UI.wrapMap[tagName] || JW.UI.wrapMap._default;
+		el.innerHTML = wrap[1] + html + wrap[2];
+		for (var i = 0; i < wrap[0]; ++i) {
+			el = el.firstChild;
+		}
+		return el.firstChild;
+	},
+	
+	hasClass: function(el, cls) {
+		return (" " + el.className + " ").indexOf(cls) !== -1;
+	},
+	
+	addClass: function(el, cls) {
+		if (!el.className) {
+			el.className = cls;
+		} else if (!JW.UI.hasClass(el, cls)) {
+			el.className += " " + cls;
+		}
+	},
+	
+	inDom: function(el) {
+		while (el) {
+			if (el.tagName.toLowerCase() === "body") {
+				return true;
+			}
+			el = el.parentNode;
+		}
+		return false;
+	},
+	
+	replace: function(removeEl, insertEl, attrs) {
+		var parentEl = removeEl.parentNode;
+		if (!parentEl) {
+			return;
+		}
+		var id = attrs ? removeEl.getAttribute("id") : null,
+			cls = attrs ? removeEl.getAttribute("class") : null;
+		parentEl.replaceChild(insertEl, removeEl);
+		if (id) {
+			insertEl.setAttribute("id", id);
+		}
+		if (cls) {
+			JW.UI.addClass(insertEl, cls);
+		}
 	}
 };
+
+(function(wrapMap) {
+	wrapMap.optgroup = wrapMap.option;
+	wrapMap.tbody = wrapMap.tfoot = wrapMap.colgroup = wrapMap.caption = wrapMap.thead;
+	wrapMap.th = wrapMap.td;
+})(JW.UI.wrapMap);
 
 jQuery(function() {
 	JW.UI.windowEl = jQuery(window);
@@ -111,76 +201,6 @@ jQuery(function() {
 	jQuery(window).bind("hashchange", function() {
 		JW.UI.hash.set(location.hash.substr(1));
 	});
-});
-
-/*
-	jWidget UI source file.
-	
-	Copyright (C) 2014 Egor Nepomnyaschih
-	
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU Lesser General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-	
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU Lesser General Public License for more details.
-	
-	You should have received a copy of the GNU Lesser General Public License
-	along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/**
- * @class jQuery
- *
- * jQuery element is extended with several methods.
- */
-JW.apply(jQuery.fn, {
-	/**
-	 * Insert element to position with specified index inside current component.
-	 * @param {jQuery} el Element to insert.
-	 * @param {number} [index] Index of position to insert to. By default, appends the element.
-	 * @returns {jQuery} this.
-	 */
-	insert: function(el, index) {
-		var ths = this.eq(0);
-		el = jQuery(el).eq(0);
-		if (!JW.isSet(index)) {
-			ths.append(el);
-		} else if (index == 0) {
-			ths.prepend(el);
-		} else {
-			jQuery(ths.children()[index - 1]).after(el);
-		}
-		return this;
-	},
-	
-	/**
-	 * Replace element with another element in DOM. Unlike standard replaceWith, doesn't kill the event listeners.
-	 * @param {jQuery} el Element.
-	 * @param {boolean} [attrs=false] Assign "id" attribute (if defined) and add all classes of current element
-	 * to el.
-	 * @returns {jQuery} this.
-	 */
-	replaceBy: function(el, attrs) {
-		var ths = this.eq(0);
-		var id = attrs ? ths.attr("id") : null,
-			cls = attrs ? ths.attr("class") : null;
-		
-		el = jQuery(el).eq(0);
-		ths.after(el);
-		ths.detach();
-		
-		if (id) {
-			el.attr("id", id);
-		}
-		if (cls) {
-			el.addClass(cls);
-		}
-		return this;
-	}
 });
 
 /*
@@ -299,6 +319,77 @@ JW.UI.Browsers = (function()
 */
 
 /**
+ * @class
+ *
+ * View synchronizer. Synchronizes DOM element children with the source array. Usually used in conjunction with
+ * JW.AbstractArray.Mapper.
+ *
+ *     var data = new JW.ObservableArray(["apple", "banana", "cherry"]);
+ *     var elements = data.{@link JW.ObservableArray#createMapper createMapper}({
+ *         {@link JW.ObservableArray.Mapper#cfg-createItem createItem}: function(value) { return jQuery('<option />').text(value)[0]; }
+ *     }).{@link JW.ObservableArray.Mapper#property-target target};
+ *     var inserter = new JW.UI.Inserter(elements, document.getElementById("myselect"));
+ *
+ * @extends JW.Class
+ *
+ * @constructor
+ * Creates synchronizer.
+ * @param {JW.AbstractArray} source `<DOMElement>` Source array.
+ * @param {DOMElement} el Parent element.
+ */
+JW.UI.Inserter = function(source, el) {
+	JW.UI.Inserter._super.call(this);
+	this.el = el; // DOMElement
+	this.len = 0; // Number
+	this.own(source.createInserter({
+		addItem    : this._addItem,
+		removeItem : this._removeItem,
+		scope      : this
+	}));
+};
+
+JW.extend(JW.UI.Inserter, JW.Class, {
+	_getElement: function(item) {
+		return item;
+	},
+	
+	_addItem: function(item, index) {
+		var parent = this.el;
+		var child = this._getElement(item);
+		if (index === this.len) {
+			parent.appendChild(child);
+		} else {
+			parent.insertBefore(child, parent.childNodes.item(index));
+		}
+		++this.len;
+	},
+	
+	_removeItem: function(item) {
+		--this.len;
+		JW.UI.remove(this._getElement(item));
+	}
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
  * @class JW.UI.Component
  *
  * Base class of UI component.
@@ -331,9 +422,9 @@ JW.UI.Browsers = (function()
  *         // String link;
  *         
  *         // override
- *         {@link #renderComponent renderComponent}: function() {
+ *         {@link #afterRender afterRender}: function() {
  *             this.{@link JW.Class#method-_super _super}();
- *             this.{@link #getElement getElement}("hello-message").text(message);
+ *             this.{@link #getElement getElement}("hello-message").text(this.message);
  *             this.{@link #getElement getElement}("link").attr("href", this.link);
  *         }
  *     });
@@ -341,7 +432,7 @@ JW.UI.Browsers = (function()
  *     JW.UI.template(MyApp.Component, {
  *         main:
  *             '<div jwclass="myapp-component">' +
- *                 '<div jwid="hello-message" />' +
+ *                 '<div jwid="hello-message"></div>' +
  *                 '<a href="#" jwid="link">Click me!</a>' +
  *             '</div>'
  *     });
@@ -357,7 +448,7 @@ JW.UI.Browsers = (function()
  * of this component rendering:
  *
  *     <div class="myapp-component">
- *         <div class="myapp-component-hello-message" />
+ *         <div class="myapp-component-hello-message"></div>
  *         <a href="#" class="myapp-component-link">Click me!</a>
  *     </div>
  *
@@ -382,7 +473,7 @@ JW.UI.Browsers = (function()
  * There are 4 ways to add a child component:
  * 
  * - Add a child component into #children map with a key equal to `jwid` of element to replace with the child
- * component. Usually it is done in #renderComponent method.
+ * component. Usually it is done in #afterRender method.
  * - Add an easily replaceable child component using #addReplaceable method. Pass JW.Property there and
  * the framework will provide the continuous synchronization with this property during application running.
  * - Add an array of child components into some element using #addArray method. If the passed array
@@ -441,7 +532,7 @@ JW.UI.Browsers = (function()
  * 
  * In this case, the element of HTML template with such `jwid` will return back to its original state.
  *
- * You can destroy child components freely in {@link #destroyComponent} method of parent component. In this method,
+ * You can destroy child components freely in {@link #unrender} method of parent component. In this method,
  * child components are already removed from the parent by the framework and are ready to be destroyed.
  *
  * Also, you can use aggregation method {@link JW.Class#own} to destroy the child component.
@@ -451,7 +542,7 @@ JW.UI.Browsers = (function()
  * JW.UI.Component.Array. If you destroy it, the array will be removed from parent component:
  * 
  *         // override
- *         {@link #renderComponent renderComponent}: function() {
+ *         {@link #afterRender afterRender}: function() {
  *             this._labelMapper = this.labels.{@link JW.AbstractArray#createMapper createMapper}({
  *                 {@link JW.AbstractCollection.Mapper#createItem createItem}: function(label) { return new LabelView(label); },
  *                 {@link JW.AbstractCollection.Mapper#destroyItem destroyItem}: JW.destroy,
@@ -465,11 +556,11 @@ JW.UI.Browsers = (function()
  *             this._labelArray.{@link JW.Class#destroy destroy}();
  *         }
  * 
- * **Notice:** All arrays are already destroyed before #destroyComponent method call, i.e. all such child components
+ * **Notice:** All arrays are already destroyed before #unrender method call, i.e. all such child components
  * are already removed from a parent. But the components themselves are still not destroyed. You must destroy a
  * corresponding sychronizer for this usually:
  * 
- *         {@link #destroyComponent destroyComponent}: function() {
+ *         {@link #unrender unrender}: function() {
  *             this._labelMapper.{@link JW.Class#destroy destroy}(); // destroys all label views
  *             this.{@link JW.Class#method-_super _super}();
  *         }
@@ -496,7 +587,7 @@ JW.UI.Browsers = (function()
  *     JW.UI.template(MyComponent, {
  *         main:
  *             '<div jwclass="my-component">' +
- *                 '<div jwid="title-box" />' +
+ *                 '<div jwid="title-box"></div>' +
  *             '</div>'
  *     });
  *
@@ -528,7 +619,7 @@ JW.UI.Browsers = (function()
  *     JW.UI.template(MyComponent, {
  *         main:
  *             '<div jwclass="my-component">' +
- *                 '<div jwid="document" />' +
+ *                 '<div jwid="document"></div>' +
  *             '</div>'
  *     });
  *
@@ -555,7 +646,7 @@ JW.UI.Browsers = (function()
  *     JW.UI.template(MyComponent, {
  *         main:
  *             '<div jwclass="my-component">' +
- *                 '<div jwid="labels" />' +
+ *                 '<div jwid="labels"></div>' +
  *             '</div>'
  *     });
  *
@@ -586,7 +677,7 @@ JW.UI.Browsers = (function()
  *     JW.UI.template(MyComponent, {
  *         main:
  *             '<div jwclass="my-component">' +
- *                 '<div jwid="labels" />' +
+ *                 '<div jwid="labels"></div>' +
  *             '</div>'
  *     });
  *
@@ -612,7 +703,7 @@ JW.UI.Browsers = (function()
  *     JW.UI.template(MyComponent, {
  *         main:
  *             '<div jwclass="my-component">' +
- *                 '<div jwid="title-box" />' +
+ *                 '<div jwid="title-box"></div>' +
  *             '</div>'
  *     });
  *
@@ -636,19 +727,21 @@ JW.UI.Browsers = (function()
  * of method.
  * 1. All <code>render&lt;ChildId&gt;</code> methods are called for HTML template elements, i.e. child component
  * creation is performed.
- * 1. Method #renderComponent is called. You should assign all elements' attributes here, create child components,
+ * 1. Method #afterRender is called. You should assign all elements' attributes here, create child components,
  * bind to events and fill component with interactivity. <code>this._super()</code> call is performed at first line of
  * method.
  * 1. Method #afterAppend is called after first-time component appearing in HTML DOM and UI components tree.
  * Component layouting should be performed here (calculate element sizes).
  * Component rendering is finished here. <code>this._super()</code> call is performed at first line of method.
- * 1. Method #destroyComponent is called during component destruction. Everything that was performed during component
- * rendering, i.e. on steps 2-5, should be reverted here. All child components are already removed by framework
+ * 1. Method #releaseDom is called during component destruction. Everything that was performed in #afterAppend method,
+ * i.e. on step 5, should be reverted here. <code>this._super()</code> method call is performed at last line of method.
+ * 1. Method #unrender is called during component destruction. Everything that was performed during component
+ * rendering, i.e. on steps 2-4, should be reverted here. All child components are already removed by framework
  * before this method call, but the components themselves are not destroyed. You must destroy them explicitly unless
  * you used {@link JW.Class#own own} method to aggregate them.
  * <code>this._super()</code> method call is performed at last line of method.
- * 1. Method #destroyObject is called during component destruction. Everything that was performed during component
- * construction, i.e. on step 1, should be reverted here. <code>this._super()</code> method call is performed
+ * 1. Method #afterDestroy is called during component destruction. Everything that was performed in component
+ * constructor, i.e. on step 1, should be reverted here. <code>this._super()</code> method call is performed
  * at last line of method.
  * 
  * ### Intergration with jWidget SDK
@@ -675,9 +768,9 @@ JW.UI.Browsers = (function()
  *         // String link;
  *         
  *         // override
- *         {@link #renderComponent renderComponent}: function() {
+ *         {@link #afterRender afterRender}: function() {
  *             this.{@link JW.Class#method-_super _super}();
- *             this.{@link #getElement getElement}("hello-message").text(message);
+ *             this.{@link #getElement getElement}("hello-message").text(this.message);
  *             this.{@link #getElement getElement}("link").attr("href", this.link);
  *         }
  *     });
@@ -685,7 +778,7 @@ JW.UI.Browsers = (function()
  * **component.jw.html**
  * 
  *     <div jwclass="myapp-component">
- *         <div jwid="hello-message" />
+ *         <div jwid="hello-message"></div>
  *         <a href="#" jwid="link">Click me!</a>
  *     </div>
  * 
@@ -709,23 +802,16 @@ JW.UI.Browsers = (function()
  * @extends JW.Class
  * @constructor
  */
-JW.UI.Component = function(config) {
+JW.UI.Component = function() {
 	JW.UI.Component._super.call(this);
-	config = config || {};
-	this.rootClass = config.rootClass;
-	this.template = config.template;
 	this.parent = null;
 	this.wasAfterAppend = false;
-	this.destroyed = false;
 	this.el = null;
-	this.replacedEl = null;
 	this.children = null;
-	this.allChildren = null;
-	this._elements = null;
-	this._childMapper = null;
-	this._childInserter = null;
-	this._replaceables = null;
-	this._arrays = null;
+	this._template = this.templates.main;
+	this._elements = null; // Map<jQuery>
+	this._replaceables = null; // Set<JW.UI.Component.Replaceable>
+	this._arrays = null; // Set<JW.UI.Component.Array>
 },
 
 JW.extend(JW.UI.Component, JW.Class, {
@@ -733,10 +819,7 @@ JW.extend(JW.UI.Component, JW.Class, {
 	 * @property {boolean} wasAfterAppend Was #afterAppend called?
 	 */
 	/**
-	 * @property {boolean} destroyed Was component destroyed?
-	 */
-	/**
-	 * @property {Object} templates Map from template ID to template string. Templates are defined by JW.UI.template method.
+	 * @property {Object} templates `<JW.UI.Component.Template>` Map from template ID to the template. Templates are defined by JW.UI.template method.
 	 */
 	/**
 	 * @property {JW.UI.Component} parent Parent component. Field is available from component rendering beginning.
@@ -745,69 +828,42 @@ JW.extend(JW.UI.Component, JW.Class, {
 	 * @property {jQuery} el Root element. Field is available from component rendering beginning.
 	 */
 	/**
-	 * @property {jQuery} replacedEl
-	 * Element in place of which was this component rendered. Assigned automatically at the moment of component
-	 * adding into #children map of parent component. Field is available from component rendering beginning.
-	 */
-	/**
-	 * @property {JW.ObservableMap} children
+	 * @property {JW.AbstractMap} children
 	 * `<JW.UI.Component>` (mutable) Named child components. Use this map to add child components in place of
 	 * elements with corresponding `jwid`. Field is available from component rendering beginning.
 	 */
-	/**
-	 * @property {Object} allChildren
-	 * Set of all child components (both named and arrays). Field is available from component rendering beginning.
-	 */
-	/*
-	Optional
-	String rootClass;
-	String template;
-	
-	Fields
-	Map<Element> _elements;
-	JW.ObservableMap.Mapper<JW.UI.Component, JW.UI.Component.Child> _childMapper;
-	JW.ObservableMap.Inserter<JW.UI.Component.Child> _childInserter;
-	Set<JW.UI.Component.Replaceable> _replaceables;
-	Set<JW.UI.Component.Array> _arrays;
-	*/
 	
 	destroy: function() {
 		if (this.parent) {
 			throw new Error("JW.UI.Component.destroy must be used for root and detached components only");
 		}
-		if (this.destroyed) {
-			return;
+		if (this.wasAfterAppend) {
+			this.releaseDom();
 		}
-		this.destroyed = true;
 		if (this.el) {
-			this.el.detach();
+			JW.UI.remove(this.el[0]);
 			JW.Set.each(this._arrays, JW.destroy);
 			this._arrays = null;
 			JW.Set.each(this._replaceables, JW.destroy);
 			this._replaceables = null;
 			
-			this._childInserter.destroy();
-			this._childInserter = null;
-			this._childMapper.destroy();
-			this._childMapper = null;
-			
-			this.destroyComponent();
+			this.children.unrender();
+			this.unrender();
 			
 			this.children.destroy();
 			this.children = null;
 			this.el.remove();
 		}
-		this.allChildren = null;
 		this._elements = null;
 		this.el = null;
-		this.destroyObject();
+		this.afterDestroy();
 		this._super();
 	},
 	
 	/**
 	 * Component life stage method. Called during component rendering after HTML template parsing and initialization
 	 * of references to all elements of the template. Called before `render<ChildId>` methods and
-	 * {@link #renderComponent} method. It is convenient to perform some preliminary action here before child
+	 * {@link #afterRender} method. It is convenient to perform some preliminary action here before child
 	 * components creation. But you are already able to create child components here. <code>this._super()</code>
 	 * call is performed at first line of method.
 	 *
@@ -823,7 +879,7 @@ JW.extend(JW.UI.Component, JW.Class, {
 	 *
 	 * @returns {void}
 	 */
-	renderComponent: function() {},
+	afterRender: function() {},
 	
 	/**
 	 * Component life stage method. Called after first-time component appearing in HTML DOM and UI components tree.
@@ -835,26 +891,57 @@ JW.extend(JW.UI.Component, JW.Class, {
 	afterAppend: function() {},
 	
 	/**
-	 * Component life stage method. Called during component destruction before {@link #destroyObject} method call.
+	 * Component life stage method. Called during component destruction before {@link #unrender} method call.
+	 * Everything that was performed in #afterAppend method should be reverted here.
+	 *
+	 * @returns {void}
+	 */
+	releaseDom: function() {},
+	
+	/**
+	 * Component life stage method. Called during component destruction before {@link #afterDestroy} method call.
 	 * Everything that was performed during component
 	 * rendering should be reverted here. All child component arrays are already removed by framework
 	 * before this method call, but the components themselves are not destroyed. You must destroy them explicitly.
-	 * Unlike arrays, named child component will be destroyed automatically after #destroyComponent method, so you must
+	 * Unlike arrays, named child component will be destroyed automatically after #unrender method, so you must
 	 * remove them from #children map if you want to keep them alive. <code>this._super()</code> method call is performed
 	 * at last line of method.
 	 *
 	 * @returns {void}
 	 */
-	destroyComponent: function() {},
+	unrender: function() {},
 	
 	/**
-	 * Component life stage method. Called during component destruction after {@link #destroyComponent} method call.
+	 * Component life stage method. Called during component destruction after {@link #unrender} method call.
 	 * Everything that was performed during component construction should be reverted here.
 	 * <code>this._super()</code> method call is performed at last line of method.
 	 *
 	 * @returns {void}
 	 */
-	destroyObject: function() {},
+	afterDestroy: function() {},
+	
+	/**
+	 * Selects component rendering strategy. By default, component is rendered outside of DOM based on `main` HTML
+	 * template specified by JW.UI.template method. You can change this by passing one of the next values
+	 * into #using method of the component:
+	 *
+	 * - JW.UI.Component.Template or String - use this template explicitly for rendering
+	 * - DOMElement or jQuery - build component on top of existing DOM element. Special attributes `jwclass` and `jwid`
+	 * will be processed the usual way
+	 *
+	 * **Disclaimer:** We strongly encourage you to use standard rendering strategy via JW.UI.template, or at least
+	 * create JW.UI.Component.Template instances to store your HTML templates. They work 3 times faster compared to
+	 * raw HTML rendering thanks to preliminary compilation and node cloning method.
+	 *
+	 * @param {Object} value Template or element to use for component rendering.
+	 * @returns {JW.UI.Component} this
+	 */
+	using: function(value) {
+		this._template =
+			(typeof value === "string") ? new JW.UI.Component.Template(value) :
+			(value instanceof JW.UI.Component.Template) ? value : new JW.UI.Component.DomTemplate(value);
+		return this;
+	},
 	
 	/**
 	 * Renders component. Call this method to initialize references to all elements of component and create
@@ -865,55 +952,25 @@ JW.extend(JW.UI.Component, JW.Class, {
 	 *
 	 * Feel free to call component rendering multiple times: it will be rendered only once.
 	 *
-	 * @param {jQuery} [replacedEl] Element on the place of which render this component (if exists).
-	 * @returns {void}
+	 * @returns {JW.UI.Component} this
 	 */
-	render: function(replacedEl) {
+	render: function() {
 		if (this.el) {
 			return;
 		}
-		this.replacedEl = replacedEl;
-		this.el = jQuery(this.template || this.templates.main);
-		this._elements = {};
-		this._elements["root"] = this.el;
-		this.allChildren = {};
-		this.children = new JW.ObservableMap();
+		var output = this._template.createElement();
+		this.el = jQuery(output.root);
+		this._elements = JW.Map.map(output.groups, jQuery);
+		this.children = new JW.UI.Component.Children(this);
 		this._replaceables = {};
 		this._arrays = {};
-		this.rootClass = JW.String.parseClass(this.rootClass || this.el.attr("jwclass"));
-		this.el.removeAttr("jwclass");
-		this.el.addClass(this.rootClass.join(" "));
-		var anchorEls = this.el.find("[jwid]");
-		for (var i = 0; i < anchorEls.length; ++i) {
-			var anchorEl = jQuery(anchorEls[i]);
-			var jwIds = JW.String.trim(anchorEl.attr("jwid")).split(/\s+/);
-			anchorEl.removeAttr("jwid");
-			for (var j = 0; j < jwIds.length; ++j) {
-				var jwId = jwIds[j];
-				this._elements[jwId] = this._elements[jwId] ? this._elements[jwId].add(anchorEl) : anchorEl;
-				for (var k = 0; k < this.rootClass.length; ++k) {
-					anchorEl.addClass(this.rootClass[k] + "-" + jwId);
-				}
-			}
-		}
-		this._childMapper = this.children.createMapper({
-			createItem  : function(child) { return new JW.UI.Component.Child(this, child); },
-			destroyItem : function(componentChild) { componentChild.destroy(); },
-			scope       : this
-		});
-		this._childInserter = this._childMapper.target.createInserter({
-			addItem    : function(componentChild, key) { componentChild.attach(key); },
-			removeItem : function(key, componentChild) { componentChild.detach(); },
-			scope      : this
-		});
 		this.beforeRender();
 		var elements = JW.apply({}, this._elements);
 		for (var jwId in elements) {
-			var anchorEl = elements[jwId];
 			var jwIdCamel = JW.String.camel(jwId);
 			var renderMethodName = "render" + JW.String.capitalize(jwIdCamel);
 			if (typeof this[renderMethodName] === "function") {
-				var result = this[renderMethodName](anchorEl);
+				var result = this[renderMethodName](elements[jwId]);
 				if (jwId === "root") {
 					if (result instanceof JW.AbstractArray) {
 						this.addArray(result, jwId);
@@ -931,46 +988,53 @@ JW.extend(JW.UI.Component, JW.Class, {
 				}
 			}
 		}
-		this.renderComponent();
+		this.afterRender();
+		if (this._template.requiresAfterAppend) {
+			this._afterAppend();
+		}
+		return this;
 	},
 	
 	/**
 	 * Render component into specified element. Use it to render root component only: its children must be rendered
 	 * using #children or #addArray stuff.
 	 *
-	 * @param {jQuery/string} [el] Element to render into, or its jQuery-selector.
-	 * @returns {void}
+	 * @param {jQuery} [el] Element to render into.
+	 * @returns {JW.UI.Component} this
 	 */
 	renderTo: function(el) {
 		this.render();
-		jQuery(el).insert(this.el);
+		jQuery(el)[0].appendChild(this.el[0]);
 		this._afterAppend();
+		return this;
 	},
 	
 	/**
 	 * Render component in place of specified element. Use it to render root component only: its children must be rendered
 	 * using #children or #addArray stuff.
 	 *
-	 * @param {jQuery/string} [el] Element to render in place of, or its jQuery-selector.
-	 * @returns {void}
+	 * @param {jQuery} [el] Element to render in place of.
+	 * @returns {JW.UI.Component} this
 	 */
 	renderAs: function(el) {
-		this.render(el);
-		jQuery(el).replaceBy(this.el, true);
+		this.render();
+		JW.UI.replace(jQuery(el)[0], this.el[0], true);
 		this._afterAppend();
+		return this;
 	},
 	
 	/**
 	 * Remove component from DOM. Can be used for root component only (which was added via #renderTo or #renderAs
 	 * method. All child components should be removed using #children or JW.UI.Component.Array stuff.
 	 *
-	 * @returns {void}
+	 * @returns {JW.UI.Component} this
 	 */
 	remove: function() {
 		if (this.parent) {
 			throw new Error("JW.UI.Component.remove must be used for root components only");
 		}
-		this.el.detach();
+		JW.UI.remove(this.el[0]);
+		return this;
 	},
 	
 	/**
@@ -980,21 +1044,6 @@ JW.extend(JW.UI.Component, JW.Class, {
 	 */
 	getElement: function(id) {
 		return this._elements[id];
-	},
-	
-	/**
-	 * Register a new element in component.
-	 * 
-	 * Method is used if HTML content of component is not fixed. For example, you can register a new element on
-	 * component inheritance if you don't want to override HTML template from scratch.
-	 * You can use an added element for various purposes, for example, to add child components.
-	 * 
-	 * @param {jQuery} el Element.
-	 * @param {string} jwid `jwid` to assign.
-	 * @returns {void}
-	 */
-	setElement: function(el, id) {
-		this._elements[id] = el;
 	},
 	
 	/**
@@ -1022,9 +1071,9 @@ JW.extend(JW.UI.Component, JW.Class, {
 	 * Method returns an instance of JW.UI.Component.Replaceable. This object is purposed for replaceable child
 	 * removal from parent component. Use {@link JW.Class#destroy destroy} method to do this.
 	 * Also, the replaceable will be removed from parent component on parent component destruction right
-	 * before #destroyComponent method call.
+	 * before #unrender method call.
 	 * But notice that child component inside this property won't be destroyed automatically.
-	 * Usually it can be done by corresponding JW.Mapper destruction in #destroyComponent method.
+	 * Usually it can be done by corresponding JW.Mapper destruction in #unrender method.
 	 *
 	 * @param {JW.Property} component `<JW.UI.Component>` Child component property.
 	 * @param {String} id jwId of element to replace.
@@ -1037,7 +1086,7 @@ JW.extend(JW.UI.Component, JW.Class, {
 	/**
 	 * Add child component array into specified element.
 	 * 
-	 * Based on JW.AbstractArray.Inserter synchronizer. Thanks to that, if you'll pass an instance of
+	 * Based on JW.UI.Inserter synchronizer. Thanks to that, if you'll pass an instance of
 	 * JW.ObservableArray as "components", then view will be synchronized with this array content of fly.
 	 * 
 	 * It is convenient to create "components" array from data array using JW.AbstractArray#createMapper method,
@@ -1046,9 +1095,9 @@ JW.extend(JW.UI.Component, JW.Class, {
 	 * Method returns an instance of JW.UI.Component.Array. This object is purposed for child component array
 	 * removal from parent component. Use {@link JW.Class#destroy destroy} method to do this.
 	 * Also, the array will be removed from parent component on parent component destruction right
-	 * before #destroyComponent method call.
+	 * before #unrender method call.
 	 * But notice that child components inside this array won't be destroyed automatically.
-	 * Usually it can be done by corresponding JW.AbstractCollection.Mapper destruction in #destroyComponent method.
+	 * Usually it can be done by corresponding JW.AbstractCollection.Mapper destruction in #unrender method.
 	 *
 	 * @param {JW.AbstractArray} components Child component array.
 	 * @param {jQuery/string} [el]
@@ -1057,7 +1106,8 @@ JW.extend(JW.UI.Component, JW.Class, {
 	 * @returns {JW.UI.Component.Array} Child component array wrapper.
 	 */
 	addArray: function(source, el) {
-		return new JW.UI.Component.Array(this, source, this._getElement(el));
+		return new JW.UI.Component.Array(this, source, (el === undefined) ? this.el :
+			(typeof el === "string") ? this._elements[el] : jQuery(el));
 	},
 	
 	_afterAppend: function() {
@@ -1067,32 +1117,27 @@ JW.extend(JW.UI.Component, JW.Class, {
 		if (this.parent && !this.parent.wasAfterAppend) {
 			return;
 		}
-		if (!this.parent && !this.el.parents("body").length) {
+		if (!this.parent && !JW.UI.inDom(this.el[0])) {
 			return;
 		}
 		this.wasAfterAppend = true;
 		this.afterAppend();
-		JW.Set.each(this.allChildren, JW.byMethod("_afterAppend"));
+		this.children.each(this._childAfterAppend);
+		JW.Array.each(this._arrays, this._childAfterAppend);
 	},
 	
-	_initChild: function(component, replacedEl) {
-		component.render(replacedEl);
+	_initChild: function(component) {
+		component.render();
 		component.parent = this;
-		JW.Set.add(this.allChildren, component);
 	},
 	
 	_doneChild: function(component) {
-		JW.Set.remove(this.allChildren, component);
 		component.parent = null;
 	},
 	
-	_getElement: function(el) {
-		return (typeof el === "string") ? this.getElement(el) : (el || this.el);
+	_childAfterAppend: function(child) {
+		child._afterAppend();
 	}
-});
-
-JW.UI.template(JW.UI.Component, {
-	main: '<div />'
 });
 
 JW.UI.Component.EventParams = function(sender) {
@@ -1104,6 +1149,75 @@ JW.extend(JW.UI.Component.EventParams, JW.EventParams, {
 	Fields
 	JW.UI.Component sender;
 	*/
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+JW.UI.Component.AbstractTemplate = function() {
+	JW.UI.Component.AbstractTemplate._super.call(this);
+	this.prefixes = null; // Array<String>
+};
+
+JW.extend(JW.UI.Component.AbstractTemplate, JW.Class, {
+	// abstract Boolean requiresAfterAppend;
+	// abstract void _addElement(String id, DOMElement el, Array<Integer> path);
+	
+	_compileAttributes: function(root) {
+		this.prefixes = JW.String.parseClass(root.getAttribute("jwclass"));
+		root.removeAttribute("jwclass");
+		for (var i = 0, l = this.prefixes.length; i < l; ++i) {
+			JW.UI.addClass(root, this.prefixes[i]);
+		}
+		var path = [];
+		this._walk(root, path, function(el, path) {
+			var attr = el.getAttribute("jwid");
+			if (!attr) {
+				return;
+			}
+			var ids = JW.String.parseClass(attr);
+			el.removeAttribute("jwid");
+			for (var i = 0, l = ids.length; i < l; ++i) {
+				var id = ids[i];
+				for (var j = 0, n = this.prefixes.length; j < n; ++j) {
+					JW.UI.addClass(el, this.prefixes[j] + "-" + id);
+				}
+				this._addElement(id, el, path);
+			}
+		}, this);
+		this._addElement("root", root, []);
+	},
+	
+	_walk: function(el, path, callback, scope) {
+		if (el.nodeType !== 1) { // ELEMENT
+			return;
+		}
+		callback.call(scope, el, path);
+		var index = path.length;
+		path.push(0);
+		var childNodes = el.childNodes;
+		for (var i = 0, l = childNodes.length; i < l; ++i) {
+			path[index] = i;
+			this._walk(childNodes[i], path, callback, scope);
+		}
+		path.pop();
+	}
 });
 
 /*
@@ -1146,7 +1260,7 @@ JW.UI.Component.Array = function(parent, source, el) {
 		scope       : this
 	}));
 	
-	this.own(new JW.UI.Inserter(mapper.target, el));
+	this.own(new JW.UI.Component.Inserter(mapper.target, el[0]));
 };
 
 JW.extend(JW.UI.Component.Array, JW.Class, {
@@ -1180,28 +1294,20 @@ JW.extend(JW.UI.Component.Array, JW.Class, {
 
 JW.UI.Component.Child = function(parent, child) {
 	JW.UI.Component.Child._super.call(this);
-	this.parent = parent;
-	this.child = child;
-	this.name = null;
-	this._el = null;
+	this.parent = parent; // JW.UI.Component
+	this.child = child; // JW.UI.Component
+	this.name = null; // String
+	this._el = null; // jQuery
 };
 
 JW.extend(JW.UI.Component.Child, JW.Class, {
-	/*
-	Fields
-	JW.UI.Component parent;
-	JW.UI.Component child;
-	String name;
-	Element _el;
-	*/
-	
 	attach: function(name) {
 		// JW.assertNull(this.name);
 		this.name = name;
-		this._el = this.parent.getElement(name);
-		this.parent._initChild(this.child, this._el);
+		this._el = this.parent._elements[name];
+		this.parent._initChild(this.child);
 		this.parent._elements[name] = this.child.el;
-		this._el.replaceBy(this.child.el, true);
+		JW.UI.replace(this._el[0], this.child.el[0], true);
 		this.child._afterAppend();
 	},
 	
@@ -1210,10 +1316,229 @@ JW.extend(JW.UI.Component.Child, JW.Class, {
 		if (this.parent._elements[this.name] === this.child.el) {
 			this.parent._elements[this.name] = this._el;
 		}
-		this.child.el.replaceBy(this._el);
+		JW.UI.replace(this.child.el[0], this._el[0]);
 		this.parent._doneChild(this.child);
 		this._el = null;
 		this.name = null;
+	}
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+JW.UI.Component.ChildInserter = function() {
+	JW.UI.Component.ChildInserter._super.call(this);
+};
+
+JW.extend(JW.UI.Component.ChildInserter, JW.AbstractMap, {
+	// override
+	destroy: function() {
+		JW.Map.each(this.getJson(), this._detach, this);
+		this._super();
+	},
+	
+	// override
+	trySplice: function(removedKeys, updatedItems) {
+		var spliceResult = this._super(removedKeys, updatedItems);
+		if (spliceResult === undefined) {
+			return;
+		}
+		JW.Map.each(spliceResult.removedItems, this._detach, this);
+		JW.Map.each(spliceResult.addedItems, this._attach, this);
+		return spliceResult;
+	},
+	
+	// override
+	tryClear: function() {
+		var items = this._super();
+		if (items === undefined) {
+			return;
+		}
+		JW.Map.each(items, this._detach, this);
+		return items;
+	},
+	
+	// override
+	tryReindex: function(keyMap) {
+		var result = this._super(keyMap);
+		if (result === undefined) {
+			return;
+		}
+		for (var oldKey in keyMap) {
+			var newKey = keyMap[oldKey];
+			var item = this.get(newKey);
+			item.detach();
+			item.attach(newKey);
+		}
+		return result;
+	},
+	
+	_attach: function(item, key) {
+		item.attach(key);
+	},
+	
+	_detach: function(item) {
+		item.detach();
+	}
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+JW.UI.Component.Children = function(component) {
+	JW.UI.Component.Children._super.call(this);
+	this.component = component; // JW.UI.Component
+	this.target = new JW.UI.Component.ChildInserter();
+};
+
+JW.extend(JW.UI.Component.Children, JW.AbstractMap, {
+	unrender: function() {
+		this.target.destroy();
+	},
+	
+	// override
+	trySplice: function(removedKeys, updatedItems) {
+		var spliceResult = this._super(removedKeys, updatedItems);
+		if (spliceResult === undefined) {
+			return;
+		}
+		var removedItems = spliceResult.removedItems;
+		var addedItems = spliceResult.addedItems;
+		var children = JW.Map.map(addedItems, function(item) {
+			return new JW.UI.Component.Child(this.component, item);
+		}, this);
+		var targetResult = this.target.trySplice(JW.Map.getRemovedKeys(removedItems, addedItems), children);
+		return spliceResult;
+	},
+	
+	// override
+	tryClear: function() {
+		var items = this._super();
+		if (items === undefined) {
+			return;
+		}
+		this.target.tryClear();
+		return items;
+	},
+	
+	// override
+	tryReindex: function(keyMap) {
+		var result = this._super(keyMap);
+		if (result === undefined) {
+			return;
+		}
+		this.target.tryReindex(keyMap);
+		return result;
+	}
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+JW.UI.Component.DomTemplate = function(el) {
+	JW.UI.Component.DomTemplate._super.call(this);
+	this.el = jQuery(el)[0];
+	this.output = null; // JW.UI.Component.TemplateOutput
+};
+
+JW.extend(JW.UI.Component.DomTemplate, JW.UI.Component.AbstractTemplate, {
+	requiresAfterAppend: true,
+	
+	createElement: function() {
+		if (this.output !== null) {
+			return this.output;
+		}
+		this.output = new JW.UI.Component.TemplateOutput(this.el, {});
+		this._compileAttributes(this.el);
+		return this.output;
+	},
+	
+	_addElement: function(id, el, path) {
+		var groups = this.output.groups;
+		groups[id] = groups[id] || [];
+		groups[id].push(el);
+	}
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+JW.UI.Component.Inserter = function(source, el) {
+	JW.UI.Component.Inserter._super.call(this, source, el);
+};
+
+JW.extend(JW.UI.Component.Inserter, JW.UI.Inserter, {
+	_getElement: function(item) {
+		return item.el[0];
+	},
+	
+	_addItem: function(item, index) {
+		this._super(item, index);
+		item._afterAppend();
 	}
 });
 
@@ -1292,27 +1617,112 @@ JW.extend(JW.UI.Component.Replaceable, JW.Class, {
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-JW.UI.Inserter = function(source, el) {
-	JW.UI.Inserter._super.call(this);
-	this.el = el;
-	this.own(source.createInserter({
-		addItem    : this._addItem,
-		removeItem : this._removeItem,
-		scope      : this
-	}));
+/**
+ * @class JW.UI.Component.Template
+ * 
+ * HTML template. This class compiles the input template only once, and uses element cloning further on to
+ * optimize rendering performance.
+ * 
+ * @extends JW.Class
+ * @constructor
+ * @param {String} html Input HTML.
+ */
+JW.UI.Component.Template = function(html) {
+	JW.UI.Component.Template._super.call(this);
+	this.html = html; // String
+	this.mirror = null; // DOMElement
+	this.groups = null; // Map<String, Array<Array<int>>>
 };
 
-JW.extend(JW.UI.Inserter, JW.Class, {
-	// Element el;
+JW.extend(JW.UI.Component.Template, JW.UI.Component.AbstractTemplate, {
+	requiresAfterAppend: false,
 	
-	_addItem: function(item, index) {
-		this.el.insert(item.el, index);
-		item._afterAppend();
+	/**
+	 * Render the template.
+	 * @returns {JW.UI.Component.TemplateOutput} Template rendering output.
+	 */
+	createElement: function() {
+		this._compile();
+		var root = this.mirror.cloneNode(true);
+		var groups = {};
+		for (var id in this.groups) {
+			var paths = this.groups[id];
+			var groupSize = paths.length;
+			var group = new Array(groupSize);
+			for (var i = 0; i < groupSize; ++i) {
+				var path = paths[i];
+				var el = root;
+				for (var j = 0, n = path.length; j < n; ++j) {
+					el = el.childNodes[path[j]];
+				}
+				group[i] = el;
+			}
+			groups[id] = group;
+		}
+		return new JW.UI.Component.TemplateOutput(root, groups);
 	},
 	
-	_removeItem: function(item) {
-		item.el.detach();
+	_compile: function() {
+		if (this.mirror !== null) {
+			return;
+		}
+		this.mirror = JW.UI.parseHtml(this.html);
+		this.groups = {};
+		this._compileAttributes(this.mirror);
+	},
+	
+	_addElement: function(id, el, path) {
+		this.groups[id] = this.groups[id] || [];
+		this.groups[id].push(path.concat());
 	}
+});
+
+JW.UI.template(JW.UI.Component, {
+	main: '<div></div>'
+});
+
+/*
+	jWidget UI source file.
+	
+	Copyright (C) 2014 Egor Nepomnyaschih
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @class JW.UI.Component.TemplateOutput
+ * 
+ * Result of JW.UI.Component.Template#createElement method. HTML template rendering output.
+ * 
+ * @extends JW.Class
+ * @constructor
+ * @param {DOMElement} root The rendered element.
+ * @param {Object} groups `<Array<DOMElement>>` Map from jwid to the elements with this jwid.
+ */
+JW.UI.Component.TemplateOutput = function(root, groups) {
+	JW.UI.Component.TemplateOutput._super.call(this);
+	this.root = root;
+	this.groups = groups;
+};
+
+JW.extend(JW.UI.Component.TemplateOutput, JW.Class, {
+	/**
+	 * @property {DOMElement} root The rendered element.
+	 */
+	/**
+	 * @property {Object} groups `<Array<DOMElement>>` Map from jwid to the elements with this jwid.
+	 */
 });
 
 /*
@@ -1576,7 +1986,7 @@ JW.extend(JW.UI.ClassUpdater, JW.Class, {
 	 */
 	
 	_update: function() {
-		this.el.toggleClass(this.cls, this.property.get());
+		this.el.toggleClass(this.cls, !!this.property.get());
 	}
 });
 
@@ -1812,7 +2222,7 @@ JW.extend(JW.UI.PropUpdater, JW.Class, {
  * @constructor
  * @param {jQuery} el Container DOM element.
  * @param {String} name Radios "name" attribute.
- * @param {JW.Property} property `<Boolean>` Target property.
+ * @param {JW.Property} property `<String>` Target property.
  */
 JW.UI.RadioListener = function(el, name, property) {
 	this._update = JW.inScope(this._update, this);
@@ -1833,7 +2243,7 @@ JW.extend(JW.UI.RadioListener, JW.Class, {
 	 * @property {String} name Radios "name" attribute.
 	 */
 	/**
-	 * @property {JW.Property} property `<Boolean>` Target property.
+	 * @property {JW.Property} property `<String>` Target property.
 	 */
 	
 	destroy: function() {
@@ -1912,10 +2322,13 @@ JW.extend(JW.UI.RadioUpdater, JW.Class, {
 	_update: function() {
 		var value = this.property.get();
 		if (JW.isSet(value)) {
-			this.el.find(this._selector + "[value='" + value + "']").prop("checked", true).change();
-		} else {
-			this.el.find(this._selector + ":checked").prop("checked", false).change();
+			var els = this.el.find(this._selector + "[value='" + value + "']");
+			if (els.length !== 0) {
+				els.prop("checked", true).change();
+				return;
+			}
 		}
+		this.el.find(this._selector + ":checked").prop("checked", false).change();
 	}
 });
 
@@ -1973,7 +2386,7 @@ JW.extend(JW.UI.TextUpdater, JW.Class, {
 	 */
 	
 	_update: function() {
-		this.el.text(this.property.get());
+		this.el[0].textContent = this.property.get();
 	}
 });
 
@@ -2029,7 +2442,7 @@ JW.UI.ValueListener = function(el, property, simple) {
 	this._update();
 	this.el.bind("change", this._update);
 	if (!this.simple) {
-		this._timer = this.own(setInterval(this._update, 100));
+		this._timer = setInterval(this._update, 100);
 	}
 };
 

@@ -1,13 +1,9 @@
 ﻿mt.TweetView = function(tweetData) {
 	mt.TweetView._super.call(this);
-	this.tweetData = tweetData;
+	this.tweetData = tweetData; // mt.data.Tweet
 };
 
 JW.extend(mt.TweetView, JW.UI.Component, {
-	/*
-	mt.data.Tweet tweetData;
-	*/
-	
 	renderAvatar: function(el) {
 		el.css("background-image", "url(" + this.tweetData.avatarUrl48 + ")");
 	},
