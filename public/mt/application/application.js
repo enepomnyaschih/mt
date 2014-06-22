@@ -1,13 +1,9 @@
 ﻿mt.Application = function(data) {
 	mt.Application._super.call(this);
-	this.data = data;
+	this.data = data; // mt.Data
 };
 
 JW.extend(mt.Application, JW.UI.Component, {
-	/*
-	mt.Data data;
-	*/
-	
 	renderProfileBox: function() {
 		return this.own(new mt.ProfileBox(this.data));
 	},
@@ -17,7 +13,7 @@ JW.extend(mt.Application, JW.UI.Component, {
 	},
 	
 	// override
-	renderComponent: function() {
+	afterRender: function() {
 		this._super();
 		$("html").addClass("mt-html");
 		$("body").addClass("mt-body");
