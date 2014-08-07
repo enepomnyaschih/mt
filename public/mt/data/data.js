@@ -1,15 +1,10 @@
 ﻿mt.Data = function() {
 	mt.Data._super.call(this);
-	this.profile = null;
-	this.tweets = this.own(new JW.ObservableArray()).ownItems();
+	this.profile = null; // mt.data.Profile
+	this.tweets = this.own(new JW.ObservableArray()).ownItems(); // JW.AbstractArray<mt.data.Tweet>
 };
 
-JW.extend(mt.Data, JW.Class, {
-	/*
-	mt.data.Profile profile;
-	JW.AbstractArray<mt.data.Tweet> tweets;
-	*/
-});
+JW.extend(mt.Data, JW.Class);
 
 mt.Data.createByJson = function(json) {
 	var data = new mt.Data();

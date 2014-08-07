@@ -1,0 +1,15 @@
+{
+	"requires": [
+		"bower_components/jquery/dist/jquery.js|auto",
+		"bower_components/jwidget/jwlib.js|auto",
+		"bower_components/jwidget/jwui.js|auto",
+		"bower_components/jwidget/plugins/locale.js|auto"
+	],
+	"resources": [
+		"samples/locale/equipmentSelector.js",
+		"samples/locale/form.js",
+		"samples/locale/localeSwitch.js",
+		"samples/locale/localeSwitchItem.js",
+		"samples/locale/boot.js"
+	]
+}

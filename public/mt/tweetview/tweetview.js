@@ -1,26 +1,20 @@
 ﻿mt.TweetView = function(data, tweetData) {
-	this._updateTime = JW.inScope(this._updateTime, this);
 	this._onLikeClick = JW.inScope(this._onLikeClick, this);
 	this._onRetweetClick = JW.inScope(this._onRetweetClick, this);
 	this._onRemoveClick = JW.inScope(this._onRemoveClick, this);
 	mt.TweetView._super.call(this);
-	this.data = data;
-	this.tweetData = tweetData;
+	this.data = data; // mt.Data
+	this.tweetData = tweetData; // mt.data.Tweet
 };
 
 JW.extend(mt.TweetView, JW.UI.Component, {
-	/*
-	mt.Data data;
-	mt.data.Tweet tweetData;
-	*/
-	
 	renderAvatar: function(el) {
 		el.css("background-image", "url(" + this.tweetData.avatarUrl48 + ")");
 	},
 	
 	renderTime: function() {
 		this._updateTime();
-		this.own(new JW.Interval(this._updateTime, 30000));
+		this.own(new JW.Interval(this._updateTime, this, 30000));
 	},
 	
 	renderFullName: function(el) {

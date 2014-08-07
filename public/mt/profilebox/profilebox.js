@@ -1,14 +1,10 @@
 ﻿mt.ProfileBox = function(data) {
 	this._onComposeSubmit = JW.inScope(this._onComposeSubmit, this);
 	mt.ProfileBox._super.call(this);
-	this.data = data;
+	this.data = data; // mt.Data
 };
 
 JW.extend(mt.ProfileBox, JW.UI.Component, {
-	/*
-	mt.Data data;
-	*/
-	
 	renderTop: function(el) {
 		el.attr("href", "https://twitter.com/" + this.data.profile.shortName);
 	},
