@@ -5,12 +5,12 @@ var Form = function(locale) {
 
 JW.extend(Form, JW.UI.Component, {
 	renderNameLabel: function(el) {
-		var text = this.own(this.locale.getFunctor("name")).target;
+		var text = this.own(this.locale.getProperty("name"));
 		this.own(new JW.UI.TextUpdater(el, text));
 	},
 
 	renderSubmit: function(el) {
-		var text = this.own(this.locale.getFunctor("submit")).target;
+		var text = this.own(this.locale.getProperty("submit"));
 		this.own(new JW.UI.ValueUpdater(el, text));
 	}
 });

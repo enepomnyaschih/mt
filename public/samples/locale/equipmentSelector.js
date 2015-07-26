@@ -5,17 +5,17 @@ var EquipmentSelector = function(locale) {
 
 JW.extend(EquipmentSelector, JW.UI.Component, {
 	renderMonitor: function(el) {
-		var text = this.own(this.locale.getFunctor("monitor")).target;
+		var text = this.own(this.locale.getProperty("monitor"));
 		this.own(new JW.UI.TextUpdater(el, text));
 	},
 
 	renderKeyboard: function(el) {
-		var text = this.own(this.locale.getFunctor("keyboard")).target;
+		var text = this.own(this.locale.getProperty("keyboard"));
 		this.own(new JW.UI.TextUpdater(el, text));
 	},
 
 	renderMouse: function(el) {
-		var text = this.own(this.locale.getFunctor("mouse")).target;
+		var text = this.own(this.locale.getProperty("mouse"));
 		this.own(new JW.UI.TextUpdater(el, text));
 	}
 });
