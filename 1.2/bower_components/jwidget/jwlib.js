@@ -3162,9 +3162,8 @@ JW.AbstractCollection.SorterComparing = function(source, config) {
 	config = config || {};
 	this.source = source;
 	this.compare = config.compare || JW.cmp;
+	this.order = config.order || 1;
 	this.scope = config.scope || this;
-	var scope = this.scope;
-	var compare = this.compare;
 	this.target = config.target || this.own(source.createEmptyArray());
 	this._splice([], source.asArray());
 };
@@ -3184,6 +3183,9 @@ JW.extend(JW.AbstractCollection.SorterComparing, JW.Class, {
 	 * @cfg {Object} scope {@link #compare} call scope.
 	 */
 	/**
+	 * @cfg {1/-1} [order] Sorting order.
+	 */
+	/**
 	 * @property {C} source Source collection.
 	 */
 	/**
@@ -3201,12 +3203,12 @@ JW.extend(JW.AbstractCollection.SorterComparing, JW.Class, {
 	 * @returns {void}
 	 */
 	resort: function() {
-		this.target.sortComparing(this.compare, this.scope);
+		this.target.sortComparing(this.compare, this.scope, this.order);
 	},
 	
 	_splice: function(removedItems, addedItems) {
-		var removedItemsSorted = JW.Array.toSortedComparing(removedItems, this.compare, this.scope);
-		var addedItemsSorted = JW.Array.toSortedComparing(addedItems, this.compare, this.scope);
+		var removedItemsSorted = JW.Array.toSortedComparing(removedItems, this.compare, this.scope, this.order);
+		var addedItemsSorted = JW.Array.toSortedComparing(addedItems, this.compare, this.scope, this.order);
 		removedItems = new Array(removedItems.length);
 		addedItems = new Array(addedItems.length);
 		var iRemoved = 0;
@@ -3218,7 +3220,7 @@ JW.extend(JW.AbstractCollection.SorterComparing, JW.Class, {
 			var removedItem = removedItemsSorted[iRemoved];
 			var addedItem = addedItemsSorted[iAdded];
 			var c = JW.cmp(removedItem === undefined, addedItem === undefined) ||
-				this.compare.call(this.scope, removedItem, addedItem);
+				(this.order * this.compare.call(this.scope, removedItem, addedItem));
 			if (c < 0) {
 				removedItems[jRemoved++] = removedItem;
 				++iRemoved;
@@ -3240,7 +3242,7 @@ JW.extend(JW.AbstractCollection.SorterComparing, JW.Class, {
 		var removeParams = null;
 		for (var iTarget = 0, lTarget = this.target.getLength(); iTarget < lTarget; ++iTarget) {
 			var value = this.target.get(iTarget);
-			if (removedItems[JW.Array.binarySearch(removedItems, value, this.compare, this.scope) - 1] === value) {
+			if (removedItems[JW.Array.binarySearch(removedItems, value, this.compare, this.scope, this.order) - 1] === value) {
 				if (!removeParams) {
 					removeParams = new JW.AbstractArray.IndexCount(iTarget, 0);
 					removeParamsList.push(removeParams);
@@ -3250,7 +3252,7 @@ JW.extend(JW.AbstractCollection.SorterComparing, JW.Class, {
 			} else {
 				removeParams = null;
 				var addParams = new JW.AbstractArray.IndexItems(iTarget + addShift, []);
-				while ((iAdds < addedItems.length) && (this.compare.call(this.scope, addedItems[iAdds], value) < 0)) {
+				while ((iAdds < addedItems.length) && (this.order * this.compare.call(this.scope, addedItems[iAdds], value) < 0)) {
 					addParams.items.push(addedItems[iAdds++]);
 					++addShift;
 				}
@@ -5415,7 +5417,7 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	},
 
 	/**
-	 * Determines index of first item which is more than specified value by `compare` function,
+	 * Determines index of first item which is more (or less if `order` == -1) than specified value by `compare` function,
 	 * using binary search. Array must be sorted by `compare` function.
 	 * Can be used for item insertion easily.
 	 * If you want to use this method for item removal, you must look at previous item and compare it to `value` first.
@@ -5428,10 +5430,11 @@ JW.extend(JW.AbstractArray, JW.IndexedCollection, {
 	 * Defaults to `JW.cmp(t1, t2)`.
 	 *
 	 * @param {Object} [scope] `f` call scope. Defaults to `this`.
+	 * @param {1/-1} [order] Sorting order.
 	 * @returns {number} Item index.
 	 */
-	binarySearch: function(value, compare, scope) {
-		return JW.Array.binarySearch(this.items, value, compare, scope);
+	binarySearch: function(value, compare, scope, order) {
+		return JW.Array.binarySearch(this.items, value, compare, scope, order);
 	},
 
 	_callStatic: function(algorithm, args) {
@@ -10273,7 +10276,7 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 */
 	/**
 	 * @method binarySearch
-	 * `<T>` Determines index of first item which is more than specified value by `compare` function,
+	 * `<T>` Determines index of first item which is more (or less if `order` == -1) than specified value by `compare` function,
 	 * using binary search. Array must be sorted by `compare` function.
 	 * Can be used for item insertion easily.
 	 * If you want to use this method for item removal, you must look at previous item and compare it to `value` first.
@@ -10284,10 +10287,11 @@ JW.extend(JW.Array, JW.AbstractArray, {
 	 *
 	 * `f(t1: T, t2: T): number`
 	 *
-	 * Comparer function. Returns positive value if t1 > t2; nagative value if t1 < t2; 0 if t1 == t2.
+	 * Comparer function. Returns positive value if t1 > t2; negative value if t1 < t2; 0 if t1 == t2.
 	 * Defaults to `JW.cmp(t1, t2)`.
 	 *
 	 * @param {Object} [scope] `f` call scope. Defaults to `this`.
+	 * @param {1/-1} [order] Sorting order.
 	 * @returns {number} Item index.
 	 */
 });
@@ -10839,9 +10843,10 @@ JW.apply(JW.Array, {
 		return target.pop();
 	},
 
-	binarySearch: function(target, value, compare, scope) {
+	binarySearch: function(target, value, compare, scope, order) {
 		compare = compare || function(x, y) { return (x < y) ? -1 : (x > y) ? 1 : 0 };
 		scope = scope || target;
+		order = order || 1;
 		var length = target.length;
 		var len2 = length >> 1;
 		var step = 1;
@@ -10850,7 +10855,7 @@ JW.apply(JW.Array, {
 		}
 		var index = 0;
 		while (step) {
-			if ((index + step <= length) && (compare.call(scope, value, target[index + step - 1]) >= 0)) {
+			if ((index + step <= length) && (order * compare.call(scope, value, target[index + step - 1]) >= 0)) {
 				index += step;
 			}
 			step >>= 1;
@@ -16737,6 +16742,7 @@ JW.extend(JW.Property, JW.Class, {
 		if (this._ownsValue && JW.isSet(this._value)) {
 			this._value.destroy();
 		}
+		this._value = null;
 		this._super();
 	},
 	

@@ -1,14 +1,14 @@
 {
   "name": "jwidget",
-  "version": "1.0.2",
+  "version": "1.2.0",
   "homepage": "https://github.com/enepomnyaschih/jwidget",
-  "_release": "1.0.2",
+  "_release": "1.2.0",
   "_resolution": {
     "type": "version",
-    "tag": "1.0.2",
-    "commit": "dbe1c4e4444165c26ed88c572a7dca2c76d3e4fd"
+    "tag": "1.2.0",
+    "commit": "fec91f57437c5c276df5bde920a298b9f6ff834b"
   },
   "_source": "git://github.com/enepomnyaschih/jwidget.git",
-  "_target": "1.0",
+  "_target": "1.2",
   "_originalSource": "jwidget"
 }
