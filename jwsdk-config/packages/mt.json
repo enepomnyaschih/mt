@@ -1,0 +1,28 @@
+{
+	"requires": [
+		"thirdparty/reset.css",
+		"bower_components/jquery/dist/jquery.js|auto",
+		"bower_components/jwidget/jwlib.js|auto",
+		"bower_components/jwidget/jwui.js|auto"
+	],
+	"resources": [
+		"mt/mt.js",
+		"mt/application/application.js",
+		"mt/application/application.jw.html : mt.Application",
+		"mt/application/application.styl",
+		"mt/data/data.js",
+		"mt/data/profile.js",
+		"mt/data/tweet.js",
+		"mt/profilebox/profilebox.js",
+		"mt/profilebox/profilebox.jw.html : mt.ProfileBox",
+		"mt/profilebox/profilebox.styl",
+		"mt/tweetfeed/tweetfeed.js",
+		"mt/tweetfeed/tweetfeed.jw.html : mt.TweetFeed",
+		"mt/tweetfeed/tweetfeed.styl",
+		"mt/tweetview/tweetview.js",
+		"mt/tweetview/tweetview.jw.html : mt.TweetView",
+		"mt/tweetview/tweetview.styl",
+		"data.json : dataJson",
+		"boot.js"
+	]
+}
