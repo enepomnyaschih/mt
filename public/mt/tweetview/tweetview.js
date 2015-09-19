@@ -45,7 +45,7 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	},
 	
 	renderRemove: function(el) {
-		el.click(this._onRemoveClick);
+		el.jwon("click", this._onRemoveClick, this);
 	},
 	
 	_updateTime: function() {
