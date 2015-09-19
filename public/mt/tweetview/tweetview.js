@@ -1,7 +1,4 @@
 ﻿mt.TweetView = function(tweetData) {
-	this._updateTime = JW.inScope(this._updateTime, this);
-	this._onLikeClick = JW.inScope(this._onLikeClick, this);
-	this._onRetweetClick = JW.inScope(this._onRetweetClick, this);
 	mt.TweetView._super.call(this);
 	this.tweetData = tweetData; // mt.data.Tweet
 };
@@ -13,7 +10,7 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	
 	renderTime: function() {
 		this._updateTime();
-		this.own(new JW.Interval(this._updateTime, 30000));
+		this.own(new JW.Interval(this._updateTime, this, 30000));
 	},
 	
 	renderFullName: function(el) {
@@ -31,13 +28,13 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	renderLike: function(el) {
 		this._updateLike();
 		this.own(this.tweetData.likeChangeEvent.bind(this._updateLike, this));
-		el.click(this._onLikeClick);
+		el.jwon("click", this._onLikeClick, this);
 	},
 	
 	renderRetweet: function(el) {
 		this._updateRetweet();
 		this.own(this.tweetData.retweetChangeEvent.bind(this._updateRetweet, this));
-		el.click(this._onRetweetClick);
+		el.jwon("click", this._onRetweetClick, this);
 	},
 	
 	_updateTime: function() {

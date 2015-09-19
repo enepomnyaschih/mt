@@ -7,8 +7,8 @@
 	this.time = config.time; // number
 	this.like = config.like; // boolean
 	this.retweet = config.retweet; // boolean
-	this.likeChangeEvent = this.own(new JW.Event()); // JW.Event<JW.ValueEventParams<boolean>>
-	this.retweetChangeEvent = this.own(new JW.Event()); // JW.Event<JW.ValueEventParams<boolean>>
+	this.likeChangeEvent = this.own(new JW.Event()); // JW.Event<boolean>
+	this.retweetChangeEvent = this.own(new JW.Event()); // JW.Event<boolean>
 };
 
 JW.extend(mt.data.Tweet, JW.Class, {
@@ -17,7 +17,7 @@ JW.extend(mt.data.Tweet, JW.Class, {
 			return;
 		}
 		this.like = value;
-		this.likeChangeEvent.trigger(new JW.ValueEventParams(this, value));
+		this.likeChangeEvent.trigger(value);
 	},
 	
 	setRetweet: function(value) {
@@ -25,7 +25,7 @@ JW.extend(mt.data.Tweet, JW.Class, {
 			return;
 		}
 		this.retweet = value;
-		this.retweetChangeEvent.trigger(new JW.ValueEventParams(this, value));
+		this.retweetChangeEvent.trigger(value);
 	}
 });
 
