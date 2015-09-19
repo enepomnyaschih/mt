@@ -10,9 +10,9 @@ JW.extend(Greeter, JW.UI.Component, {
 	},
 	
 	renderGreeting: function(el) {
-		var text = this.own(new JW.Functor([this.name], function(name) {
+		var text = this.own(this.name.$$mapValue(function(name) { // build greeting message
 			return "Hello, " + name + "!";
-		}, this)).target; // build greeting message
+		}, this));
 		this.own(new JW.UI.TextUpdater(el, text)); // bind element text to message
 	}
 });
