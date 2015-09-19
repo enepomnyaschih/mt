@@ -1,5 +1,6 @@
-﻿mt.TweetView = function(tweetData) {
+mt.TweetView = function(data, tweetData) {
 	mt.TweetView._super.call(this);
+	this.data = data; // mt.Data
 	this.tweetData = tweetData; // mt.data.Tweet
 };
 
@@ -43,6 +44,10 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 		el.jwon("click", this._onRetweetClick, this);
 	},
 	
+	renderRemove: function(el) {
+		el.click(this._onRemoveClick);
+	},
+	
 	_updateTime: function() {
 		var timeAgo = new Date().getTime() - this.tweetData.time;
 		var text = this._getTimeString(timeAgo);
@@ -57,6 +62,11 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	_onRetweetClick: function(event) {
 		event.preventDefault();
 		this.tweetData.retweet.set(!this.tweetData.retweet.get());
+	},
+	
+	_onRemoveClick: function(event) {
+		event.preventDefault();
+		this.data.tweets.removeItem(this.tweetData);
 	},
 	
 	_getTimeString: function(timeAgo) {
