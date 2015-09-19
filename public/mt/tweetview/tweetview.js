@@ -26,18 +26,18 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	},
 	
 	renderLike: function(el) {
-		var text = this.own(new JW.Functor([this.tweetData.like], function(like) {
+		var text = this.own(this.tweetData.like.$$mapValue(function(like) {
 			return like ? "Unlike" : "Like";
-		}, this)).target;
+		}, this));
 		this.own(new JW.UI.TextUpdater(el, text));
 		this.own(new JW.UI.ClassUpdater(el, "active", this.tweetData.like));
 		el.jwon("click", this._onLikeClick, this);
 	},
 	
 	renderRetweet: function(el) {
-		var text = this.own(new JW.Functor([this.tweetData.retweet], function(retweet) {
+		var text = this.own(this.tweetData.retweet.$$mapValue(function(retweet) {
 			return retweet ? "Unretweet" : "Retweet";
-		}, this)).target;
+		}, this));
 		this.own(new JW.UI.TextUpdater(el, text));
 		this.own(new JW.UI.ClassUpdater(el, "active", this.tweetData.retweet));
 		el.jwon("click", this._onRetweetClick, this);
