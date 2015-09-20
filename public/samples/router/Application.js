@@ -5,6 +5,7 @@ var Application = function() {
 
 JW.extend(Application, JW.UI.Component, {
 	beforeRender: function(el) {
+		this._super();
 		this.router = this.own(new JW.Plugins.Router({
 			path: JW.UI.hash,
 			handler: {
