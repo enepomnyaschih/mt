@@ -1,3 +1,6 @@
 bower_components/jquery/src
 build/resources
 mt
+boot.js
+bower.json
+data.json
