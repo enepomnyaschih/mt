@@ -1,7 +1,4 @@
-﻿mt.TweetView = function(data, tweetData) {
-	this._onLikeClick = JW.inScope(this._onLikeClick, this);
-	this._onRetweetClick = JW.inScope(this._onRetweetClick, this);
-	this._onRemoveClick = JW.inScope(this._onRemoveClick, this);
+mt.TweetView = function(data, tweetData) {
 	mt.TweetView._super.call(this);
 	this.data = data; // mt.Data
 	this.tweetData = tweetData; // mt.data.Tweet
@@ -30,25 +27,25 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 	},
 	
 	renderLike: function(el) {
-		var text = this.own(new JW.Functor([this.tweetData.like], function(like) {
+		var text = this.own(this.tweetData.like.$$mapValue(function(like) {
 			return like ? "Unlike" : "Like";
-		}, this)).target;
+		}, this));
 		this.own(new JW.UI.TextUpdater(el, text));
 		this.own(new JW.UI.ClassUpdater(el, "active", this.tweetData.like));
-		el.click(this._onLikeClick);
+		el.jwon("click", this._onLikeClick, this);
 	},
 	
 	renderRetweet: function(el) {
-		var text = this.own(new JW.Functor([this.tweetData.retweet], function(retweet) {
+		var text = this.own(this.tweetData.retweet.$$mapValue(function(retweet) {
 			return retweet ? "Unretweet" : "Retweet";
-		}, this)).target;
+		}, this));
 		this.own(new JW.UI.TextUpdater(el, text));
 		this.own(new JW.UI.ClassUpdater(el, "active", this.tweetData.retweet));
-		el.click(this._onRetweetClick);
+		el.jwon("click", this._onRetweetClick, this);
 	},
 	
 	renderRemove: function(el) {
-		el.click(this._onRemoveClick);
+		el.jwon("click", this._onRemoveClick, this);
 	},
 	
 	_updateTime: function() {
