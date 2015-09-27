@@ -4,7 +4,10 @@ var Application = function() {
 
 JW.extend(Application, JW.UI.Component, {
 	renderRect: function(el) {
+		// Watch input value
 		var title = this.own(this.getElement("input").jwval());
+
+		// Update rectangle title attribute
 		this.own(el.jwattr("title", title));
 	}
 });

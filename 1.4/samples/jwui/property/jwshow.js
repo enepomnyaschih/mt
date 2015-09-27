@@ -4,7 +4,10 @@ var Application = function() {
 
 JW.extend(Application, JW.UI.Component, {
 	renderRect: function(el) {
+		// Watch checkbox state
 		var checked = this.own(this.getElement("checkbox").jwprop("checked"));
+
+		// Show/hide rectangle
 		this.own(el.jwshow(checked));
 	}
 });

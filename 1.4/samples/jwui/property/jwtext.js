@@ -6,7 +6,11 @@ JW.extend(Application, JW.UI.Component, {
 	renderResult: function(el) {
 		var input = this.getElement("input");
 		input.text('<b>Hello!</b>');
+
+		// Watch input value
 		var text = this.own(input.jwval());
+
+		// Update element inner text
 		this.own(el.jwtext(text));
 	}
 });
