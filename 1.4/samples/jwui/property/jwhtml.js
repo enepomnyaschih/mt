@@ -16,7 +16,7 @@ JW.UI.template(Application, {
 		'<div jwclass="application">' +
 			'<div>HTML:</div>' +
 			'<textarea jwid="input" rows="5" cols="80"></textarea>' +
-			'<div>Result:</div>' +
+			'<div>Output:</div>' +
 			'<div jwid="result"></div>' +
 		'</div>'
 });
