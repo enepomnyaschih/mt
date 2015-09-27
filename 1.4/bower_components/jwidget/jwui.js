@@ -2097,7 +2097,10 @@ jQuery.extend(jQuery.fn, {
 	},
 
 	/**
-	 * Shorthand for JW.UI.AttrUpdater creation - see it for details.
+	 * Watches string property modification and updates the specified attribute of the DOM element.
+	 * Returns JW.UI.AttrUpdater instance. Destroy it to stop synchronization.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="180" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwattr.html"></iframe>
 	 *
 	 * @param {String} attr DOM element attribute name.
 	 * @param {JW.Property} property `<String>` Attribute value.
@@ -2108,10 +2111,32 @@ jQuery.extend(jQuery.fn, {
 	},
 
 	/**
-	 * Shorthand for JW.UI.ClassUpdater and JW.UI.ClassNameUpdater creation - see them for details.
+	 * DOM element CSS class management method. Supports two variations.
 	 *
 	 *     jwclass(cls: String, property: JW.Property<Boolean>): JW.UI.ClassUpdater
 	 *     jwclass(cls: JW.Property<String>): JW.UI.ClassNameUpdater
+	 *
+	 * <hr>
+	 *
+	 *     jwclass(cls: String, property: JW.Property<Boolean>): JW.UI.ClassUpdater
+	 *
+	 * Watches boolean property modification and updates the specified CSS class presence in the DOM element.
+	 * Returns JW.UI.ClassUpdater instance. Destroy it to stop synchronization.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="220" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwclass-bool.html"></iframe>
+	 *
+	 * <hr>
+	 *
+	 *     jwclass(cls: JW.Property<String>): JW.UI.ClassNameUpdater
+	 *
+	 * Watches string property modification and updates CSS class name in the DOM element.
+	 * Returns JW.UI.ClassNameUpdater instance. Destroy it to stop synchronization.
+	 *
+	 * **Caution:** Method doesn't check if the class of the same name is already present in the element.
+	 * If that's the case, it will remove the class on the next property value change. However, it won't
+	 * touch the other classes, e.g. it doesn't remove "application-rect" class in the example below.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="250" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwclass-string.html"></iframe>
 	 */
 	jwclass: function() {
 		var a = arguments[0], b = arguments[1];
@@ -2119,7 +2144,10 @@ jQuery.extend(jQuery.fn, {
 	},
 
 	/**
-	 * Shorthand for JW.UI.CssUpdater creation - see it for details.
+	 * Watches string modification and updates the specified CSS style of the DOM element.
+	 * Returns JW.UI.CssUpdater instance. Destroy it to stop synchronization.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="180" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwcss.html"></iframe>
 	 *
 	 * @param {String} style CSS style name.
 	 * @param {JW.Property} property `<String>` Style value.
@@ -2130,7 +2158,10 @@ jQuery.extend(jQuery.fn, {
 	},
 
 	/**
-	 * Shorthand for JW.UI.HtmlUpdater creation - see it for details.
+	 * Watches string property modification and updates inner HTML of the DOM element.
+	 * Returns JW.UI.HtmlUpdater instance. Destroy it to stop synchronization.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="220" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwhtml.html"></iframe>
 	 *
 	 * @param {JW.Property} property `<String>` HTML value.
 	 * @returns {JW.UI.HtmlUpdater} Synchronizer instance.
@@ -2140,13 +2171,29 @@ jQuery.extend(jQuery.fn, {
 	},
 
 	/**
-	 * Shorthand for JW.UI.PropUpdater and JW.UI.CheckedListener creation - see them for details.
+	 * DOM element property management method. Supports two variations.
 	 *
 	 *     jwprop(prop: String, property: JW.Property<Boolean>): JW.UI.PropUpdater
-	 *     jwprop("checked"): JW.Property<Boolean> // creates JW.UI.CheckedListener implicitly
+	 *     jwprop("checked"): JW.Property<Boolean>
+	 *
+	 * <hr>
+	 *
+	 *     jwprop(prop: String, property: JW.Property<Boolean>): JW.UI.PropUpdater
+	 *
+	 * Watches boolean property modification and updates the specified property of the DOM element.
+	 * Returns JW.UI.PropUpdater instance. Destroy it to stop synchronization.
+	 *
+	 * <hr>
+	 *
+	 *     jwprop("checked"): JW.Property<Boolean>
+	 *
+	 * Returns a boolean property containing current checkbox state and starts watching for checkbox modification.
+	 * Creates JW.UI.CheckedListener implicitly. Destroy the result property to stop synchronization.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="140" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwprop.html"></iframe>
 	 *
 	 * @param {String} prop Element's property name.
-	 * @param {JW.Property} property `<Boolean>` Property value.
+	 * @param {JW.Property} [property] `<Boolean>` Property value.
 	 */
 	jwprop: function(prop, property) {
 		if (property != null) {
@@ -2161,10 +2208,34 @@ jQuery.extend(jQuery.fn, {
 	},
 
 	/**
-	 * Shorthand for JW.UI.RadioUpdater and JW.UI.RadioListener creation - see them for details.
+	 * Radio group value management method. Supports two variations.
 	 *
 	 *     jwradio(name: String, value: JW.Property<String>): JW.UI.RadioUpdater
-	 *     jwradio(name: String): JW.Property<String> // creates JW.UI.RadioListener implicitly
+	 *     jwradio(name: String): JW.Property<String>
+	 *
+	 * <hr>
+	 *
+	 *     jwradio(name: String, value: JW.Property<String>): JW.UI.RadioUpdater
+	 *
+	 * Watches string property modification and selects a corresponding radio button.
+	 * Returns JW.UI.RadioUpdater instance. Destroy it to stop synchronization.
+	 *
+	 * All radios must have the same "name" attribute value.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="170" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwradio.html"></iframe>
+	 *
+	 * <hr>
+	 *
+	 *     jwradio(name: String): JW.Property<String>
+	 *
+	 * Returns a string property containing current radio group selection and starts watching for selection modification.
+	 * Creates JW.UI.RadioListener implicitly. Destroy the result property to stop synchronization.
+	 *
+	 * Notice that the object binds an event listener to a container element and uses bubbling mechanism to detect the
+	 * selection modification. That's why you must avoid bubbling interruption in child elements of the container.
+	 * All radios must have the same "name" attribute value. If neighter radio is selected, property is set to null.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="255" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwclass-string.html"></iframe>
 	 *
 	 * @param {String} name Radios "name" attribute.
 	 * @param {JW.Property} [property] `<String>` Radio value.
@@ -2179,7 +2250,10 @@ jQuery.extend(jQuery.fn, {
 	},
 
 	/**
-	 * Shorthand for JW.UI.TextUpdater creation - see it for details.
+	 * Watches string modification and updates inner text of the DOM element.
+	 * Returns JW.UI.TextUpdater instance. Destroy it to stop synchronization.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="220" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwtext.html"></iframe>
 	 *
 	 * @param {JW.Property} property `<String>` HTML value.
 	 * @returns {JW.UI.TextUpdater} Synchronizer instance.
@@ -2189,10 +2263,26 @@ jQuery.extend(jQuery.fn, {
 	},
 
 	/**
-	 * Shorthand for JW.UI.ValueUpdater and JW.ValueListener creation - see them for details.
+	 * DOM element value management method. Supports two variations.
 	 *
 	 *     jwval(value: JW.Property<String>): JW.UI.ValueUpdater
-	 *     jwval(): JW.Property<String> // creates JW.UI.ValueListener implicitly
+	 *     jwval(): JW.Property<String>
+	 *
+	 * <hr>
+	 *
+	 *     jwval(value: JW.Property<String>): JW.UI.ValueUpdater
+	 *
+	 * Watches string property modification and updates the value of the DOM text input.
+	 * Returns JW.UI.ValueUpdater instance. Destroy it to stop synchronization.
+	 *
+	 * <hr>
+	 *
+	 *     jwval(): JW.Property<String>
+	 *
+	 * Returns a string property containing current element value and starts watching for value modification.
+	 * Creates JW.UI.ValueListener implicitly. Destroy the result property to stop synchronization.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="285" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwval.html"></iframe>
 	 *
 	 * @param {JW.Property} [property] `<String>` Element value.
 	 */
@@ -2206,7 +2296,12 @@ jQuery.extend(jQuery.fn, {
 	},
 
 	/**
-	 * Shorthand for JW.UI.VisibleUpdater creation - see it for details.
+	 * Watches boolean property modification and updates visibility of the DOM element.
+	 * To make element invisible, sets "display: none" inline style. To make
+	 * element visible, removes "display" inline style. Make sure that element is visible according to your CSS rules.
+	 * Returns JW.UI.VisibleUpdater instance. Destroy it to stop synchronization.
+	 *
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="215" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-jwshow.html"></iframe>
 	 *
 	 * @param {JW.Property} property `<Boolean>` Element visibility.
 	 * @returns {JW.UI.VisibleUpdater} Synchronizer instance.
@@ -2309,24 +2404,11 @@ JW.UI.preloadImage = function(
 
 /**
  * @class
- * Watches source string {@link JW.Property property} modification and updates the
- * specified attribute of the DOM element.
- * Applied on initialization as well.
  *
- *     var title = new JW.Property("This is a tooltip");
- *     // Next command sets "title" attribute value to "This is a tooltip"
- *     var updater = new JW.UI.AttrUpdater($("#myelem"), "title", title);
- *     // Next command changes "title" attribute value to "Это подсказка"
- *     title.{@link JW.Property#set set}("Это подсказка");
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     updater.{@link JW.UI.AttrUpdater#destroy destroy}();
+ * Result of {@link jQuery#jwattr jwattr} method call. Destroy it to stop synchronization.
  *
- * Method {@link jQuery#jwattr jwattr} is a shorthand for synchronizer creation.
- *
- *     var title = new JW.Property("This is a tooltip");
- *     var updater = $("#myelem").{@link jQuery#jwattr jwattr}("title", title);
- *     title.{@link JW.Property#set set}("Это подсказка");
- *     updater.{@link JW.UI.AttrUpdater#destroy destroy}();
+ * Was used as a standalone class before jWidget 1.4.
+ * As of jWidget 1.4, {@link jQuery#jwattr jwattr} is an easier alternative.
  *
  * @extends JW.Class
  *
@@ -2387,26 +2469,13 @@ JW.extend(JW.UI.AttrUpdater, JW.Class, {
 
 /**
  * @class
- * Watches checkbox state modification and updates the value of the target boolean
- * {@link JW.Property property}.
- * Applied on initialization as well.
  *
- *     var listener = new JW.UI.CheckedListener($("#mycheckbox"));
- *     var checked = listener.{@link JW.UI.CheckedListener#property-target target};
- *     // Assume that the checkbox is unchecked initially
- *     assertEquals(false, checked.{@link JW.Property#get get}());
- *     // Later on, user checked the checkbox
- *     assertEquals(true, checked.{@link JW.Property#get get}());
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     listener.{@link JW.UI.CheckedListener#destroy destroy}();
+ * Checked state listener for {@link jQuery#jwprop jwprop} method.
  *
- * In simple scenarios, {@link jQuery#jwprop jwprop} is a shorthand for synchronizer creation.
+ * You may use it as a standalone class. In addition to {@link jQuery#jwprop jwprop} features,
+ * allows you to specify target property explicitly. Destroy it to stop synchronization.
  *
- *     var checked = $("#mycheckbox").{@link jQuery#jwprop jwprop}("checked");
- *     assertEquals(false, checked.{@link JW.Property#get get}());
- *     checked.{@link JW.Property#destroy destroy}();
- *
- * For backward binding, use JW.UI.PropUpdater, passing "checked" as a prop argument value.
+ * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="150" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-checkedListener.html"></iframe>
  *
  * @extends JW.Class
  *
@@ -2479,37 +2548,11 @@ JW.extend(JW.UI.CheckedListener, JW.Class, {
 
 /**
  * @class
- * Watches source string {@link JW.Property property} modification and updates
- * the CSS class name in the DOM element.
- * Applied on initialization as well.
  *
- *     var color = new JW.Property("red");
+ * Result of {@link jQuery#jwclass jwclass} method call. Destroy it to stop synchronization.
  *
- *     // Next command adds "red" CSS class to the element
- *     var updater = new JW.UI.ClassNameUpdater($("#myelem"), color);
- *
- *     // Next command removes "red" CSS class from the element and adds "blue" class instead
- *     color.{@link JW.Property#set set}("blue");
- *
- *     // Next command removes "blue" CSS class from the element
- *     color.{@link JW.Property#set set}(null);
- *
- *     // Next command adds "green" CSS class to the element
- *     color.{@link JW.Property#set set}("green");
- *
- *     // Next command removes "green" CSS class from the element and stops synchronization
- *     updater.{@link JW.UI.ClassNameUpdater#destroy destroy}();
- *
- * **Caution:** Updater doesn't check if the class of the same name is already present in the element.
- * If that's the case, it will remove the class on the next property value change. However, it won't
- * touch the other classes, e.g. it doesn't remove "elem" class in the example above.
- *
- * Method {@link jQuery#jwclass jwclass} is a shorthand for synchronizer creation.
- *
- *     var color = new JW.Property("red");
- *     var updater = $("#myelem"){@link jQuery#jwclass jwclass}(color);
- *     color.{@link JW.Property#set set}("blue");
- *     updater.{@link JW.UI.ClassNameUpdater#destroy destroy}();
+ * Was used as a standalone class before jWidget 1.4.
+ * As of jWidget 1.4, {@link jQuery#jwclass jwclass} is an easier alternative.
  *
  * @extends JW.Class
  *
@@ -2550,24 +2593,11 @@ JW.extend(JW.UI.ClassNameUpdater, JW.Class);
 
 /**
  * @class
- * Watches source boolean {@link JW.Property property} modification and updates the
- * specified CSS class presence in the DOM element.
- * Applied on initialization as well.
  *
- *     var selected = new JW.Property(true);
- *     // Next command adds "selected" CSS class to element
- *     var updater = new JW.UI.ClassUpdater($("#myelem"), "selected", selected);
- *     // Next command removes "selected" CSS class from element
- *     selected.{@link JW.Property#set set}(false);
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     updater.{@link JW.UI.ClassUpdater#destroy destroy}();
+ * Result of {@link jQuery#jwclass jwclass} method call. Destroy it to stop synchronization.
  *
- * Method {@link jQuery#jwclass jwclass} is a shorthand for synchronizer creation.
- *
- *     var selected = new JW.Property(true);
- *     var updater = $("#myelem").{@link jQuery#jwclass jwclass}("selected", selected);
- *     selected.{@link JW.Property#set set}(false);
- *     updater.{@link JW.UI.ClassUpdater#destroy destroy}();
+ * Was used as a standalone class before jWidget 1.4.
+ * As of jWidget 1.4, {@link jQuery#jwclass jwclass} is an easier alternative.
  *
  * @extends JW.Class
  *
@@ -2628,24 +2658,11 @@ JW.extend(JW.UI.ClassUpdater, JW.Class, {
 
 /**
  * @class
- * Watches source string {@link JW.Property property} modification and updates the
- * specified CSS style of the DOM element.
- * Applied on initialization as well.
  *
- *     var color = new JW.Property("red");
- *     // Next command sets "color" style value to "red"
- *     var updater = new JW.UI.CssUpdater($("#myelem"), "color", color);
- *     // Next command changes "color" style value to "blue"
- *     color.{@link JW.Property#set set}("blue");
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     updater.{@link JW.UI.CssUpdater#destroy destroy}();
+ * Result of {@link jQuery#jwcss jwcss} method call. Destroy it to stop synchronization.
  *
- * Method {@link jQuery#jwcss jwcss} is a shorthand for synchronizer creation.
- *
- *     var color = new JW.Property("red");
- *     var updater = $("#myelem").{@link jQuery#jwcss jwcss}("color", color);
- *     color.{@link JW.Property#set set}("blue");
- *     updater.{@link JW.UI.CssUpdater#destroy destroy}();
+ * Was used as a standalone class before jWidget 1.4.
+ * As of jWidget 1.4, {@link jQuery#jwcss jwcss} is an easier alternative.
  *
  * @extends JW.Class
  *
@@ -2706,24 +2723,11 @@ JW.extend(JW.UI.CssUpdater, JW.Class, {
 
 /**
  * @class
- * Watches source string {@link JW.Property property} modification and updates the
- * inner HTML of the DOM element.
- * Applied on initialization as well.
  *
- *     var html = new JW.Property('<img src="loading.gif"> Loading...');
- *     // Next command sets element HTML to loading stuff
- *     var updater = new JW.UI.HtmlUpdater($("#myelem"), html);
- *     // Next command changes element HTML to loaded stuff
- *     html.{@link JW.Property#set set}('<img src="loaded.png"> Loaded!');
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     updater.{@link JW.UI.HtmlUpdater#destroy destroy}();
+ * Result of {@link jQuery#jwhtml jwhtml} method call. Destroy it to stop synchronization.
  *
- * Method {@link jQuery#jwhtml jwhtml} is a shorthand for synchronizer creation.
- *
- *     var html = new JW.Property('<img src="loading.gif"> Loading...');
- *     var updater = $("#myelem").{@link jQuery#jwhtml jwhtml}(html);
- *     html.{@link JW.Property#set set}('<img src="loaded.png"> Loaded!');
- *     updater.{@link JW.UI.HtmlUpdater#destroy destroy}();
+ * Was used as a standalone class before jWidget 1.4.
+ * As of jWidget 1.4, {@link jQuery#jwhtml jwhtml} is an easier alternative.
  *
  * @extends JW.Class
  *
@@ -2779,26 +2783,11 @@ JW.extend(JW.UI.HtmlUpdater, JW.Class, {
 
 /**
  * @class
- * Watches source boolean {@link JW.Property property} modification and updates the
- * specified property of the DOM element.
- * Applied on initialization as well.
  *
- *     var checked = new JW.Property(true);
- *     // Next command checks the checkbox
- *     var updater = new JW.UI.PropUpdater($("#myelem"), "checked", checked);
- *     // Next command unchecks the checkbox
- *     checked.{@link JW.Property#set set}(false);
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     updater.{@link JW.UI.PropUpdater#destroy destroy}();
+ * Result of {@link jQuery#jwprop jwprop} method call. Destroy it to stop synchronization.
  *
- * Method {@link jQuery#jwprop jwprop} is a shorthand for synchronizer creation.
- *
- *     var checked = new JW.Property(true);
- *     var updater = $("#myelem").{@link jQuery#jwprop jwprop}("checked", checked);
- *     checked.{@link JW.Property#set set}(false);
- *     updater.{@link JW.UI.PropUpdater#destroy destroy}();
- *
- * For backward binding, use JW.UI.CheckedListener for checkboxes and JW.UI.RadioListener for radios.
+ * Was used as a standalone class before jWidget 1.4.
+ * As of jWidget 1.4, {@link jQuery#jwprop jwprop} is an easier alternative.
  *
  * @extends JW.Class
  *
@@ -2862,30 +2851,13 @@ JW.extend(JW.UI.PropUpdater, JW.Class, {
 
 /**
  * @class
- * Watches selection modification in radio group and updates the value of the target string
- * {@link JW.Property property}.
- * Applied on initialization as well.
  *
- *     var listener = new JW.UI.RadioListener($("#myform"), "myradio");
- *     var selected = listener.{@link JW.UI.RadioListener#property-target target};
- *     // Assume that the radio with value "apple" is selected initially
- *     assertEquals("apple", selected.{@link JW.Property#get get}());
- *     // Later on, user selected "banana" radio
- *     assertEquals("banana", selected.{@link JW.Property#get get}());
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     listener.{@link JW.UI.RadioListener#destroy destroy}();
+ * Radio group selection listener for {@link jQuery#jwradio jwradio} method.
  *
- * Notice that the object binds an event listener to a container element and uses bubbling mechanism to detect the
- * selection modification. That's why you must avoid bubbling interruption in child elements of the container.
- * All radios must have the same "name" attribute value. If neighter radio is selected, property is set to null.
+ * You may use it as a standalone class. In addition to {@link jQuery#jwradio jwradio} features,
+ * allows you to specify target property explicitly. Destroy it to stop synchronization.
  *
- * In simple scenarios, {@link jQuery#jwradio jwradio} is a shorthand for synchronizer creation.
- *
- *     var selected = $("#myform").{@link jQuery#jwradio jwradio}("myradio");
- *     assertEquals("apple", selected.{@link JW.Property#get get}());
- *     selected.{@link JW.Property#destroy destroy}();
- *
- * For backward binding, use JW.UI.RadioUpdater.
+ * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="300" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-radioListener.html"></iframe>
  *
  * @extends JW.Class
  *
@@ -2965,27 +2937,11 @@ JW.extend(JW.UI.RadioListener, JW.Class, {
 
 /**
  * @class
- * Watches source string {@link JW.Property property} modification and selects a corresponding radio.
- * Applied on initialization as well.
  *
- *     var value = new JW.Property("apple");
- *     // Next command selects a radio with value "apple" in a group
- *     var updater = new JW.UI.RadioUpdater($("#myform"), "myradio", value);
- *     // Next command selects a radio with value "banana" in a group
- *     value.{@link JW.Property#set set}("banana");
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     updater.{@link JW.UI.RadioUpdater#destroy destroy}();
+ * Result of {@link jQuery#jwradio jwradio} method call. Destroy it to stop synchronization.
  *
- * All radios must have the same "name" attribute value.
- *
- * Method {@link jQuery#jwradio jwradio} is a shorthand for synchronizer creation.
- *
- *     var value = new JW.Property("apple");
- *     var updater = $("#myform").{@link jQuery#jwradio jwradio}("myradio", value);
- *     value.{@link JW.Property#set set}("banana");
- *     updater.{@link JW.UI.RadioUpdater#destroy destroy}();
- *
- * For backward binding, use JW.UI.RadioListener.
+ * Was used as a standalone class before jWidget 1.4.
+ * As of jWidget 1.4, {@link jQuery#jwradio jwradio} is an easier alternative.
  *
  * @extends JW.Class
  *
@@ -3055,24 +3011,11 @@ JW.extend(JW.UI.RadioUpdater, JW.Class, {
 
 /**
  * @class
- * Watches source string {@link JW.Property property} modification and updates the
- * inner text of the DOM element.
- * Applied on initialization as well.
  *
- *     var text = new JW.Property("I like cats");
- *     // Next command sets element text to "I like cats"
- *     var updater = new JW.UI.TextUpdater($("#myelem"), text);
- *     // Next command changes element text to "Everyone likes cats"
- *     text.{@link JW.Property#set set}("Everyone likes cats");
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     updater.{@link JW.UI.TextUpdater#destroy destroy}();
+ * Result of {@link jQuery#jwtext jwtext} method call. Destroy it to stop synchronization.
  *
- * Method {@link jQuery#jwtext jwtext} is a shorthand for synchronizer creation.
- *
- *     var text = new JW.Property("I like cats");
- *     var updater = $("#myelem").{@link jQuery#jwtext jwtext}(text);
- *     text.{@link JW.Property#set set}("Everyone likes cats");
- *     updater.{@link JW.UI.TextUpdater#destroy destroy}();
+ * Was used as a standalone class before jWidget 1.4.
+ * As of jWidget 1.4, {@link jQuery#jwtext jwtext} is an easier alternative.
  *
  * @extends JW.Class
  *
@@ -3128,30 +3071,13 @@ JW.extend(JW.UI.TextUpdater, JW.Class, {
 
 /**
  * @class
- * Watches DOM text input value modification and updates the value of the target string
- * {@link JW.Property property}.
- * Applied on initialization as well.
  *
- *     var listener = new JW.UI.ValueListener($("#myinput"));
- *     var value = listener.{@link JW.UI.ValueListener#property-target target};
- *     // Assume that the element is a blank field initially
- *     assertEquals("", value.{@link JW.Property#get get}());
- *     // Later on, user entered "foo" in the field
- *     assertEquals("foo", value.{@link JW.Property#get get}());
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     listener.{@link JW.UI.ValueListener#destroy destroy}();
+ * Element value listener for {@link jQuery#jwval jwval} method.
  *
- * In simple scenarios, {@link jQuery#jwval jwval} is a shorthand for synchronizer creation.
+ * You may use it as a standalone class. In addition to {@link jQuery#jwval jwval} features,
+ * has some configuration options. Destroy it to stop synchronization.
  *
- *     var value = $("#myinput").{@link jQuery#jwval jwval}();
- *     // Assume that the element is a blank field initially
- *     assertEquals("", value.{@link JW.Property#get get}());
- *     // Later on, user entered "foo" in the field
- *     assertEquals("foo", value.{@link JW.Property#get get}());
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     value.{@link JW.Property#destroy destroy}();
- *
- * For backward binding, use JW.UI.ValueUpdater.
+ * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="180" src="http://enepomnyaschih.github.io/mt/1.4/jwui-property-valueListener.html"></iframe>
  *
  * @extends JW.Class
  *
@@ -3239,26 +3165,11 @@ JW.extend(JW.UI.ValueListener, JW.Class, {
 
 /**
  * @class
- * Watches source string {@link JW.Property property} modification and updates the
- * value of the DOM text input.
- * Applied on initialization as well.
  *
- *     var value = new JW.Property("Submit");
- *     // Next command sets element value to "Submit"
- *     var updater = new JW.UI.ValueUpdater($("#myelem"), value);
- *     // Next command changes element value to "Отправить"
- *     value.{@link JW.Property#set set}("Отправить");
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     updater.{@link JW.UI.ValueUpdater#destroy destroy}();
+ * Result of {@link jQuery#jwval jwval} method call. Destroy it to stop synchronization.
  *
- * Method {@link jQuery#jwval jwval} is a shorthand for synchronizer creation.
- *
- *     var value = new JW.Property("Submit");
- *     var updater = $("#myelem").{@link jQuery#jwval jwval}(value);
- *     value.{@link JW.Property#set set}("Отправить");
- *     updater.{@link JW.UI.ValueUpdater#destroy destroy}();
- *
- * For backward binding, use JW.UI.ValueListener.
+ * Was used as a standalone class before jWidget 1.4.
+ * As of jWidget 1.4, {@link jQuery#jwval jwval} is an easier alternative.
  *
  * @extends JW.Class
  *
@@ -3289,7 +3200,10 @@ JW.extend(JW.UI.ValueUpdater, JW.Class, {
 	},
 	
 	_update: function() {
-		this.el.val(this.property.get());
+		var value = this.property.get();
+		if (this.el.val() !== value) {
+			this.el.val(value);
+		}
 	}
 });
 
@@ -3314,25 +3228,11 @@ JW.extend(JW.UI.ValueUpdater, JW.Class, {
 
 /**
  * @class
- * Watches source boolean {@link JW.Property property} modification and updates
- * visibility of the DOM element. To make element invisible, sets "display: none" inline style. To make
- * element visible, removes "display" inline style. Make sure that element is visible by your CSS rules.
- * Applied on initialization as well.
  *
- *     var visible = new JW.Property(true);
- *     // Next command makes element visible
- *     var updater = new JW.UI.VisibleUpdater($("#myelem"), visible);
- *     // Next command makes element invisible
- *     visible.{@link JW.Property#set set}(false);
- *     // If helper is not needed anymore, destroy it to stop synchronization
- *     updater.{@link JW.UI.VisibleUpdater#destroy destroy}();
+ * Result of {@link jQuery#jwshow jwshow} method call. Destroy it to stop synchronization.
  *
- * Method {@link jQuery#jwshow jwshow} is a shorthand for synchronizer creation.
- *
- *     var visible = new JW.Property(true);
- *     var updater = $("#myelem").{@link jQuery#jwshow jwshow}(visible);
- *     visible.{@link JW.Property#set set}(false);
- *     updater.{@link JW.UI.VisibleUpdater#destroy destroy}();
+ * Was used as a standalone class before jWidget 1.4.
+ * As of jWidget 1.4, {@link jQuery#jwshow jwshow} is an easier alternative.
  *
  * @extends JW.Class
  *
