@@ -1,5 +1,6 @@
 {
 	"package": "jwui/property/jwcss",
-	"template": "base",
-	"title": "jQuery.jwcss sample"
+	"template": "sample",
+	"title": "jQuery.jwcss sample",
+	"links": "{JavaScript:'samples/jwui/property/jwcss.js',CSS:'samples/jwui/property/jwcss.css'}"
 }

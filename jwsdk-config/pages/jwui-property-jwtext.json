@@ -1,5 +1,6 @@
 {
 	"package": "jwui/property/jwtext",
-	"template": "base",
-	"title": "jQuery.jwtext sample"
+	"template": "sample",
+	"title": "jQuery.jwtext sample",
+	"links": "{JavaScript:'samples/jwui/property/jwtext.js'}"
 }

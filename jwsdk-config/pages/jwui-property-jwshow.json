@@ -1,5 +1,6 @@
 {
 	"package": "jwui/property/jwshow",
-	"template": "base",
-	"title": "jQuery.jwshow sample"
+	"template": "sample",
+	"title": "jQuery.jwshow sample",
+	"links": "{JavaScript:'samples/jwui/property/jwshow.js',CSS:'samples/jwui/property/jwshow.css'}"
 }

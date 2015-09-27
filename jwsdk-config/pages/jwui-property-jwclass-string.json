@@ -1,5 +1,6 @@
 {
 	"package": "jwui/property/jwclass-string",
-	"template": "base",
-	"title": "jQuery.jwclass string sample"
+	"template": "sample",
+	"title": "jQuery.jwclass string sample",
+	"links": "{JavaScript:'samples/jwui/property/jwclass-string.js',CSS:'samples/jwui/property/jwclass-string.css'}"
 }

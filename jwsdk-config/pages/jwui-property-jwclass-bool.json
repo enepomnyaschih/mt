@@ -1,5 +1,6 @@
 {
 	"package": "jwui/property/jwclass-bool",
-	"template": "base",
-	"title": "jQuery.jwclass boolean sample"
+	"template": "sample",
+	"title": "jQuery.jwclass boolean sample",
+	"links": "{JavaScript:'samples/jwui/property/jwclass-bool.js',CSS:'samples/jwui/property/jwclass-bool.css'}"
 }

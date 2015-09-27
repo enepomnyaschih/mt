@@ -1,5 +1,6 @@
 {
 	"package": "jwui/property/jwattr",
-	"template": "base",
-	"title": "jQuery.jwattr sample"
+	"template": "sample",
+	"title": "jQuery.jwattr sample",
+	"links": "{JavaScript:'samples/jwui/property/jwattr.js',CSS:'samples/jwui/property/jwattr.css'}"
 }

@@ -12,11 +12,11 @@ JW.extend(Application, JW.UI.Component, {
 JW.UI.template(Application, {
 	main:
 		'<div jwclass="application">' +
-			'<div>Letter: <input jwid="input" type="text" value="a"></div>' +
+			'<div>Enter a letter (a, b or c): <input jwid="input" type="text" value="a"></div>' +
 			'<div jwid="letters">' +
-				'<div><label><input type="radio" name="letter" value="a" disabled>a</label></div>' +
-				'<div><label><input type="radio" name="letter" value="b" disabled>b</label></div>' +
-				'<div><label><input type="radio" name="letter" value="c" disabled>c</label></div>' +
+				'<div><label><input type="radio" name="letter" value="a" disabled>Is a?</label></div>' +
+				'<div><label><input type="radio" name="letter" value="b" disabled>Is b?</label></div>' +
+				'<div><label><input type="radio" name="letter" value="c" disabled>Is c?</label></div>' +
 			'</div>' +
 		'</div>'
 });

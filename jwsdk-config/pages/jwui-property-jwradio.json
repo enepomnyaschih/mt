@@ -1,5 +1,6 @@
 {
 	"package": "jwui/property/jwradio",
-	"template": "base",
-	"title": "jQuery.jwradio sample"
+	"template": "sample",
+	"title": "jQuery.jwradio sample",
+	"links": "{JavaScript:'samples/jwui/property/jwradio.js'}"
 }

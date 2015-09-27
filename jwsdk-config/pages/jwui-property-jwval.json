@@ -1,5 +1,6 @@
 {
 	"package": "jwui/property/jwval",
-	"template": "base",
-	"title": "jQuery.jwval sample"
+	"template": "sample",
+	"title": "jQuery.jwval sample",
+	"links": "{JavaScript:'samples/jwui/property/jwval.js'}"
 }
