@@ -4,7 +4,10 @@ var Application = function() {
 
 JW.extend(Application, JW.UI.Component, {
 	renderLetters: function(el) {
+		// Watch input value
 		var value = this.own(this.getElement("input").jwval());
+
+		// Update radio button selection
 		this.own(el.jwradio("letter", value));
 	}
 });

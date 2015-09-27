@@ -4,7 +4,10 @@ var Application = function() {
 
 JW.extend(Application, JW.UI.Component, {
 	renderRect: function(el) {
+		// Watch input value
 		var color = this.own(this.getElement("input").jwval());
+
+		// Update rectangle CSS style
 		this.own(el.jwcss("background-color", color));
 	}
 });

@@ -4,7 +4,10 @@ var Application = function() {
 
 JW.extend(Application, JW.UI.Component, {
 	renderOutput: function(el) {
+		// Watch input element value
 		var value = this.own(this.getElement("input").jwval());
+
+		// Update output element value
 		this.own(el.jwval(value));
 	}
 });

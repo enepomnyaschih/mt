@@ -4,7 +4,10 @@ var Application = function() {
 
 JW.extend(Application, JW.UI.Component, {
 	renderRect: function(el) {
+		// Watch radio button selection
 		var color = this.own(this.getElement("colors").jwradio("color"));
+
+		// Update rectangle CSS class name
 		this.own(el.jwclass(color));
 	}
 });

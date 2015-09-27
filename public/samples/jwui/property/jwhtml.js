@@ -3,10 +3,14 @@ var Application = function() {
 };
 
 JW.extend(Application, JW.UI.Component, {
-	renderResult: function(el) {
+	renderOutput: function(el) {
 		var input = this.getElement("input");
 		input.html('<b>Hello!</b>');
+
+		// Watch input value
 		var html = this.own(input.jwval());
+
+		// Update element inner HTML
 		this.own(el.jwhtml(html));
 	}
 });
@@ -17,7 +21,7 @@ JW.UI.template(Application, {
 			'<div>HTML:</div>' +
 			'<textarea jwid="input" rows="5" cols="80"></textarea>' +
 			'<div>Output:</div>' +
-			'<div jwid="result"></div>' +
+			'<div jwid="output"></div>' +
 		'</div>'
 });
 
