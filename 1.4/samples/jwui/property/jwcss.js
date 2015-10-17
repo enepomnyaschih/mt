@@ -7,7 +7,7 @@ JW.extend(Application, JW.UI.Component, {
 		// Watch input value
 		var color = this.own(this.getElement("input").jwval());
 
-		// Update rectangle CSS style
+		// Bind background color style to color property value
 		this.own(el.jwcss("background-color", color));
 	}
 });

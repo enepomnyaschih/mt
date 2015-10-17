@@ -7,7 +7,7 @@ JW.extend(Application, JW.UI.Component, {
 		// Watch checkbox state
 		var disabled = this.own(this.getElement("checkbox").jwprop("checked"));
 
-		// Enable/disable text area
+		// Bind text area state to property
 		this.own(el.jwprop("disabled", disabled));
 	}
 });
