@@ -7,7 +7,7 @@ JW.extend(Application, JW.UI.Component, {
 		// Watch input value
 		var value = this.own(this.getElement("input").jwval());
 
-		// Update radio button selection
+		// Bind radio button selection to property value
 		this.own(el.jwradio("letter", value));
 	}
 });

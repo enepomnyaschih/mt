@@ -7,7 +7,7 @@ JW.extend(Application, JW.UI.Component, {
 		// Watch checkbox state
 		var checked = this.own(this.getElement("checkbox").jwprop("checked"));
 
-		// Show/hide rectangle
+		// Bind rectangle visibility to property value
 		this.own(el.jwshow(checked));
 	}
 });

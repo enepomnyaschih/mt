@@ -10,7 +10,7 @@ JW.extend(Application, JW.UI.Component, {
 		// Watch input value
 		var html = this.own(input.jwval());
 
-		// Update element inner HTML
+		// Bind inner HTML to html property value
 		this.own(el.jwhtml(html));
 	}
 });

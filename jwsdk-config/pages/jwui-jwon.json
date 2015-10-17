@@ -1,0 +1,6 @@
+{
+	"package": "jwui/jwon",
+	"template": "sample",
+	"title": "jQuery().jwon sample",
+	"links": "{JavaScript:'samples/jwui/jwon.js',CSS:'samples/jwui/jwon.css'}"
+}

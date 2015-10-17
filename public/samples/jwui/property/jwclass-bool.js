@@ -7,7 +7,7 @@ JW.extend(Application, JW.UI.Component, {
 		// Watch checkbox state
 		var checked = this.own(this.getElement("checkbox").jwprop("checked"));
 
-		// Update rectangle "checked" CSS class
+		// Bind "checked" CSS class to checked property value
 		this.own(el.jwclass("checked", checked));
 	}
 });

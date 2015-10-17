@@ -7,7 +7,7 @@ JW.extend(Application, JW.UI.Component, {
 		// Watch input value
 		var title = this.own(this.getElement("input").jwval());
 
-		// Update rectangle title attribute
+		// Bind rectangle "title" attribute to title property value
 		this.own(el.jwattr("title", title));
 	}
 });
