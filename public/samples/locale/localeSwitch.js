@@ -12,8 +12,8 @@ JW.extend(LocaleSwitch, JW.UI.Component, {
 
 	afterRender: function() {
 		this._super();
-		this.own(new JW.UI.RadioUpdater(this.el, "lang", this.locale.lang));
-		this.own(new JW.UI.RadioListener(this.el, "lang", this.locale.lang));
+		this.own(this.el.jwradio("lang", this.locale.lang));
+		this.locale.lang.bindTo(this.own(this.el.jwradio("lang")));
 	}
 });
 

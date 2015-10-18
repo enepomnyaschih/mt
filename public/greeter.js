@@ -1,19 +1,25 @@
 var Greeter = function() {
 	Greeter._super.call(this);
-	this.name = this.own(new JW.Property("wanderer"));
+	this.name = this.own(new JW.Property("guest"));
 };
 
 JW.extend(Greeter, JW.UI.Component, {
 	renderNameField: function(el) {
-		this.own(new JW.UI.ValueUpdater(el, this.name)); // bind element value to property
-		this.own(new JW.UI.ValueListener(el, this.name)); // bind property to element value
+		// Bind element value to property
+		this.own(el.jwval(this.name));
+
+		// Bind property to element value
+		this.name.bindTo(this.own(el.jwval()));
 	},
 	
 	renderGreeting: function(el) {
-		var text = this.own(this.name.$$mapValue(function(name) { // build greeting message
+		// Build greeting message
+		var text = this.own(this.name.$$mapValue(function(name) {
 			return "Hello, " + name + "!";
 		}, this));
-		this.own(new JW.UI.TextUpdater(el, text)); // bind element text to message
+
+		// Bind element text to message
+		this.own(el.jwtext(text));
 	}
 });
 
