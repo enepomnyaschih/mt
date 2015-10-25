@@ -5,9 +5,9 @@
 
 JW.extend(mt.TweetFeed, JW.UI.Component, {
 	renderTweets: function() {
-		return this.own(this.data.tweets.$map(function(tweetData) {
-			return new mt.TweetView(tweetData);
-		}, this)).ownItems();
+		return this.own(this.data.tweets.$$mapObjects(function(tweetData) {
+			return new mt.TweetView(this.data, tweetData);
+		}, this));
 	}
 });
 
