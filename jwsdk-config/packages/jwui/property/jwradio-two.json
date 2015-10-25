@@ -5,6 +5,6 @@
 		"bower_components/jwidget/jwui.js|auto"
 	],
 	"resources": [
-		"samples/jwui/property/radioListener.js"
+		"samples/jwui/property/jwradio-two.js"
 	]
 }

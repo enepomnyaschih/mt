@@ -29,7 +29,7 @@ JW.extend(Application, JW.UI.Component, {
 	},
 
 	renderUrl: function(el) {
-		this.own(new JW.UI.ValueUpdater(el, JW.UI.hash));
+		this.own(el.jwval(JW.UI.hash));
 	},
 
 	renderPage: function() {

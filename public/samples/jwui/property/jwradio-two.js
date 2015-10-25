@@ -4,17 +4,9 @@ var Application = function() {
 };
 
 JW.extend(Application, JW.UI.Component, {
-	renderRoot: function() {
-		this.initGroup("first");
-		this.initGroup("second");
-	},
-
-	initGroup: function(name) {
-		// Bind radio group to property
-		this.own(this.el.jwradio(name, this.value));
-
-		// Bind property to radio group
-		this.own(new JW.UI.RadioListener(this.el, name, {target: this.value}));
+	renderRoot: function(el) {
+		this.own(el.jwradio("first", this.value, JW.TWOWAY));
+		this.own(el.jwradio("second", this.value, JW.TWOWAY));
 	}
 });
 

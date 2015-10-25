@@ -1,0 +1,6 @@
+{
+	"package": "jwui/property/jwprop-two",
+	"template": "sample",
+	"title": "jQuery.jwprop two-way binding sample",
+	"links": "{JavaScript:'samples/jwui/property/jwprop-two.js'}"
+}

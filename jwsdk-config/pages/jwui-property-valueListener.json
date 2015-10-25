@@ -1,6 +1,0 @@
-{
-	"package": "jwui/property/valueListener",
-	"template": "sample",
-	"title": "JW.UI.ValueListener sample",
-	"links": "{JavaScript:'samples/jwui/property/valueListener.js'}"
-}

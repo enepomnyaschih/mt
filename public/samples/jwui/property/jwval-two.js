@@ -5,19 +5,11 @@ var Application = function() {
 
 JW.extend(Application, JW.UI.Component, {
 	renderFirst: function(el) {
-		this.initInput(el);
+		this.own(el.jwval(this.value, JW.TWOWAY));
 	},
 
 	renderSecond: function(el) {
-		this.initInput(el);
-	},
-
-	initInput: function(el) {
-		// Bind input to property
-		this.own(el.jwval(this.value));
-
-		// Bind property to input
-		this.own(new JW.UI.ValueListener(el, {target: this.value}));
+		this.own(el.jwval(this.value, JW.TWOWAY));
 	}
 });
 

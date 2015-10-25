@@ -1,0 +1,6 @@
+{
+	"package": "jwui/property/jwradio-two",
+	"template": "sample",
+	"title": "jQuery.jwradio two-way binding sample",
+	"links": "{JavaScript:'samples/jwui/property/jwradio-two.js'}"
+}

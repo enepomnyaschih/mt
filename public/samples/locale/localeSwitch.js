@@ -12,8 +12,7 @@ JW.extend(LocaleSwitch, JW.UI.Component, {
 
 	afterRender: function() {
 		this._super();
-		this.own(this.el.jwradio("lang", this.locale.lang));
-		this.locale.lang.bindTo(this.own(this.el.jwradio("lang")));
+		this.own(this.el.jwradio("lang", this.locale.lang, JW.TWOWAY));
 	}
 });
 

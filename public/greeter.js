@@ -5,11 +5,8 @@ var Greeter = function() {
 
 JW.extend(Greeter, JW.UI.Component, {
 	renderNameField: function(el) {
-		// Bind element value to property
-		this.own(el.jwval(this.name));
-
-		// Bind property to element value
-		this.name.bindTo(this.own(el.jwval()));
+		// Setup two-way binding between element value and property
+		this.own(el.jwval(this.name, JW.TWOWAY));
 	},
 	
 	renderGreeting: function(el) {

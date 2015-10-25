@@ -5,10 +5,10 @@ var Application = function() {
 JW.extend(Application, JW.UI.Component, {
 	renderTextarea: function(el) {
 		// Watch checkbox state
-		var disabled = this.own(this.getElement("checkbox").jwprop("checked"));
+		var property = this.own(this.getElement("checkbox").jwprop("checked"));
 
 		// Bind text area state to property
-		this.own(el.jwprop("disabled", disabled));
+		this.own(el.jwprop("disabled", property));
 	}
 });
 

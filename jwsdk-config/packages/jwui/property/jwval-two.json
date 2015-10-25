@@ -5,6 +5,6 @@
 		"bower_components/jwidget/jwui.js|auto"
 	],
 	"resources": [
-		"samples/jwui/property/checkedListener.js"
+		"samples/jwui/property/jwval-two.js"
 	]
 }
