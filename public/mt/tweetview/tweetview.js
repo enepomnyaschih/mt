@@ -29,8 +29,8 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 		var text = this.own(this.tweetData.like.$$mapValue(function(like) {
 			return like ? "Unlike" : "Like";
 		}, this));
-		this.own(new JW.UI.TextUpdater(el, text));
-		this.own(new JW.UI.ClassUpdater(el, "active", this.tweetData.like));
+		this.own(el.jwtext(text));
+		this.own(el.jwclass("active", this.tweetData.like));
 		el.jwon("click", this._onLikeClick, this);
 	},
 	
@@ -38,8 +38,8 @@ JW.extend(mt.TweetView, JW.UI.Component, {
 		var text = this.own(this.tweetData.retweet.$$mapValue(function(retweet) {
 			return retweet ? "Unretweet" : "Retweet";
 		}, this));
-		this.own(new JW.UI.TextUpdater(el, text));
-		this.own(new JW.UI.ClassUpdater(el, "active", this.tweetData.retweet));
+		this.own(el.jwtext(text));
+		this.own(el.jwclass("active", this.tweetData.retweet));
 		el.jwon("click", this._onRetweetClick, this);
 	},
 	
