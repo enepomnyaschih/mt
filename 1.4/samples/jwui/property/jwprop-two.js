@@ -5,19 +5,11 @@ var Application = function() {
 
 JW.extend(Application, JW.UI.Component, {
 	renderFirst: function(el) {
-		this.initCheckbox(el);
+		this.own(el.jwprop("checked", this.value, JW.TWOWAY));
 	},
 
 	renderSecond: function(el) {
-		this.initCheckbox(el);
-	},
-
-	initCheckbox: function(el) {
-		// Bind checkbox to property
-		this.own(el.jwprop("checked", this.value));
-
-		// Bind property to checkbox
-		this.own(new JW.UI.CheckedListener(el, {target: this.value}));
+		this.own(el.jwprop("checked", this.value, JW.TWOWAY));
 	}
 });
 
