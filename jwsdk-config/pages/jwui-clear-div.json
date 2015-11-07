@@ -1,0 +1,6 @@
+{
+	"package": "jwui/clear-div",
+	"template": "sample",
+	"title": "Clear-div persistence sample",
+	"links": "{JavaScript:'samples/jwui/clear-div.js',CSS:'samples/jwui/clear-div.css'}"
+}
