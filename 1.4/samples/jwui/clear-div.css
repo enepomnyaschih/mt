@@ -1,0 +1,13 @@
+.array {
+	background: lightgray;
+}
+.item {
+	display: block;
+	float: left;
+	margin: 5px;
+	width: 60px;
+	height: 60px;
+}
+.clear {
+	clear: both;
+}

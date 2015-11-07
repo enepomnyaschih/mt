@@ -344,7 +344,6 @@ JW.UI.Browsers = (function()
 JW.UI.Inserter = function(source, el) {
 	JW.UI.Inserter._super.call(this);
 	this.el = el; // DOMElement
-	this.len = 0; // Number
 	this.own(source.createInserter({
 		addItem    : this._addItem,
 		removeItem : this._removeItem,
@@ -359,17 +358,16 @@ JW.extend(JW.UI.Inserter, JW.Class, {
 	
 	_addItem: function(item, index) {
 		var parent = this.el;
+		var anchor = parent.childNodes[index];
 		var child = this._getElement(item);
-		if (index === this.len) {
-			parent.appendChild(child);
+		if (anchor != null) {
+			parent.insertBefore(child, anchor);
 		} else {
-			parent.insertBefore(child, parent.childNodes.item(index));
+			parent.appendChild(child);
 		}
-		++this.len;
 	},
 	
 	_removeItem: function(item) {
-		--this.len;
 		JW.UI.remove(this._getElement(item));
 	}
 });
@@ -776,6 +774,12 @@ JW.extend(JW.UI.Inserter, JW.Class, {
  * See more complicated example in article:
  *
  * [Getting started. Part 7. Project infrastructure](#!/guide/ensample7)
+ *
+ * ### Clear-div persistence
+ *
+ * As of jWidget 1.4, you may render child collections to non-blank DOM elements. In this case, all existing nodes
+ * stay at the end of the element. The most common application of this feature
+ * is <a href="https://css-tricks.com/the-how-and-why-of-clearing-floats/" target="_blank">clear-div usage</a>.
  *
  * @extends JW.Class
  * @constructor
@@ -1657,7 +1661,8 @@ JW.extend(JW.UI.Component.Collection, JW.Class, {
 
 JW.UI.Component.CollectionInserter = function(source, el) {
 	JW.UI.Component.CollectionInserter._super.call(this);
-	this.el = el;
+	this.el = el; // DOMElement
+	this.len = 0; // Number
 	this.own(source.createObserver({
 		addItem: this._addItem,
 		removeItem: this._removeItem,
@@ -1667,12 +1672,21 @@ JW.UI.Component.CollectionInserter = function(source, el) {
 
 JW.extend(JW.UI.Component.CollectionInserter, JW.Class, {
 	_addItem: function(item) {
-		this.el.appendChild(item.el[0]);
+		var parent = this.el;
+		var anchor = parent.childNodes[this.len];
+		var child = item.el[0];
+		if (anchor != null) {
+			parent.insertBefore(child, anchor);
+		} else {
+			parent.appendChild(child);
+		}
+		++this.len;
 		item._afterAppend();
 	},
 
 	_removeItem: function(item) {
 		JW.UI.remove(item.el[0]);
+		--this.len;
 	}
 });
 ;
@@ -2058,7 +2072,7 @@ jQuery.extend(jQuery.fn, {
 	 *
 	 * The method doesn't support "data" argument - please use closures instead.
 	 *
-	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="180" src="http://enepomnyaschih.github.io/mt/1.4/jwui-jwon.html"></iframe>
+	 * <iframe style="border: 1px solid green; padding: 10px;" width="800" height="200" src="http://enepomnyaschih.github.io/mt/1.4/jwui-jwon.html"></iframe>
 	 *
 	 * @param {String} events One or more space-separated event types and optional namespaces, such as "click" or "keydown.myPlugin".
 	 * @param {String} selector A selector string to filter the descendants of the selected elements that trigger the event. If the selector is null or omitted, the event is always triggered when it reaches the selected element.
@@ -2167,13 +2181,12 @@ jQuery.extend(jQuery.fn, {
 	/**
 	 * DOM element property management method. Supports two variations.
 	 *
-	 *     jwprop("checked"): JW.Property
-	 *     jwprop(prop: String, property: JW.Property, [binding: JW.Binding]): JW.UI.PropBinding
+	 *     jwprop("checked"): JW.Property<Boolean>
+	 *     jwprop(prop: String, property: JW.Property<Boolean>, [binding: JW.Binding]): JW.UI.PropBinding
 	 *
 	 * <hr>
 	 *
-	 *     jwprop("checked"): JW.Property<Mixed>
-	 *     watch(checked: Boolean): Mixed
+	 *     jwprop("checked"): JW.Property<Boolean>
 	 *
 	 * Returns a boolean property containing current checkbox state and starts watching for its modification.
 	 * Destroy the result property to stop synchronization.
@@ -2328,13 +2341,16 @@ jQuery.extend(jQuery.fn, {
 	 *
 	 * @param {JW.Property} [property] `<String>` Element value.
 	 * @param {JW.Binding} [binding] Binding mode. Defaults to JW.Binding.UPDATE.
+	 * @param {Boolean} [simple=false]
+	 * If true, watch-binding listens "change" event only. Defaults to false which enables
+	 * reaction to any real-time field modification.
 	 */
 	jwval: function(property, binding, simple) {
 		if (property != null && (typeof property !== "boolean")) {
 			return new JW.UI.ValueBinding(this, property, binding, simple);
 		}
 		var target = new JW.Property();
-		target.own(new JW.UI.ValueListener(this, {target: target}, simple));
+		target.own(new JW.UI.ValueListener(this, {target: target, simple: simple}));
 		return target;
 	},
 
