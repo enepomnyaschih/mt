@@ -4,7 +4,7 @@ var ItemView = function() {
 
 JW.extend(ItemView, JW.UI.Component, {
 	renderRoot: function() {
-		this.el.css("background-color", "#" + JW.String.prepend(Math.floor(Math.random() * 0x1000000).toString(16), 0, 6));
+		this.el.css("background-color", "#" + JW.String.prepend(Math.floor(Math.random() * 0x1000000).toString(16), 6, "0"));
 	}
 });
 
