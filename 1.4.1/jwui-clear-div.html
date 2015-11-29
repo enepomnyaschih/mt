@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+		<title>Clear-div persistence sample</title>
+		<link rel="stylesheet" type="text/css" href="samples/jwui/clear-div.css?timestamp=1448727500" />
+	</head>
+	<body style="font-family: sans-serif">
+		<script type="text/javascript" charset="utf-8" src="bower_components/jquery/dist/jquery.js?timestamp=1446894627"></script>
+		<script type="text/javascript" charset="utf-8" src="bower_components/jwidget/jwlib.js?timestamp=1448781880"></script>
+		<script type="text/javascript" charset="utf-8" src="bower_components/jwidget/jwui.js?timestamp=1448781882"></script>
+		<script type="text/javascript" charset="utf-8" src="samples/jwui/clear-div.js?timestamp=1448727500"></script>
+		<script type="text/javascript">
+			$(function() {
+				var header = $('<div><b>Example</b></div>');
+				var el = $('<div style="float: right"><b>Source:</b> </div>');
+				var links = {JavaScript:'samples/jwui/clear-div.js',CSS:'samples/jwui/clear-div.css'};
+				var first = true;
+				for (var name in links) {
+					if (first) {
+						first = false;
+					} else {
+						el.append(', ');
+					}
+					el.append($('<a target="_blank"></a>').text(name).attr("href", links[name]));
+				}
+				$("body").prepend('<hr>').prepend(header).prepend(el);
+			});
+		</script>
+	</body>
+</html>
