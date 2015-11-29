@@ -1,6 +1,7 @@
-var Inbox = function() {
+var Inbox = function(path, parentRouter) {
 	Inbox._super.call(this);
-	this.path = this.own(new JW.Property()); // <string>
+	this.path = this.own(new JW.Property(path)); // <string>
+	this.router = null; // JW.Plugins.Router
 	this.emails = new JW.Array([
 		{
 			id: "1",
@@ -19,17 +20,23 @@ JW.extend(Inbox, JW.UI.Component, {
 	renderContent: function() {
 		// "inbox/<id>" is routed to email if one exists
 		// "inbox" is routed to email list
-		return this.own(new JW.Plugins.Router({
+		this.router = this.own(new JW.Plugins.Router({
 			path: this.path,
 			handler: function(id) {
 				if (!id) {
 					return new EmailList(this.emails);
 				}
 				var email = this.emails.search(JW.byValue("id", id));
-				return (email != null) ? new Email(email) : new EmailNotFound(id);
+				return (email != null) ? new Email(email, this.router) : new EmailNotFound(id);
 			},
 			scope: this
-		})).target;
+		}));
+
+		// update call should be done separately to make sure that this.router field
+		// is assigned before routing
+		this.router.update();
+
+		return this.router.target;
 	},
 
 	setPath: function(path) {
