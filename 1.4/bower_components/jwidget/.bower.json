@@ -1,17 +1,17 @@
 {
   "name": "jwidget",
-  "version": "1.4.0",
+  "version": "1.4.3",
   "main": [
     "jwlib.js",
     "jwui.js"
   ],
   "ignore": [],
   "homepage": "https://github.com/enepomnyaschih/jwidget",
-  "_release": "1.4.0",
+  "_release": "1.4.3",
   "_resolution": {
     "type": "version",
-    "tag": "1.4.0",
-    "commit": "a394f274e17fae2e96768878a2bfb4a9f3d42873"
+    "tag": "1.4.3",
+    "commit": "62859e1148cfc718cc414c6bf55f9061d19e1557"
   },
   "_source": "git://github.com/enepomnyaschih/jwidget.git",
   "_target": "~1.4",

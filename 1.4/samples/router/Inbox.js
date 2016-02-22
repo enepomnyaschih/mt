@@ -19,7 +19,7 @@ JW.extend(Inbox, JW.UI.Component, {
 	renderContent: function() {
 		// "inbox/<id>" is routed to email if one exists
 		// "inbox" is routed to email list
-		return this.own(new JW.Plugins.Router({
+		var router = this.own(new JW.Plugins.Router({
 			path: this.path,
 			handler: function(id) {
 				if (!id) {
@@ -29,7 +29,9 @@ JW.extend(Inbox, JW.UI.Component, {
 				return (email != null) ? new Email(email) : new EmailNotFound(id);
 			},
 			scope: this
-		})).target;
+		}));
+		router.update();
+		return router.target;
 	},
 
 	setPath: function(path) {

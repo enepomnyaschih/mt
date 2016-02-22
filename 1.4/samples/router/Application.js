@@ -19,6 +19,7 @@ JW.extend(Application, JW.UI.Component, {
 			},
 			scope: this
 		}));
+		this.router.update();
 	},
 
 	renderUrlForm: function(el) {
