@@ -1,8 +1,13 @@
-﻿var tweetData;
-var tweetView;
+﻿import Tweet from './data/Tweet';
+import TweetView from './tweetview/TweetView';
+
+require('./reset.css');
+
+var tweet: Tweet;
+var tweetView: TweetView;
 
 $(function() {
-	tweetData = mt.data.Tweet.createByJson({
+	tweet = Tweet.createByJson({
 		"fullName": "Road Runner",
 		"shortName": "roadrunner",
 		"avatarUrl48": "backend/avatar-48.png",
@@ -11,6 +16,6 @@ $(function() {
 		"like": false,
 		"retweet": true
 	});
-	tweetView = new mt.TweetView(tweetData);
-	tweetView.renderTo("#container");
+	tweetView = new TweetView(tweet);
+	tweetView.renderTo("body");
 });

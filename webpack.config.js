@@ -53,7 +53,7 @@ module.exports = {
 
 	plugins: [
 		new CleanWebpackPlugin(['public'], {
-			exclude: ['bower_components']
+			exclude: ['bower_components', 'backend']
 		}),
 		new webpack.optimize.CommonsChunkPlugin("common", "common.js")
 	].concat(Object.keys(pages).map(function(id) {
