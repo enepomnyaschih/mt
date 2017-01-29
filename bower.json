@@ -1,0 +1,7 @@
+{
+  "name": "jwidget-template",
+  "private": true,
+  "dependencies": {
+    "jquery": "*"
+  }
+}
