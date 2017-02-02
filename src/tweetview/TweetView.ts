@@ -1,5 +1,6 @@
 import template from 'jwidget/template';
 import Component from 'jwidget/Component';
+
 import Tweet from '../data/Tweet';
 
 require('./TweetView.css');
