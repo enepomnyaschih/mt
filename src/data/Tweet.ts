@@ -20,35 +20,35 @@ export default class Tweet extends Class {
 		this._retweet = config.retweet;
 	}
 
-	public get fullName(): string {
+	public get fullName() {
 		return this._fullName;
 	}
 
-	public get shortName(): string {
+	public get shortName() {
 		return this._shortName;
 	}
 
-	public get avatarUrl48(): string {
+	public get avatarUrl48() {
 		return this._avatarUrl48;
 	}
 
-	public get contentHtml(): string {
+	public get contentHtml() {
 		return this._contentHtml;
 	}
 
-	public get time(): number {
+	public get time() {
 		return this._time;
 	}
 
-	public get like(): boolean {
+	public get like() {
 		return this._like;
 	}
 
-	public get retweet(): boolean {
+	public get retweet() {
 		return this._retweet;
 	}
 
-	public static createByJson(json: any): Tweet {
+	public static createByJson(json: any) {
 		return new Tweet({
 			fullName: json['fullName'],
 			shortName: json['shortName'],
