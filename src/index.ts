@@ -3,8 +3,8 @@ import TweetView from './tweetview/TweetView';
 
 require('./reset.css');
 
-var tweet: Tweet;
-var tweetView: TweetView;
+let tweet: Tweet;
+let tweetView: TweetView;
 
 $(function() {
 	tweet = Tweet.createByJson({
