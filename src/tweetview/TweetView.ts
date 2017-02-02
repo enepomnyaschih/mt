@@ -16,8 +16,8 @@ export default class TweetView extends Component {
 	}
 
 	protected renderTime(el: JQuery) {
-		var timeAgo = new Date().getTime() - this.tweet.time;
-		var text = this._getTimeString(timeAgo);
+		let timeAgo = new Date().getTime() - this.tweet.time;
+		let text = this._getTimeString(timeAgo);
 		el.text(text);
 	}
 
@@ -42,14 +42,14 @@ export default class TweetView extends Component {
 	}
 
 	private _getTimeString(timeAgo: number) {
-		var minutes = timeAgo / 60000;
+		let minutes = timeAgo / 60000;
 		if (minutes < 1) {
 			return "Just now";
 		}
 		if (minutes < 60) {
 			return Math.floor(minutes) + "m";
 		}
-		var hours = minutes / 60;
+		let hours = minutes / 60;
 		if (hours < 24) {
 			return Math.round(hours) + "h";
 		}
@@ -58,7 +58,7 @@ export default class TweetView extends Component {
 			return (value < 10) ? ("0" + value) : String(value);
 		}
 
-		var date = new Date(new Date().getTime() - timeAgo);
+		let date = new Date(new Date().getTime() - timeAgo);
 		return date.getDate() + "." + pad(date.getMonth());
 	}
 }

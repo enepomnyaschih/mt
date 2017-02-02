@@ -3,8 +3,8 @@ import TweetFeed from './tweetfeed/TweetFeed';
 
 require('./reset.css');
 
-var data: Data;
-var tweetFeed: TweetFeed;
+let data: Data;
+let tweetFeed: TweetFeed;
 
 $(function() {
 	data = Data.createByJson([
