@@ -1,4 +1,5 @@
 import Class from 'jwidget/Class';
+import Event from 'jwidget/Event';
 
 export default class Tweet extends Class {
 	private _fullName: string;
@@ -8,6 +9,8 @@ export default class Tweet extends Class {
 	private _time: number;
 	private _like: boolean;
 	private _retweet: boolean;
+	private _likeChangeEvent = this.own(new Event<boolean>());
+	private _retweetChangeEvent = this.own(new Event<boolean>());
 
 	constructor(config: TweetConfig) {
 		super();
@@ -46,6 +49,30 @@ export default class Tweet extends Class {
 
 	get retweet() {
 		return this._retweet;
+	}
+
+	get likeChangeEvent() {
+		return this._likeChangeEvent;
+	}
+
+	get retweetChangeEvent() {
+		return this._retweetChangeEvent;
+	}
+
+	setLike(like: boolean) {
+		if (this._like === like) {
+			return;
+		}
+		this._like = like;
+		this._likeChangeEvent.trigger(like);
+	}
+
+	setRetweet(retweet: boolean) {
+		if (this._retweet === retweet) {
+			return;
+		}
+		this._retweet = retweet;
+		this._retweetChangeEvent.trigger(retweet);
 	}
 
 	static createByJson(json: any) {
