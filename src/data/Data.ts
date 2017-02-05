@@ -1,8 +1,8 @@
-import Class from 'jwidget/Class';
-import IArray from 'jwidget/IArray';
-import JWArray from 'jwidget/JWArray';
+import Class from "jwidget/Class";
+import IArray from "jwidget/IArray";
+import JWArray from "jwidget/JWArray";
 
-import Tweet from './Tweet';
+import Tweet from "./Tweet";
 
 export default class Data extends Class {
 	tweets: IArray<Tweet>;

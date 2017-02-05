@@ -1,4 +1,4 @@
-import Class from 'jwidget/Class';
+import Class from "jwidget/Class";
 
 export default class Tweet extends Class {
 	fullName: string;
@@ -22,13 +22,13 @@ export default class Tweet extends Class {
 
 	static createByJson(json: any) {
 		return new Tweet({
-			fullName: json['fullName'],
-			shortName: json['shortName'],
-			avatarUrl48: json['avatarUrl48'],
-			contentHtml: json['contentHtml'],
-			time: new Date().getTime() - json['timeAgo'],
-			like: json['like'],
-			retweet: json['retweet']
+			fullName: json["fullName"],
+			shortName: json["shortName"],
+			avatarUrl48: json["avatarUrl48"],
+			contentHtml: json["contentHtml"],
+			time: new Date().getTime() - json["timeAgo"],
+			like: json["like"],
+			retweet: json["retweet"]
 		});
 	}
 }
