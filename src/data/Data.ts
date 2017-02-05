@@ -1,9 +1,9 @@
-import Class from 'jwidget/Class';
-import IArray from 'jwidget/IArray';
-import JWArray from 'jwidget/JWArray';
+import Class from "jwidget/Class";
+import IArray from "jwidget/IArray";
+import JWArray from "jwidget/JWArray";
 
-import Profile from './Profile';
-import Tweet from './Tweet';
+import Profile from "./Profile";
+import Tweet from "./Tweet";
 
 export default class Data extends Class {
 	profile: Profile;
@@ -16,7 +16,7 @@ export default class Data extends Class {
 	}
 
 	static createByJson(json: any) {
-		const tweets = (<any[]>json['tweets']).map(Tweet.createByJson);
-		return new Data(json['profile'], tweets);
+		const tweets = (<any[]>json["tweets"]).map(Tweet.createByJson);
+		return new Data(json["profile"], tweets);
 	}
 }
