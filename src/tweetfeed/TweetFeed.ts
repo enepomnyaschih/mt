@@ -1,12 +1,12 @@
-import template from 'jwidget/template';
-import Component from 'jwidget/Component';
+import template from "jwidget/template";
+import Component from "jwidget/Component";
 
-import Data from '../data/Data';
-import TweetView from '../tweetview/TweetView';
+import Data from "../data/Data";
+import TweetView from "../tweetview/TweetView";
 
-require('./TweetFeed.css');
+require("./TweetFeed.css");
 
-@template(require<string>('./TweetFeed.jw.html'))
+@template(require<string>("./TweetFeed.jw.html"))
 export default class TweetFeed extends Component {
 	constructor(private data: Data) {
 		super();
