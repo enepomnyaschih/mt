@@ -1,5 +1,6 @@
 import template from "jwidget/template";
 import Component from "jwidget/Component";
+import {mapArray} from "jwidget/mapper/array";
 
 import Data from "../data/Data";
 import TweetView from "../tweetview/TweetView";
@@ -13,8 +14,6 @@ export default class TweetFeed extends Component {
 	}
 
 	protected renderTweets() {
-		return this.own(this.data.tweets.$map((tweet) => {
-			return new TweetView(tweet);
-		})).ownItems();
+		return this.own(mapArray(this.data.tweets, (tweet) => new TweetView(this.data, tweet)));
 	}
 }

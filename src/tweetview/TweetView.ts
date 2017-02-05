@@ -4,13 +4,14 @@ import Interval from "jwidget/Interval";
 import jwclass from "jwidget/ui/class";
 import jwtext from "jwidget/ui/text";
 
+import Data from "../data/Data";
 import Tweet from "../data/Tweet";
 
 require("./TweetView.css");
 
 @template(require<string>("./TweetView.jw.html"))
 export default class TweetView extends Component {
-	constructor(private tweet: Tweet) {
+	constructor(private data: Data, private tweet: Tweet) {
 		super();
 	}
 
@@ -49,6 +50,10 @@ export default class TweetView extends Component {
 		el.click((e) => this._onRetweetClick(e));
 	}
 
+	protected renderRemove(el: JQuery) {
+		el.click((e) => this._onRemoveClick(e));
+	}
+
 	private _updateTime() {
 		const timeAgo = new Date().getTime() - this.tweet.time;
 		const text = this._getTimeString(timeAgo);
@@ -63,6 +68,11 @@ export default class TweetView extends Component {
 	private _onRetweetClick(e: JQueryEventObject) {
 		e.preventDefault();
 		this.tweet.retweet.set(!this.tweet.retweet.get());
+	}
+
+	private _onRemoveClick(e: JQueryEventObject) {
+		e.preventDefault();
+		this.data.tweets.removeItem(this.tweet);
 	}
 
 	private _getTimeString(timeAgo: number) {

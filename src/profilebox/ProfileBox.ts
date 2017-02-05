@@ -1,7 +1,9 @@
 import template from "jwidget/template";
 import Component from "jwidget/Component";
+import * as StringUtils from "jwidget/StringUtils";
 
 import Data from "../data/Data";
+import Tweet from "../data/Tweet";
 
 require("./ProfileBox.css");
 
@@ -37,5 +39,27 @@ export default class ProfileBox extends Component {
 
 	protected renderFollowersValue(el: JQuery) {
 		el.text(this.data.profile.followers);
+	}
+
+	protected renderComposeForm(el: JQuery) {
+		el.submit((e) => this._onComposeSubmit(e));
+	}
+
+	private _onComposeSubmit(e: JQueryEventObject) {
+		e.preventDefault();
+		const text = StringUtils.trim(this.getElement("compose-input").val());
+		if (!text) {
+			return;
+		}
+		this.data.tweets.add(new Tweet({
+			fullName: this.data.profile.fullName,
+			shortName: this.data.profile.shortName,
+			avatarUrl48: this.data.profile.avatarUrl48,
+			contentHtml: text,
+			time: new Date().getTime(),
+			like: false,
+			retweet: false
+		}), 0);
+		this.getElement("compose-input").val("");
 	}
 }
