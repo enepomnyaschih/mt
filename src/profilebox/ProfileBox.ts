@@ -5,7 +5,7 @@ import * as StringUtils from "jwidget/StringUtils";
 import Data from "../data/Data";
 import Tweet from "../data/Tweet";
 
-require("./ProfileBox.css");
+require("./ProfileBox.styl");
 
 @template(require<string>("./ProfileBox.jw.html"))
 export default class ProfileBox extends Component {

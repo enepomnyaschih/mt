@@ -7,7 +7,7 @@ import jwtext from "jwidget/ui/text";
 import Data from "../data/Data";
 import Tweet from "../data/Tweet";
 
-require("./TweetView.css");
+require("./TweetView.styl");
 
 @template(require<string>("./TweetView.jw.html"))
 export default class TweetView extends Component {

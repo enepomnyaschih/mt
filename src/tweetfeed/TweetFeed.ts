@@ -5,7 +5,7 @@ import {mapArray} from "jwidget/mapper/array";
 import Data from "../data/Data";
 import TweetView from "../tweetview/TweetView";
 
-require("./TweetFeed.css");
+require("./TweetFeed.styl");
 
 @template(require<string>("./TweetFeed.jw.html"))
 export default class TweetFeed extends Component {
