@@ -12,12 +12,12 @@ export default class TweetView extends Component {
 	}
 
 	protected renderAvatar(el: JQuery) {
-		el.css("background-image", "url(" + this.tweet.avatarUrl48 + ")");
+		el.css('background-image', `url(${this.tweet.avatarUrl48})`);
 	}
 
 	protected renderTime(el: JQuery) {
-		let timeAgo = new Date().getTime() - this.tweet.time;
-		let text = this._getTimeString(timeAgo);
+		const timeAgo = new Date().getTime() - this.tweet.time;
+		const text = this._getTimeString(timeAgo);
 		el.text(text);
 	}
 
@@ -26,7 +26,7 @@ export default class TweetView extends Component {
 	}
 
 	protected renderShortName(el: JQuery) {
-		el.text("@" + this.tweet.shortName);
+		el.text('@' + this.tweet.shortName);
 	}
 
 	protected renderText(el: JQuery) {
@@ -34,31 +34,31 @@ export default class TweetView extends Component {
 	}
 
 	protected renderLike(el: JQuery) {
-		el.toggleClass("active", this.tweet.like).text(this.tweet.like ? "Unlike" : "Like");
+		el.toggleClass('active', this.tweet.like).text(this.tweet.like ? 'Unlike' : 'Like');
 	}
 
 	protected renderRetweet(el: JQuery) {
-		el.toggleClass("active", this.tweet.retweet).text(this.tweet.retweet ? "Unretweet" : "Retweet");
+		el.toggleClass('active', this.tweet.retweet).text(this.tweet.retweet ? 'Unretweet' : 'Retweet');
 	}
 
 	private _getTimeString(timeAgo: number) {
-		let minutes = timeAgo / 60000;
+		const minutes = timeAgo / 60000;
 		if (minutes < 1) {
-			return "Just now";
+			return 'Just now';
 		}
 		if (minutes < 60) {
-			return Math.floor(minutes) + "m";
+			return Math.floor(minutes) + 'm';
 		}
-		let hours = minutes / 60;
+		const hours = minutes / 60;
 		if (hours < 24) {
-			return Math.round(hours) + "h";
+			return Math.round(hours) + 'h';
 		}
 
 		function pad(value: number): string {
-			return (value < 10) ? ("0" + value) : String(value);
+			return (value < 10) ? ('0' + value) : String(value);
 		}
 
-		let date = new Date(new Date().getTime() - timeAgo);
-		return date.getDate() + "." + pad(date.getMonth());
+		const date = new Date(new Date().getTime() - timeAgo);
+		return date.getDate() + '.' + pad(date.getMonth());
 	}
 }
