@@ -1,4 +1,4 @@
-import Class from 'jwidget/Class';
+import Class from "jwidget/Class";
 
 export default class Profile extends Class {
 	fullName: string;
@@ -22,13 +22,13 @@ export default class Profile extends Class {
 
 	static createByJson(json: any) {
 		return new Profile({
-			fullName: json['fullName'],
-			shortName: json['shortName'],
-			avatarUrl32: json['avatarUrl32'],
-			avatarUrl48: json['avatarUrl48'],
-			tweets: json['tweets'],
-			following: json['following'],
-			followers: json['followers']
+			fullName: json["fullName"],
+			shortName: json["shortName"],
+			avatarUrl32: json["avatarUrl32"],
+			avatarUrl48: json["avatarUrl48"],
+			tweets: json["tweets"],
+			following: json["following"],
+			followers: json["followers"]
 		});
 	}
 }
