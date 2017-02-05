@@ -3,12 +3,12 @@ import TweetView from './tweetview/TweetView';
 
 require('./reset.css');
 
-const data = require<any>('./data.json');
+const json = require<any>('./data.json');
 let tweet: Tweet;
 let tweetView: TweetView;
 
 $(function() {
-	tweet = Tweet.createByJson(data);
+	tweet = Tweet.createByJson(json);
 	tweetView = new TweetView(tweet);
 	tweetView.renderTo('body');
 });
