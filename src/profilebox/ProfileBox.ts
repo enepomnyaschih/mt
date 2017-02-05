@@ -3,7 +3,7 @@ import Component from "jwidget/Component";
 
 import Data from "../data/Data";
 
-require("./ProfileBox.css");
+require("./ProfileBox.styl");
 
 @template(require<string>("./ProfileBox.jw.html"))
 export default class ProfileBox extends Component {
