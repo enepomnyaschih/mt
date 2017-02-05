@@ -1,5 +1,5 @@
 import Class from 'jwidget/Class';
-import Event from 'jwidget/Event';
+import Property from 'jwidget/Property';
 
 export default class Tweet extends Class {
 	fullName: string;
@@ -7,10 +7,8 @@ export default class Tweet extends Class {
 	avatarUrl48: string;
 	contentHtml: string;
 	time: number;
-	like: boolean;
-	retweet: boolean;
-	likeChangeEvent = this.own(new Event<boolean>());
-	retweetChangeEvent = this.own(new Event<boolean>());
+	like: Property<boolean>;
+	retweet: Property<boolean>;
 
 	constructor(config: TweetConfig) {
 		super();
@@ -19,24 +17,8 @@ export default class Tweet extends Class {
 		this.avatarUrl48 = config.avatarUrl48;
 		this.contentHtml = config.contentHtml;
 		this.time = config.time;
-		this.like = config.like;
-		this.retweet = config.retweet;
-	}
-
-	setLike(like: boolean) {
-		if (this.like === like) {
-			return;
-		}
-		this.like = like;
-		this.likeChangeEvent.trigger(like);
-	}
-
-	setRetweet(retweet: boolean) {
-		if (this.retweet === retweet) {
-			return;
-		}
-		this.retweet = retweet;
-		this.retweetChangeEvent.trigger(retweet);
+		this.like = new Property(config.like || false);
+		this.retweet = new Property(config.retweet || false);
 	}
 
 	static createByJson(json: any) {
