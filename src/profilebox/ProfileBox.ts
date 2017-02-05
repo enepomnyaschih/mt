@@ -24,7 +24,7 @@ export default class ProfileBox extends Component {
 	}
 
 	protected renderTweets(el: JQuery) {
-		el.attr('href', 'https://twitter.com/${this.data.profile.shortName}');
+		el.attr('href', `https://twitter.com/${this.data.profile.shortName}`);
 	}
 
 	protected renderTweetsValue(el: JQuery) {
