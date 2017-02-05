@@ -5,7 +5,7 @@ import Data from "../data/Data";
 import ProfileBox from "../profilebox/ProfileBox";
 import TweetFeed from "../tweetfeed/TweetFeed";
 
-require("./Application.css");
+require("./Application.styl");
 
 @template(require<string>("./Application.jw.html"))
 export default class Application extends Component {
