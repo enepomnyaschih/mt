@@ -21,6 +21,6 @@
   "scripts": {
     "setup": "npm install -g bower typescript webpack stylus & npm link typescript webpack stylus & bower install & npm install",
     "debug": "webpack",
-    "release": "webpack --optimize"
+    "release": "webpack --env.optimize"
   }
 }
