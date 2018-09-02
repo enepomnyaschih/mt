@@ -1,4 +1,8 @@
 node_modules
 bower_components
-/public
-!/public/backend
+/public/*.html
+/public/*.js
+/public/*.json
+/public/*.map
+/.idea
+/package-lock.json

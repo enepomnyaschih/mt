@@ -1,5 +1,5 @@
 {
-  "name": "jwidget-template",
+  "name": "jwidget-tutorial",
   "private": true,
   "dependencies": {
     "jquery": "*"
