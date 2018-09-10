@@ -3,7 +3,7 @@ import List from "jwidget/List";
 import ReadonlyList from "jwidget/ReadonlyList";
 import Tweet from "./Tweet";
 
-export default class TweetFeed {
+export default class ApplicationData {
 
 	private _tweets: IList<Tweet>;
 
@@ -16,6 +16,6 @@ export default class TweetFeed {
 	}
 
 	static createByJson(json: any) {
-		return new TweetFeed((<any[]>json || []).map(Tweet.createByJson));
+		return new ApplicationData((<any[]>json || []).map(Tweet.createByJson));
 	}
 }

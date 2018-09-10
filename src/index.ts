@@ -2,11 +2,11 @@ import "es6-promise/auto";
 import "script-loader!jquery";
 import "./index.styl";
 
-import TweetFeed from "./model/TweetFeed";
-import TweetFeedView from "./view/TweetFeedView";
+import ApplicationData from "./model/ApplicationData";
+import TweetFeed from "./view/TweetFeed";
 
 $(function () {
-	const tweetFeed = TweetFeed.createByJson([
+	const data = ApplicationData.createByJson([
 		{
 			"fullName": "Road Runner",
 			"shortName": "roadrunner",
@@ -26,5 +26,5 @@ $(function () {
 			"retweet": false
 		}
 	]);
-	new TweetFeedView(tweetFeed).renderTo("body");
+	new TweetFeed(data.tweets).renderTo("body");
 });
