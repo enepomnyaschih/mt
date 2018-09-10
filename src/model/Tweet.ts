@@ -27,11 +27,12 @@ export default class Tweet {
 }
 
 export interface TweetConfig {
-	fullName: string;
-	shortName: string;
-	avatarUrl48: string;
-	contentHtml: string;
-	time: number;
-	like: boolean;
-	retweet: boolean;
+
+	readonly fullName: string;
+	readonly shortName: string;
+	readonly avatarUrl48: string;
+	readonly contentHtml: string;
+	readonly time: number;
+	readonly like: boolean;
+	readonly retweet: boolean;
 }

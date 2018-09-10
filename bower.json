@@ -1,7 +1,0 @@
-{
-  "name": "jwidget-tutorial",
-  "private": true,
-  "dependencies": {
-    "jquery": "*"
-  }
-}
