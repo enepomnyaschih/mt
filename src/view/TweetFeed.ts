@@ -1,7 +1,5 @@
-import {destroy} from "jwidget";
 import Component from "jwidget/Component";
-import {mapList} from "jwidget/mapper/list";
-import ReadonlyList from "jwidget/ReadonlyList";
+import List from "jwidget/List";
 import template from "jwidget/template";
 import Tweet from "../model/Tweet";
 import TweetView from "./TweetView";
@@ -9,11 +7,12 @@ import TweetView from "./TweetView";
 @template(require<string>("./TweetFeed.jw.html"))
 export default class TweetFeed extends Component {
 
-	constructor(private tweets: ReadonlyList<Tweet>) {
+	constructor(private tweets: Tweet[]) {
 		super();
 	}
 
 	protected renderTweets() {
-		return this.own(mapList(this.tweets, tweet => new TweetView(tweet), {destroy}));
+		const tweetViews = this.tweets.map(tweet => new TweetView(tweet));
+		return this.own(new List(tweetViews)).ownItems();
 	}
 }

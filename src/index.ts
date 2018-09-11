@@ -2,11 +2,11 @@ import "es6-promise/auto";
 import "script-loader!jquery";
 import "./index.styl";
 
-import ApplicationData from "./model/ApplicationData";
+import {createTweetByJson} from "./model/Tweet";
 import TweetFeed from "./view/TweetFeed";
 
 $(function () {
-	const data = ApplicationData.createByJson([
+	const tweets = [
 		{
 			"fullName": "Road Runner",
 			"shortName": "roadrunner",
@@ -25,6 +25,6 @@ $(function () {
 			"like": false,
 			"retweet": false
 		}
-	]);
-	new TweetFeed(data.tweets).renderTo("body");
+	].map(createTweetByJson);
+	new TweetFeed(tweets).renderTo("body");
 });
