@@ -1,7 +1,7 @@
 import IList from "jwidget/IList";
 import List from "jwidget/List";
 import ReadonlyList from "jwidget/ReadonlyList";
-import Tweet from "./Tweet";
+import Tweet, {createTweetByJson} from "./Tweet";
 
 export default class ApplicationData {
 
@@ -16,6 +16,6 @@ export default class ApplicationData {
 	}
 
 	static createByJson(json: any) {
-		return new ApplicationData((<any[]>json || []).map(Tweet.createByJson));
+		return new ApplicationData((<any[]>json || []).map(createTweetByJson));
 	}
 }
