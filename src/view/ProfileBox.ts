@@ -1,12 +1,17 @@
 import Component from "jwidget/Component";
 import template from "jwidget/template";
-import Profile from "../model/Profile";
+import ApplicationData from "../model/ApplicationData";
+import Tweet from "../model/Tweet";
 
 @template(require<string>("./ProfileBox.jw.html"))
 export default class ProfileBox extends Component {
 
-	constructor(private profile: Profile) {
+	constructor(private data: ApplicationData) {
 		super();
+	}
+
+	get profile() {
+		return this.data.profile;
 	}
 
 	protected renderTop(el: JQuery) {
@@ -35,5 +40,26 @@ export default class ProfileBox extends Component {
 
 	protected renderFollowersValue(el: JQuery) {
 		el.text(this.profile.followers);
+	}
+
+	protected renderComposeForm(el: JQuery) {
+		el.on("submit", event => {
+			event.preventDefault();
+
+			const text: string = <any>this.getElement("compose-input").val();
+			if (!text) {
+				return;
+			}
+			this.data.addTweet(new Tweet({
+				fullName: this.profile.fullName,
+				shortName: this.profile.shortName,
+				avatarUrl48: this.profile.avatarUrl48,
+				contentHtml: text,
+				time: new Date().getTime(),
+				like: false,
+				retweet: false
+			}));
+			this.getElement("compose-input").val("");
+		});
 	}
 }

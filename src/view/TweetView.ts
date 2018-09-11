@@ -2,12 +2,13 @@ import bindClass from "jwidget/bindClass";
 import bindText from "jwidget/bindText";
 import Component from "jwidget/Component";
 import template from "jwidget/template";
+import ApplicationData from "../model/ApplicationData";
 import Tweet from "../model/Tweet";
 
 @template(require<string>("./TweetView.jw.html"))
 export default class TweetView extends Component {
 
-	constructor(private tweet: Tweet) {
+	constructor(private data: ApplicationData, private tweet: Tweet) {
 		super();
 	}
 
@@ -50,6 +51,13 @@ export default class TweetView extends Component {
 		el.on("click", event => {
 			event.preventDefault();
 			this.tweet.retweet.set(!this.tweet.retweet.get());
+		});
+	}
+
+	protected renderRemove(el: JQuery) {
+		el.on("click", event => {
+			event.preventDefault();
+			this.data.removeTweet(this.tweet);
 		});
 	}
 
