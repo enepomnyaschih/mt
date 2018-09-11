@@ -50,7 +50,7 @@ export default class ProfileBox extends Component {
 			if (!text) {
 				return;
 			}
-			this.data.addTweet(new Tweet({
+			this.data.tweets.add(new Tweet({
 				fullName: this.profile.fullName,
 				shortName: this.profile.shortName,
 				avatarUrl48: this.profile.avatarUrl48,
@@ -58,7 +58,7 @@ export default class ProfileBox extends Component {
 				time: new Date().getTime(),
 				like: false,
 				retweet: false
-			}));
+			}), 0);
 			this.getElement("compose-input").val("");
 		});
 	}

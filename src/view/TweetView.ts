@@ -57,7 +57,7 @@ export default class TweetView extends Component {
 	protected renderRemove(el: JQuery) {
 		el.on("click", event => {
 			event.preventDefault();
-			this.data.removeTweet(this.tweet);
+			this.data.tweets.removeItem(this.tweet);
 		});
 	}
 
