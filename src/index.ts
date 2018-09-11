@@ -2,11 +2,11 @@ import "es6-promise/auto";
 import "script-loader!jquery";
 import "./index.styl";
 
-import Tweet from "./model/Tweet";
+import {createTweetByJson} from "./model/Tweet";
 import TweetView from "./view/TweetView";
 
 $(function () {
-	const tweet = Tweet.createByJson({
+	const tweet = createTweetByJson({
 		"fullName": "Road Runner",
 		"shortName": "roadrunner",
 		"avatarUrl48": "backend/avatar-48.png",
