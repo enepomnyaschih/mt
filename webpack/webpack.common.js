@@ -19,8 +19,7 @@ module.exports = {
 	entry: entry,
 	output: {
 		filename: "bundle-[name]-[contenthash].js",
-		path: path.resolve(__dirname, "../" + publicFolder),
-		publicPath: "/"
+		path: path.resolve(__dirname, "../" + publicFolder)
 	},
 	resolve: {
 		extensions: [".ts", ".js"]
