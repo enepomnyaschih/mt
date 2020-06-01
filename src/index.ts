@@ -1,7 +1,8 @@
-import "es6-promise/auto";
-import "script-loader!jquery";
+import "core-js/stable";
+import "regenerator-runtime/runtime";
 import "./index.styl";
 
+import $ from "jquery";
 import {createTweetByJson} from "./model/Tweet";
 import TweetView from "./view/TweetView";
 
