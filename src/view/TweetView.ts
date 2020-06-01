@@ -32,11 +32,31 @@ export default class TweetView extends Component {
 	}
 
 	protected renderLike(el: JQuery) {
-		el.toggleClass("active", this.tweet.like).text(this.tweet.like ? "Unlike" : "Like");
+		this._updateLike();
+		this.tweet.likeChangeEvent.listen(() => this._updateLike());
+		el.on("click", event => {
+			event.preventDefault();
+			this.tweet.like = !this.tweet.like;
+		});
 	}
 
 	protected renderRetweet(el: JQuery) {
-		el.toggleClass("active", this.tweet.retweet).text(this.tweet.retweet ? "Unretweet" : "Retweet");
+		this._updateRetweet();
+		this.tweet.retweetChangeEvent.listen(() => this._updateRetweet());
+		el.on("click", event => {
+			event.preventDefault();
+			this.tweet.retweet = !this.tweet.retweet;
+		});
+	}
+
+	private _updateLike() {
+		this.getElement("like").toggleClass(
+			"active", this.tweet.like).text(this.tweet.like ? "Unlike" : "Like");
+	}
+
+	private _updateRetweet() {
+		this.getElement("retweet").toggleClass(
+			"active", this.tweet.retweet).text(this.tweet.retweet ? "Unretweet" : "Retweet");
 	}
 
 	private _getTimeString(timeAgo: number) {

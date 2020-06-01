@@ -1,5 +1,5 @@
 import Profile from "./Profile";
-import Tweet, {createTweetByJson} from "./Tweet";
+import Tweet from "./Tweet";
 
 export default class ApplicationData {
 
@@ -8,6 +8,6 @@ export default class ApplicationData {
 
 	static createByJson(json: any) {
 		return new ApplicationData(json.profile,
-			(<any[]>json.tweets || []).map(createTweetByJson));
+			(<any[]>json.tweets || []).map(Tweet.createByJson));
 	}
 }

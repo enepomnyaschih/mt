@@ -38,4 +38,6 @@ $(function () {
 		]
 	});
 	new Application(data).renderTo("body");
+
+	(<any>window).data = data;
 });
