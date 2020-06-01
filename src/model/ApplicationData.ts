@@ -1,9 +1,13 @@
+import List from "jwidget/List";
 import Profile from "./Profile";
 import Tweet from "./Tweet";
 
 export default class ApplicationData {
 
-	constructor(readonly profile: Profile, readonly tweets: Tweet[] = []) {
+	readonly tweets: List<Tweet>;
+
+	constructor(readonly profile: Profile, tweets: Tweet[] = []) {
+		this.tweets = new List(tweets);
 	}
 
 	static createByJson(json: any) {

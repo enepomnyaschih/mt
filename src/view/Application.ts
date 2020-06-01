@@ -13,11 +13,11 @@ export default class Application extends Component {
 	}
 
 	protected renderTweets() {
-		return this.own(new TweetFeed(this.data.tweets));
+		return this.own(new TweetFeed(this.data));
 	}
 
 	protected renderProfileBox() {
-		return this.own(new ProfileBox(this.data.profile));
+		return this.own(new ProfileBox(this.data));
 	}
 
 	protected afterRender() {
