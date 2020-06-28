@@ -1,7 +1,6 @@
 {
   "name": "jwidget-mt",
   "private": true,
-  "version": "2.2.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node_modules/.bin/webpack --watch --config webpack/webpack.dev.js",
