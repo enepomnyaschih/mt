@@ -1,3 +1,5 @@
+import bindClass from "jwidget/bindClass";
+import bindText from "jwidget/bindText";
 import Component from "jwidget/Component";
 import template from "jwidget/template";
 import Tweet from "../model/Tweet";
@@ -32,31 +34,23 @@ export default class TweetView extends Component {
 	}
 
 	protected renderLike(el: JQuery) {
-		this._updateLike();
-		this.tweet.onLikeChange.listen(() => this._updateLike());
+		const text = this.own(this.tweet.like.map(like => like ? "Unlike" : "Like"));
+		bindText(el, text);
+		this.own(bindClass(el, "active", this.tweet.like));
 		el.on("click", event => {
 			event.preventDefault();
-			this.tweet.like = !this.tweet.like;
+			this.tweet.like.set(!this.tweet.like.get());
 		});
 	}
 
 	protected renderRetweet(el: JQuery) {
-		this._updateRetweet();
-		this.tweet.onRetweetChange.listen(() => this._updateRetweet());
+		const text = this.own(this.tweet.retweet.map(retweet => retweet ? "Unretweet" : "Retweet"));
+		bindText(el, text);
+		this.own(bindClass(el, "active", this.tweet.retweet));
 		el.on("click", event => {
 			event.preventDefault();
-			this.tweet.retweet = !this.tweet.retweet;
+			this.tweet.retweet.set(!this.tweet.retweet.get());
 		});
-	}
-
-	private _updateLike() {
-		this.getElement("like").toggleClass(
-			"active", this.tweet.like).text(this.tweet.like ? "Unlike" : "Like");
-	}
-
-	private _updateRetweet() {
-		this.getElement("retweet").toggleClass(
-			"active", this.tweet.retweet).text(this.tweet.retweet ? "Unretweet" : "Retweet");
 	}
 
 	private _getTimeString(timeAgo: number) {

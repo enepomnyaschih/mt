@@ -1,5 +1,5 @@
-import Dispatcher from "jwidget/Dispatcher";
-import Listenable from "jwidget/Listenable";
+import IProperty from "jwidget/IProperty";
+import Property from "jwidget/Property";
 
 export default class Tweet {
 
@@ -9,10 +9,8 @@ export default class Tweet {
 	readonly contentHtml: string;
 	readonly time: number;
 
-	private _like: boolean;
-	private _retweet: boolean;
-	private _onLikeChange = new Dispatcher<boolean>();
-	private _onRetweetChange = new Dispatcher<boolean>();
+	readonly like: IProperty<boolean>;
+	readonly retweet: IProperty<boolean>;
 
 	constructor(config: TweetConfig) {
 		this.fullName = config.fullName;
@@ -20,38 +18,8 @@ export default class Tweet {
 		this.avatarUrl48 = config.avatarUrl48;
 		this.contentHtml = config.contentHtml;
 		this.time = config.time;
-		this._like = config.like;
-		this._retweet = config.retweet;
-	}
-
-	get like() {
-		return this._like;
-	}
-
-	set like(value) {
-		if (this._like !== value) {
-			this._like = value;
-			this._onLikeChange.dispatch(value);
-		}
-	}
-
-	get onLikeChange(): Listenable<boolean> {
-		return this._onLikeChange;
-	}
-
-	get retweet() {
-		return this._retweet;
-	}
-
-	set retweet(value) {
-		if (this._retweet !== value) {
-			this._retweet = value;
-			this._onRetweetChange.dispatch(value);
-		}
-	}
-
-	get onRetweetChange(): Listenable<boolean> {
-		return this._onRetweetChange;
+		this.like = new Property(config.like);
+		this.retweet = new Property(config.retweet);
 	}
 
 	static createByJson(json: any) {
