@@ -1,9 +1,13 @@
+import BindableArray from "jwidget/BindableArray";
 import Profile from "./Profile";
 import Tweet from "./Tweet";
 
 export default class ApplicationData {
 
-	constructor(readonly profile: Profile, readonly tweets: Tweet[] = []) {
+	readonly tweets: BindableArray<Tweet>;
+
+	constructor(readonly profile: Profile, tweets: Tweet[] = []) {
+		this.tweets = new BindableArray(tweets);
 	}
 
 	static createByJson(json: any) {

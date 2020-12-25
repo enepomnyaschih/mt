@@ -1,18 +1,18 @@
-import BindableArray from "jwidget/BindableArray";
+import {destroy} from "jwidget";
+import {startMappingArray} from "jwidget/collection/ArrayMapper";
 import Component from "jwidget/Component";
 import template from "jwidget/template";
-import Tweet from "../model/Tweet";
+import ApplicationData from "../model/ApplicationData";
 import TweetView from "./TweetView";
 
 @template(require<string>("./TweetFeed.jw.html"))
 export default class TweetFeed extends Component {
 
-	constructor(private tweets: Tweet[]) {
+	constructor(private data: ApplicationData) {
 		super();
 	}
 
 	protected renderTweets() {
-		const tweetViews = this.tweets.map(tweet => new TweetView(tweet));
-		return this.own(new BindableArray(tweetViews)).ownValues();
+		return this.own(startMappingArray(this.data.tweets, tweet => new TweetView(this.data, tweet), {destroy}));
 	}
 }
