@@ -33,7 +33,7 @@ export default class TweetView extends Component {
 
 	protected renderLike(el: JQuery) {
 		this._updateLike();
-		this.tweet.likeChangeEvent.listen(() => this._updateLike());
+		this.tweet.onLikeChange.listen(() => this._updateLike());
 		el.on("click", event => {
 			event.preventDefault();
 			this.tweet.like = !this.tweet.like;
@@ -42,7 +42,7 @@ export default class TweetView extends Component {
 
 	protected renderRetweet(el: JQuery) {
 		this._updateRetweet();
-		this.tweet.retweetChangeEvent.listen(() => this._updateRetweet());
+		this.tweet.onRetweetChange.listen(() => this._updateRetweet());
 		el.on("click", event => {
 			event.preventDefault();
 			this.tweet.retweet = !this.tweet.retweet;

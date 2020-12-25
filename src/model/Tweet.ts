@@ -1,4 +1,4 @@
-import Event from "jwidget/Event";
+import Dispatcher from "jwidget/Dispatcher";
 import Listenable from "jwidget/Listenable";
 
 export default class Tweet {
@@ -11,8 +11,8 @@ export default class Tweet {
 
 	private _like: boolean;
 	private _retweet: boolean;
-	private _likeChangeEvent = new Event<boolean>();
-	private _retweetChangeEvent = new Event<boolean>();
+	private _onLikeChange = new Dispatcher<boolean>();
+	private _onRetweetChange = new Dispatcher<boolean>();
 
 	constructor(config: TweetConfig) {
 		this.fullName = config.fullName;
@@ -31,12 +31,12 @@ export default class Tweet {
 	set like(value) {
 		if (this._like !== value) {
 			this._like = value;
-			this._likeChangeEvent.trigger(value);
+			this._onLikeChange.dispatch(value);
 		}
 	}
 
-	get likeChangeEvent(): Listenable<boolean> {
-		return this._likeChangeEvent;
+	get onLikeChange(): Listenable<boolean> {
+		return this._onLikeChange;
 	}
 
 	get retweet() {
@@ -46,12 +46,12 @@ export default class Tweet {
 	set retweet(value) {
 		if (this._retweet !== value) {
 			this._retweet = value;
-			this._retweetChangeEvent.trigger(value);
+			this._onRetweetChange.dispatch(value);
 		}
 	}
 
-	get retweetChangeEvent(): Listenable<boolean> {
-		return this._retweetChangeEvent;
+	get onRetweetChange(): Listenable<boolean> {
+		return this._onRetweetChange;
 	}
 
 	static createByJson(json: any) {
