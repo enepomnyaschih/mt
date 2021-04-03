@@ -2,7 +2,7 @@ import Component from "jwidget/Component";
 import template from "jwidget/template";
 import Profile from "../model/Profile";
 
-@template(require<string>("./ProfileBox.jw.html"))
+@template(require("./ProfileBox.jw.html"))
 export default class ProfileBox extends Component {
 
 	constructor(private profile: Profile) {
