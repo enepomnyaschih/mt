@@ -2,7 +2,7 @@ import Component from "jwidget/Component";
 import template from "jwidget/template";
 import Tweet from "../model/Tweet";
 
-@template(require<string>("./TweetView.jw.html"))
+@template(require("./TweetView.jw.html"))
 export default class TweetView extends Component {
 
 	constructor(private tweet: Tweet) {
