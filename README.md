@@ -1,11 +1,11 @@
 # jWidget 2 Mini-Twitter implementation tutorials
 
-This repository stores source code of [jWidget 2 tutorials](http://enepomnyaschih.github.io/jwidget/2.2/tutorial.html).
+This repository stores source code of [jWidget 2 tutorials](http://enepomnyaschih.github.io/jwidget/2.3/tutorial.html).
 
 Master branch is not maintained.
 
 Every tutorial step is committed to a dedicated branch, such as
-[mt-2.2-1](https://github.com/enepomnyaschih/mt/tree/mt-2.2-1) (which stands for "1st tutorial for jWidget 2.2").
+[mt-2.3-1](https://github.com/enepomnyaschih/mt/tree/mt-2.3-1) (which stands for "1st tutorial for jWidget 2.3").
 
 Build instruction:
 
