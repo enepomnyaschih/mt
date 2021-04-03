@@ -5,7 +5,7 @@ import ApplicationData from "../model/ApplicationData";
 import ProfileBox from "./ProfileBox";
 import TweetFeed from "./TweetFeed";
 
-@template(require<string>("./Application.jw.html"))
+@template(require("./Application.jw.html"))
 export default class Application extends Component {
 
 	constructor(private data: ApplicationData) {
