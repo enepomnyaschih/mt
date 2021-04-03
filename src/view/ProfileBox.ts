@@ -3,7 +3,7 @@ import template from "jwidget/template";
 import ApplicationData from "../model/ApplicationData";
 import Tweet from "../model/Tweet";
 
-@template(require<string>("./ProfileBox.jw.html"))
+@template(require("./ProfileBox.jw.html"))
 export default class ProfileBox extends Component {
 
 	constructor(private data: ApplicationData) {
